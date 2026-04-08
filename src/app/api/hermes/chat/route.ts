@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { HermesAgentDB } from "@/lib/hermes-db";
 import { getUserAIConfig } from "@/lib/platform";
 import { hermesStream, getHermesConfig, HermesMessage } from "@/lib/hermes";
+import { getUserCredits, deductCredits, estimateCreditCost } from "@/lib/credits";
+
+const ESTIMATED_TOKENS_PER_MESSAGE = 500;
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,12 +47,30 @@ export async function POST(request: NextRequest) {
     try {
       // Load user's AI config
       const aiConfig = await getUserAIConfig(session.user.id!);
+      const isPlatformMode = aiConfig.mode === "platform";
+      
       console.log(`🔧 AI Config loaded:`, {
         mode: aiConfig.mode,
         baseUrl: aiConfig.baseUrl,
         model: aiConfig.model,
         hasApiKey: !!aiConfig.apiKey
       });
+
+      // Estimate cost and check credits (platform mode only)
+      const estimatedTokens = ESTIMATED_TOKENS_PER_MESSAGE;
+      const estimatedCost = estimateCreditCost(estimatedTokens);
+
+      if (isPlatformMode) {
+        const balance = await getUserCredits(session.user.id!);
+        console.log(`💰 Credit check - Balance: ${balance}, Cost: ${estimatedCost}`);
+        
+        if (balance < estimatedCost) {
+          return NextResponse.json(
+            { error: "Insufficient credits. Please add more credits or configure your own API key." },
+            { status: 402 }
+          );
+        }
+      }
       
       // Convert messages to Hermes format
       const hermesMessages: HermesMessage[] = messages.map((msg: any) => ({
@@ -103,6 +124,8 @@ IMPORTANT RESPONSE GUIDELINES:
 
             console.log(`✅ Stream started successfully`);
 
+            let totalTokensUsed = 0;
+
             while (true) {
               const { done, value } = await reader.read();
               if (done) break;
@@ -123,6 +146,7 @@ IMPORTANT RESPONSE GUIDELINES:
                   };
                   const delta = json.choices?.[0]?.delta?.content;
                   if (delta) {
+                    totalTokensUsed += Math.ceil(delta.length / 4); // Rough token estimation
                     // Send the content directly in the expected format
                     send(JSON.stringify({
                       choices: [{
@@ -136,6 +160,21 @@ IMPORTANT RESPONSE GUIDELINES:
                   // Skip invalid JSON
                   continue;
                 }
+              }
+            }
+
+            // Deduct credits after successful completion (platform mode only)
+            if (isPlatformMode && totalTokensUsed > 0) {
+              try {
+                const actualCost = estimateCreditCost(totalTokensUsed);
+                await deductCredits(session.user.id!, actualCost, "Chat completion", {
+                  agentId: dbAgent.id,
+                  tokensUsed: totalTokensUsed,
+                  model: hermesConfig.model
+                });
+                console.log(`💸 Credits deducted: ${actualCost} (${totalTokensUsed} tokens)`);
+              } catch (creditError) {
+                console.error("Failed to deduct credits:", creditError);
               }
             }
 
