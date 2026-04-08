@@ -1,5 +1,5 @@
 /**
- * Hermes — BlinkAI AI Orchestration Framework
+ * Hermes — ReAgent AI Orchestration Framework
  *
  * A lightweight, configurable AI engine layer that manages:
  * - Multiple AI provider routing
