@@ -43,7 +43,7 @@ export function Navbar() {
               <Zap className="w-4 h-4 text-black" />
             </div>
             <span className="font-bold text-xl tracking-tight text-white">
-              Hermes<span className="text-amber-400">AI</span>
+              Re<span className="text-amber-400">Agent</span>
             </span>
           </Link>
 
