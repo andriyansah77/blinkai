@@ -199,7 +199,7 @@ export async function GET() {
         port: agent.port
       })),
       endpoints: {
-        POST: "Send messages to Hermes AI agents with real CLI integration",
+        POST: "Send messages to Hermes framework agents with real CLI integration",
         "GET /api/hermes/test": "Test Hermes CLI connection and configuration",
         "GET /api/hermes/status": "Get detailed Hermes status and agent info"
       },

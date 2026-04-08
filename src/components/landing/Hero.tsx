@@ -200,7 +200,7 @@ export function Hero() {
 
             {/* Floating badge */}
             <div className="absolute -top-3 -right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-amber-500/30">
-              Powered by Hermes ⚡
+              Powered by ReAgent ⚡
             </div>
           </div>
         </motion.div>
