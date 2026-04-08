@@ -211,7 +211,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
             {["Helpful", "Creative", "Professional"].map((trait) => (
               <button
                 key={trait}
-                onClick={() => setAgentPersonality(prev => 
+                onClick={() => setAgentPersonality((prev: string) => 
                   prev ? `${prev}, ${trait.toLowerCase()}` : trait.toLowerCase()
                 )}
                 className="bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg px-4 py-2 text-sm transition-colors"
