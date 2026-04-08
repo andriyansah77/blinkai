@@ -105,7 +105,7 @@ export default function OnboardingPage() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
                 <Bot className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold">Ampere.sh Setup</span>
+              <span className="font-semibold">ReAgent Setup</span>
             </div>
             <span className="text-sm text-white/60">
               Step {currentStep + 1} of {steps.length}
@@ -560,7 +560,7 @@ function DeployStep({ data }: any) {
             
             <div className="flex items-center justify-center gap-2 text-green-400">
               <Sparkles className="w-4 h-4" />
-              <span className="text-sm">Welcome to Ampere.sh!</span>
+              <span className="text-sm">Welcome to ReAgent!</span>
             </div>
           </>
         )}

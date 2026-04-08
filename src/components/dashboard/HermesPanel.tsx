@@ -136,7 +136,7 @@ export function HermesPanel() {
           </div>
           <div className="text-left">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm">Hermes AI Engine</span>
+              <span className="font-semibold text-sm">AI Engine</span>
               <span className="text-xs px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 font-mono">
                 v{HERMES_VERSION}
               </span>
@@ -169,7 +169,7 @@ export function HermesPanel() {
           <div className="flex items-start gap-2 text-xs text-muted-foreground bg-orange-500/5 border border-orange-500/15 rounded-lg px-3 py-2.5">
             <Info className="w-3.5 h-3.5 mt-0.5 text-orange-400 shrink-0" />
             <span>
-              Hermes is BlinkAI's AI orchestration engine. Config is saved locally and sent with
+              ReAgent's AI orchestration engine. Config is saved locally and sent with
               each generation request. Server-side env vars are used as fallback.
             </span>
           </div>

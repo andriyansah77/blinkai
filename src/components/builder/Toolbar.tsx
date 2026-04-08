@@ -92,7 +92,7 @@ export function Toolbar({
       // Add a README
       zip.file(
         "README.md",
-        `# ${projectName}\n\nExported from BlinkAI.\n\nOpen \`index.html\` in your browser to view the app.\n`
+        `# ${projectName}\n\nExported from ReAgent.\n\nOpen \`index.html\` in your browser to view the app.\n`
       );
 
       const blob = await zip.generateAsync({ type: "blob" });

@@ -53,7 +53,7 @@ const plans = [
     description: "For teams and businesses deploying agents at scale.",
     badge: null,
     cta: "Contact Sales",
-    href: "mailto:sales@hermesai.com",
+    href: "mailto:sales@reagent.com",
     highlighted: false,
     features: [
       "Unlimited agents",

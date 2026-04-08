@@ -91,7 +91,7 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
             <Bot className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="text-white font-semibold text-sm">Ampere.sh</h1>
+            <h1 className="text-white font-semibold text-sm">ReAgent</h1>
             <div className="flex items-center gap-2 mt-0.5">
               <div className={`w-2 h-2 rounded-full ${hasAgent ? 'bg-green-400' : 'bg-gray-400'}`}></div>
               <span className={`text-xs font-medium ${hasAgent ? 'text-green-400' : 'text-gray-400'}`}>

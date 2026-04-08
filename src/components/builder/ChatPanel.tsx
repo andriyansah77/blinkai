@@ -62,14 +62,14 @@ export function ChatPanel({
       console.warn("[Hermes] Failed to read hermes_config:", e);
     }
     try {
-      // Fallback to legacy blinkai_settings
-      const legacy = localStorage.getItem("blinkai_settings");
+      // Fallback to legacy reagent_settings
+      const legacy = localStorage.getItem("reagent_settings");
       if (legacy) {
         const s = JSON.parse(legacy);
         if (s?.apiKey) return { apiKey: s.apiKey, baseUrl: s.baseUrl, model: s.model };
       }
     } catch (e) {
-      console.warn("[Hermes] Failed to read blinkai_settings:", e);
+      console.warn("[ReAgent] Failed to read reagent_settings:", e);
     }
     return null;
   }

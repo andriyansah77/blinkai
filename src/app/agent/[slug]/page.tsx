@@ -24,7 +24,7 @@ interface ChatMessage {
 
 function getOrCreateVisitorId(): string {
   if (typeof window === "undefined") return crypto.randomUUID();
-  const key = "hermesai_visitor_id";
+  const key = "reagent_visitor_id";
   let id = localStorage.getItem(key);
   if (!id) {
     id = crypto.randomUUID();
@@ -259,7 +259,7 @@ export default function PublicAgentPage() {
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium shrink-0">
             <Zap className="w-3 h-3" />
-            Powered by HermesAI
+            Powered by ReAgent
           </div>
         </div>
       </header>
@@ -430,7 +430,7 @@ export default function PublicAgentPage() {
             <p className="text-xs text-zinc-700">Ctrl+Enter to send</p>
             <p className="text-xs text-zinc-700">
               Powered by{" "}
-              <span className="text-amber-500/60 font-medium">HermesAI</span>
+              <span className="text-amber-500/60 font-medium">ReAgent</span>
             </p>
           </div>
         </div>

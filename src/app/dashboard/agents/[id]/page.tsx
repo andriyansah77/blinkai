@@ -277,7 +277,7 @@ export default function AgentDetailPage() {
 
   function copyEmbed() {
     if (!agent) return;
-    const code = `<iframe src="https://hermesai.com/agent/${agent.slug}" width="400" height="600" frameborder="0" allow="microphone"></iframe>`;
+    const code = `<iframe src="https://reagent.com/agent/${agent.slug}" width="400" height="600" frameborder="0" allow="microphone"></iframe>`;
     navigator.clipboard.writeText(code).then(() => {
       setEmbedCopied(true);
       toast.success("Embed code copied!");
@@ -304,8 +304,8 @@ export default function AgentDetailPage() {
 
   if (!agent) return null;
 
-  const shareUrl = `${typeof window !== "undefined" ? window.location.origin : "https://hermesai.com"}/agent/${agent.slug}`;
-  const publicUrl = `https://hermesai.com/agent/${agent.slug}`;
+  const shareUrl = `${typeof window !== "undefined" ? window.location.origin : "https://reagent.com"}/agent/${agent.slug}`;
+  const publicUrl = `https://reagent.com/agent/${agent.slug}`;
   const embedCode = `<iframe src="${publicUrl}" width="400" height="600" frameborder="0" allow="microphone"></iframe>`;
 
   return (
@@ -715,7 +715,7 @@ export default function AgentDetailPage() {
                 <div>
                   <h3 className="text-base font-semibold text-white mb-1">AI Provider Mode</h3>
                   <p className="text-xs text-zinc-500 mb-4">
-                    Choose whether to use HermesAI platform credits or your own API key.
+                    Choose whether to use ReAgent platform credits or your own API key.
                   </p>
                 </div>
 
@@ -738,7 +738,7 @@ export default function AgentDetailPage() {
                       Platform Credits
                     </p>
                     <p className="text-xs text-zinc-500 leading-relaxed">
-                      Use HermesAI platform credits. 100 credits free, then pay-as-you-go.
+                      Use ReAgent platform credits. 100 credits free, then pay-as-you-go.
                     </p>
                   </button>
 
@@ -759,7 +759,7 @@ export default function AgentDetailPage() {
                       Bring Your Own Key (BYOK)
                     </p>
                     <p className="text-xs text-zinc-500 leading-relaxed">
-                      Use your own API key. No credit deduction from HermesAI.
+                      Use your own API key. No credit deduction from ReAgent.
                     </p>
                   </button>
                 </div>

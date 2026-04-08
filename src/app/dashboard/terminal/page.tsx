@@ -153,7 +153,7 @@ export default function TerminalPage() {
               <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
             </div>
-            <div className="text-sm text-gray-400">BlinkAI Terminal</div>
+            <div className="text-sm text-gray-400">ReAgent Terminal</div>
             <div className="flex items-center space-x-2">
               <Settings className="h-4 w-4 text-gray-400" />
             </div>
@@ -167,7 +167,7 @@ export default function TerminalPage() {
             {/* Welcome Message */}
             {lines.length === 0 && (
               <div className="text-green-400 mb-4">
-                <div>Welcome to BlinkAI Terminal</div>
+                <div>Welcome to ReAgent Terminal</div>
                 <div>Type 'help' for available commands</div>
                 <div className="mt-2 text-gray-500">
                   Connected to: {session?.user?.email}

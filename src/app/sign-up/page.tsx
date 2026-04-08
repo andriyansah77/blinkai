@@ -76,7 +76,7 @@ export default function SignUpPage() {
         );
         router.push("/sign-in");
       } else {
-        toast.success("Account created! Welcome to Ampere.sh 🎉");
+        toast.success("Account created! Welcome to ReAgent 🎉");
         router.push("/onboarding");
         router.refresh();
       }
