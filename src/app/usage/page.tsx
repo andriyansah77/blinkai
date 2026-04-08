@@ -8,7 +8,7 @@ export default function UsagePage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">Getting Started</h2>
             <p className="text-gray-300 mb-4">
-              Welcome to BlinkAI! Here's how to get started with creating and managing your AI agents:
+              Welcome to ReAgent! Here's how to get started with creating and managing your AI agents:
             </p>
             <ol className="list-decimal list-inside text-gray-300 space-y-2">
               <li>Complete the onboarding process to set up your first agent</li>

@@ -1,22 +1,22 @@
-# BlinkAI
+# ReAgent
 
-> **Don't just think it, Build it.**
+> **Deploy your Agent in Minutes**
 
-BlinkAI is an AI-powered web application builder with advanced agent capabilities powered by the Hermes Agent framework. Create intelligent AI agents that learn from interactions, develop skills, and improve over time.
+ReAgent is an AI-powered agent deployment platform with advanced capabilities powered by the Hermes Agent framework. Create intelligent AI agents that learn from interactions, develop skills, and improve over time.
 
 ---
 
 ## Features
 
 ### Core Features
-- 🤖 **AI Code Generation** — Powered by any OpenAI-compatible API
-- ⚡ **Live Preview** — See your app as it's being generated
-- 🖥️ **Monaco Editor** — VS Code-quality code editing
-- 📱 **Responsive Preview** — Desktop, tablet, and mobile views
-- 💾 **Auto-save** — Never lose your work
-- 📦 **Export as ZIP** — Download your project
-- 🎨 **Template Gallery** — Start from pre-built templates
-- 🌙 **Dark/Light Mode** — Easy on the eyes
+- 🤖 **AI Agent Creation** — Powered by any OpenAI-compatible API
+- ⚡ **Quick Deployment** — Deploy agents in minutes, not hours
+- 🖥️ **Web Dashboard** — Intuitive agent management interface
+- 📱 **Multi-Channel** — Deploy to Discord, Telegram, and more
+- 💾 **Persistent Memory** — Agents remember conversations
+- 📦 **Skills System** — Extend agent capabilities
+- 🎨 **Custom Personalities** — Create unique agent behaviors
+- 🌙 **Modern UI** — Clean, responsive design
 
 ### Hermes Agent Framework
 - 🧠 **Learning Agents** — AI agents that improve from conversations
@@ -41,7 +41,7 @@ BlinkAI is an AI-powered web application builder with advanced agent capabilitie
 ```bash
 # Clone the repo
 git clone <your-repo-url>
-cd blinkai
+cd reagent
 
 # Install dependencies
 npm install
@@ -63,7 +63,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Hermes Agent Framework
 
-BlinkAI integrates the powerful Hermes Agent framework, providing advanced AI capabilities:
+ReAgent integrates the powerful Hermes Agent framework, providing advanced AI capabilities:
 
 ### Agent Types
 
@@ -113,28 +113,28 @@ Agents automatically:
 
 ### Method 1: GitHub Deployment (Recommended)
 
-The easiest way to deploy BlinkAI to your VPS is via GitHub:
+The easiest way to deploy ReAgent to your VPS is via GitHub:
 
 #### Step 1: Push to GitHub
 ```bash
 # Initialize git and push to GitHub
 git init
 git add .
-git commit -m "Initial BlinkAI setup"
-git remote add origin https://github.com/username/blinkai.git
+git commit -m "Initial ReAgent setup"
+git remote add origin https://github.com/username/reagent.git
 git push -u origin main
 ```
 
 #### Step 2: Auto-Deploy to VPS
 ```bash
 # Use the automated deployment script
-npm run deploy:github -- -r username/blinkai -u root -h your-vps-ip
+npm run deploy:github -- -r username/reagent -u root -h your-vps-ip
 ```
 
 #### Step 3: Easy Updates
 ```bash
 # On VPS, future updates are simple:
-~/update-blinkai.sh
+~/update-reagent.sh
 ```
 
 ### Method 2: Direct Deployment
@@ -170,14 +170,14 @@ docker --version
 
 ```bash
 # On your local machine:
-scp -r ./blinkai user@your-server-ip:~/blinkai
+scp -r ./reagent user@your-server-ip:~/reagent
 # Or clone from your git repo on the server
 ```
 
 ### Step 3 — Configure environment
 
 ```bash
-cd ~/blinkai
+cd ~/reagent
 cp .env.example .env
 nano .env
 ```
@@ -185,7 +185,7 @@ nano .env
 Set these required values:
 
 ```env
-DATABASE_URL="file:./data/blinkai.db"
+DATABASE_URL="file:./data/reagent.db"
 NEXTAUTH_SECRET="your-super-secret-random-string-min-32-chars"
 NEXTAUTH_URL="http://your-domain.com"  # or http://your-server-ip:3000
 
@@ -280,7 +280,7 @@ const response = await fetch('/api/hermes/chat', {
 
 | Variable | Required | Description |
 |---|---|---|
-| `DATABASE_URL` | ✅ | SQLite path, e.g. `file:./data/blinkai.db` |
+| `DATABASE_URL` | ✅ | SQLite path, e.g. `file:./data/reagent.db` |
 | `NEXTAUTH_SECRET` | ✅ | Random secret string (min 32 chars) |
 | `NEXTAUTH_URL` | ✅ | Full URL of your deployment |
 | `AI_API_KEY` | ✅ | AI provider API key |
@@ -295,7 +295,7 @@ const response = await fetch('/api/hermes/chat', {
 
 ## AI Provider Support
 
-BlinkAI works with any OpenAI-compatible API:
+ReAgent works with any OpenAI-compatible API:
 
 | Provider | Base URL | Example Model |
 |---|---|---|
@@ -389,7 +389,7 @@ docker compose exec app npx prisma db push
 
 ## Contributing
 
-We welcome contributions to both BlinkAI and the Hermes Agent integration! 
+We welcome contributions to both ReAgent and the Hermes Agent integration! 
 
 ### Areas for Contribution
 - New agent templates

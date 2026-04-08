@@ -10,7 +10,7 @@ const testimonials = [
     avatar: "SC",
     rating: 5,
     content:
-      "BlinkAI completely changed how I prototype. I can go from idea to working demo in under 5 minutes. My clients are blown away when I show them functional apps the same day they request them.",
+      "ReAgent completely changed how I prototype. I can go from idea to working demo in under 5 minutes. My clients are blown away when I show them functional apps the same day they request them.",
     highlight: "5 minutes from idea to demo",
   },
   {
@@ -20,7 +20,7 @@ const testimonials = [
     avatar: "MR",
     rating: 5,
     content:
-      "I've shipped 3 micro-SaaS products using BlinkAI this year. The code quality is surprisingly good, and I can customize it to my needs. This is a genuine superpower for non-developers.",
+      "I've shipped 3 micro-SaaS products using ReAgent this year. The code quality is surprisingly good, and I can customize it to my needs. This is a genuine superpower for non-developers.",
     highlight: "3 products shipped",
   },
   {
@@ -30,7 +30,7 @@ const testimonials = [
     avatar: "ET",
     rating: 5,
     content:
-      "We use BlinkAI to quickly build landing pages for new campaigns. Our time-to-launch dropped from 2 weeks to 2 days. The AI understands our brand guidelines when I describe them.",
+      "We use ReAgent to quickly build landing pages for new campaigns. Our time-to-launch dropped from 2 weeks to 2 days. The AI understands our brand guidelines when I describe them.",
     highlight: "2 weeks → 2 days",
   },
 ];
@@ -54,7 +54,7 @@ export function Testimonials() {
             <span className="gradient-text">worldwide</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of designers, developers, and entrepreneurs building faster with BlinkAI.
+            Join thousands of designers, developers, and entrepreneurs building faster with ReAgent.
           </p>
         </div>
 
@@ -107,7 +107,7 @@ export function Testimonials() {
         {/* Social proof bar */}
         <div className="mt-16 text-center">
           <p className="text-muted-foreground text-sm mb-4">
-            Join 10,000+ builders already using BlinkAI
+            Join 10,000+ builders already using ReAgent
           </p>
           <div className="flex justify-center">
             <div className="flex -space-x-2">

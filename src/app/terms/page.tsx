@@ -8,14 +8,14 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
             <p className="text-gray-300">
-              By accessing and using BlinkAI, you accept and agree to be bound by the terms and provision of this agreement.
+              By accessing and using ReAgent, you accept and agree to be bound by the terms and provision of this agreement.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4">2. Use License</h2>
             <p className="text-gray-300">
-              Permission is granted to temporarily use BlinkAI for personal, non-commercial transitory viewing only.
+              Permission is granted to temporarily use ReAgent for personal, non-commercial transitory viewing only.
             </p>
           </section>
 
@@ -36,7 +36,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">5. Limitations</h2>
             <p className="text-gray-300">
-              BlinkAI is provided "as is" without any representations or warranties, express or implied.
+              ReAgent is provided "as is" without any representations or warranties, express or implied.
             </p>
           </section>
         </div>

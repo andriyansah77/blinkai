@@ -12,19 +12,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "HermesAI — Deploy Your AI Agents in Seconds",
+  title: "ReAgent — Deploy your Agent in Minutes",
   description:
-    "Build, deploy, and scale AI agents with HermesAI. Give your users the power of AI — with your branding, your rules.",
-  keywords: ["AI", "agent hosting", "AI agents", "deploy AI", "BYOK", "HermesAI"],
-  authors: [{ name: "HermesAI" }],
+    "Build, deploy, and scale AI agents with ReAgent. Create intelligent agents that learn, remember, and improve over time.",
+  keywords: ["AI", "agent deployment", "AI agents", "deploy AI", "Hermes", "ReAgent"],
+  authors: [{ name: "ReAgent" }],
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
   openGraph: {
-    title: "HermesAI — Deploy Your AI Agents in Seconds",
+    title: "ReAgent — Deploy your Agent in Minutes",
     description:
-      "Build, deploy, and scale AI agents with HermesAI. Give your users the power of AI — with your branding, your rules.",
+      "Build, deploy, and scale AI agents with ReAgent. Create intelligent agents that learn, remember, and improve over time.",
     type: "website",
   },
 };

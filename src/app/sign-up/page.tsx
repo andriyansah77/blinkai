@@ -161,7 +161,7 @@ export default function SignUpPage() {
             </div>
 
             <p className="text-sm text-white/30">
-              Join 500+ developers deploying AI agents with HermesAI
+              Join 500+ developers deploying AI agents with ReAgent
             </p>
           </div>
         </div>

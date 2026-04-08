@@ -79,8 +79,7 @@ export function Hero() {
           animate="visible"
           className="text-lg sm:text-xl md:text-2xl text-white/50 mb-10 max-w-2xl mx-auto leading-relaxed"
         >
-          Build, deploy, and scale AI agents with HermesAI. Give your users the
-          power of AI — with your branding, your rules.
+          Build, deploy, and scale AI agents with ReAgent. Deploy your Agent in Minutes — with your branding, your rules.
         </motion.p>
 
         {/* CTAs */}

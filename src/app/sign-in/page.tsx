@@ -96,7 +96,7 @@ function SignInContent() {
                 Trusted by developers
               </p>
               <blockquote className="text-2xl font-semibold text-white leading-relaxed">
-                &ldquo;HermesAI cut our agent deployment time from days to
+                &ldquo;ReAgent cut our agent deployment time from days to
                 seconds.&rdquo;
               </blockquote>
               <div className="flex items-center gap-3 mt-4">
@@ -133,7 +133,7 @@ function SignInContent() {
             </div>
 
             <p className="text-sm text-white/30">
-              Join 500+ developers deploying AI agents with HermesAI
+              Join 500+ developers deploying AI agents with ReAgent
             </p>
           </div>
         </div>
@@ -167,7 +167,7 @@ function SignInContent() {
             </div>
 
             <h1 className="text-3xl font-bold text-white mb-2">Welcome back</h1>
-            <p className="text-white/40">Sign in to your HermesAI account</p>
+            <p className="text-white/40">Sign in to your ReAgent account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

@@ -85,7 +85,7 @@ export function Features() {
             <span className="gradient-text-amber">ship AI agents</span>
           </h2>
           <p className="text-xl text-white/50 max-w-2xl mx-auto">
-            HermesAI gives you the full stack to host, scale, and monetize AI
+            ReAgent gives you the full stack to host, scale, and monetize AI
             agents — without managing any infrastructure.
           </p>
         </div>

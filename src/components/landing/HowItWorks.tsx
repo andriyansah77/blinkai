@@ -18,8 +18,8 @@ const steps = [
     icon: Share2,
     title: "Share Your Link",
     description:
-      "Get an instant public URL at hermesai.com/agent/your-slug. Share it, embed it, or keep it behind auth.",
-    detail: "hermesai.com/agent/your-slug",
+      "Get an instant public URL at reagent.com/agent/your-slug. Share it, embed it, or keep it behind auth.",
+    detail: "reagent.com/agent/your-slug",
   },
   {
     number: "03",
@@ -69,7 +69,7 @@ export function HowItWorks() {
             <span className="gradient-text-amber">three simple steps</span>
           </h2>
           <p className="text-xl text-white/50 max-w-2xl mx-auto">
-            No complex setup, no DevOps. Just build your agent and let HermesAI
+            No complex setup, no DevOps. Just build your agent and let ReAgent
             handle the rest.
           </p>
         </div>

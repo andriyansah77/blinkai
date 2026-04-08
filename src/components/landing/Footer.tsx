@@ -67,7 +67,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/[0.05] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-white/25">
-            © 2025 HermesAI · Deploy AI Agents in Seconds
+            © 2025 ReAgent · Deploy your Agent in Minutes
           </p>
           <p className="text-xs text-white/20">
             Built with Next.js · Tailwind CSS · Framer Motion
