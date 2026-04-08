@@ -1,11 +1,11 @@
-# Simple VPS Deployment Script for BlinkAI
+# Simple VPS Deployment Script for ReAgent
 # Target: 159.65.141.68 (root)
 
 $VPS_HOST = "159.65.141.68"
 $VPS_USER = "root"
 $REPO = "andriyansah77/blinkai"
 
-Write-Host "Deploying BlinkAI to VPS: $VPS_HOST" -ForegroundColor Blue
+Write-Host "Deploying ReAgent to VPS: $VPS_HOST" -ForegroundColor Blue
 
 # Test SSH connection
 Write-Host "Testing SSH connection..." -ForegroundColor Blue
@@ -75,7 +75,7 @@ DATABASE_URL="file:./prisma/dev.db"
 
 # NextAuth
 NEXTAUTH_URL="http://$VPS_HOST:3000"
-NEXTAUTH_SECRET="blinkai-secret-$(Get-Random -Maximum 99999)"
+NEXTAUTH_SECRET="reagent-secret-$(Get-Random -Maximum 99999)"
 
 # AI Configuration (EDIT THESE!)
 AI_API_KEY="sk-your-openai-api-key-here"

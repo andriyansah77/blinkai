@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# 🚀 BlinkAI VPS Deployment Script
-# Script otomatis untuk deploy BlinkAI ke VPS
+# 🚀 ReAgent VPS Deployment Script
+# Script otomatis untuk deploy ReAgent ke VPS
 
 set -e  # Exit on any error
 
@@ -93,7 +93,7 @@ fi
 # Update APP_DIR with actual user
 APP_DIR="/home/$VPS_USER/blinkai"
 
-print_status "🚀 Starting BlinkAI deployment to VPS..."
+print_status "🚀 Starting ReAgent deployment to VPS..."
 print_status "Target: $VPS_USER@$VPS_HOST:$VPS_PORT"
 print_status "Directory: $APP_DIR"
 
@@ -245,4 +245,4 @@ echo "  2. Configure domain/SSL if needed"
 echo "  3. Setup firewall rules for port 3000"
 echo "  4. Test the application in browser"
 echo ""
-print_success "🎉 BlinkAI deployment completed!"
+print_success "🎉 ReAgent deployment completed!"

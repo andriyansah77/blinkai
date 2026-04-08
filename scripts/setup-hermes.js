@@ -86,8 +86,8 @@ async function setupHermesEnvironment() {
     // Create Hermes config template
     const configTemplate = {
       agent: {
-        name: "BlinkAI Agent",
-        personality: "You are a helpful AI assistant created with BlinkAI.",
+        name: "ReAgent Assistant",
+        personality: "You are a helpful AI assistant created with ReAgent.",
         learning: {
           enabled: true,
           auto_improve: true

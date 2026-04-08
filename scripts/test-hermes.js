@@ -86,19 +86,19 @@ async function testHermesConnection() {
   
   if (passedTests === totalTests) {
     console.log('\n🎉 All tests passed! Hermes CLI is ready to use.');
-    console.log('✅ BlinkAI can now use Hermes framework features:');
+    console.log('✅ ReAgent can now use Hermes framework features:');
     console.log('   - Learning & Memory');
     console.log('   - Skills Development');
     console.log('   - Advanced Agent Capabilities');
   } else if (passedTests > 0) {
     console.log('\n⚠️  Some tests failed. Hermes CLI is partially working.');
-    console.log('🔄 BlinkAI will use available features and fallback for others.');
+    console.log('🔄 ReAgent will use available features and fallback for others.');
   } else {
     console.log('\n❌ All tests failed. Hermes CLI is not working.');
-    console.log('🔄 BlinkAI will fallback to standard AI responses.');
+    console.log('🔄 ReAgent will fallback to standard AI responses.');
   }
 
-  console.log('\n🚀 Start BlinkAI with: npm run dev');
+  console.log('\n🚀 Start ReAgent with: npm run dev');
   console.log('🔗 Test API: http://localhost:3001/api/hermes/test');
 }
 

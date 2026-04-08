@@ -1,4 +1,4 @@
-# 🚀 BlinkAI GitHub Push Script (PowerShell)
+# 🚀 ReAgent GitHub Push Script (PowerShell)
 # Script otomatis untuk push project ke GitHub dengan authentication
 
 param(
@@ -237,4 +237,4 @@ Write-Host "  git add ."
 Write-Host "  git commit -m 'Update description'"
 Write-Host "  git push origin main"
 Write-Host ""
-Write-Success "BlinkAI successfully pushed to GitHub!"
+Write-Success "ReAgent successfully pushed to GitHub!"

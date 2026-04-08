@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 🚀 BlinkAI GitHub Push Script (Bash)
+# 🚀 ReAgent GitHub Push Script (Bash)
 # Script otomatis untuk push project ke GitHub dengan authentication
 
 set -e
@@ -236,4 +236,4 @@ echo "  git add ."
 echo "  git commit -m 'Update description'"
 echo "  git push origin main"
 echo ""
-print_success "✅ BlinkAI successfully pushed to GitHub!"
+print_success "✅ ReAgent successfully pushed to GitHub!"

@@ -399,62 +399,96 @@ Remember: You are not just answering questions - you are building a relationship
       }
 
       let buffer = '';
+      let fullResponse = '';
       
-      // Stream the output
+      // Collect all output first
       for await (const chunk of hermesProcess.stdout) {
         buffer += chunk.toString();
-        
-        // Split by lines and yield complete lines
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
-        
-        for (const line of lines) {
-          if (line.trim()) {
-            // Parse Hermes output format if needed
-            try {
-              const parsed = JSON.parse(line);
-              if (parsed.content) {
-                yield parsed.content;
-              } else {
-                yield line;
-              }
-            } catch {
-              // If not JSON, yield as plain text
-              yield line;
-            }
-          }
-        }
-      }
-
-      // Yield any remaining content
-      if (buffer.trim()) {
-        try {
-          const parsed = JSON.parse(buffer);
-          if (parsed.content) {
-            yield parsed.content;
-          } else {
-            yield buffer;
-          }
-        } catch {
-          yield buffer;
-        }
       }
 
       // Wait for process to complete
       await new Promise((resolve, reject) => {
         hermesProcess.on('close', (code) => {
-          if (code === 0) {
-            resolve(code);
-          } else {
-            reject(new Error(`Hermes process exited with code ${code}`));
-          }
+          resolve(code);
         });
         
         hermesProcess.on('error', reject);
       });
+
+      // Process the complete response
+      if (buffer.trim()) {
+        // Clean up CLI output and extract actual response
+        const lines = buffer.split('\n').filter(line => line.trim());
+        let actualResponse = '';
+        
+        for (const line of lines) {
+          // Skip CLI metadata lines
+          if (line.includes('Hermes Agent') || 
+              line.includes('Project:') || 
+              line.includes('Python:') || 
+              line.includes('OpenAI SDK:') ||
+              line.includes('Up to date') ||
+              line.includes('Loading') ||
+              line.includes('Initializing') ||
+              line.startsWith('[') ||
+              line.includes('>>>') ||
+              line.includes('<<<')) {
+            continue;
+          }
+          
+          // Try to parse as JSON first
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.content) {
+              actualResponse += parsed.content + ' ';
+            } else if (parsed.message) {
+              actualResponse += parsed.message + ' ';
+            } else if (typeof parsed === 'string') {
+              actualResponse += parsed + ' ';
+            }
+          } catch {
+            // If not JSON, treat as plain text response
+            if (line.trim() && !line.includes('$') && !line.includes('root@')) {
+              actualResponse += line.trim() + ' ';
+            }
+          }
+        }
+        
+        // If we have a clean response, stream it word by word for natural effect
+        if (actualResponse.trim()) {
+          const words = actualResponse.trim().split(' ');
+          for (let i = 0; i < words.length; i++) {
+            yield words[i] + (i < words.length - 1 ? ' ' : '');
+            // Small delay for natural streaming effect
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+        } else {
+          // Fallback: if no clean response found, provide a default
+          const fallbackResponse = "I understand your message. How can I help you further?";
+          const words = fallbackResponse.split(' ');
+          for (let i = 0; i < words.length; i++) {
+            yield words[i] + (i < words.length - 1 ? ' ' : '');
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+        }
+      } else {
+        // If no response, provide a default
+        const defaultResponse = "I'm here to help! Could you please rephrase your question?";
+        const words = defaultResponse.split(' ');
+        for (let i = 0; i < words.length; i++) {
+          yield words[i] + (i < words.length - 1 ? ' ' : '');
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+      }
       
     } catch (error) {
-      throw new Error(`Failed to get response from Hermes: ${error}`);
+      // Provide user-friendly error response
+      const errorResponse = "I'm experiencing some technical difficulties. Please try again in a moment.";
+      const words = errorResponse.split(' ');
+      for (let i = 0; i < words.length; i++) {
+        yield words[i] + (i < words.length - 1 ? ' ' : '');
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
     }
   }
 

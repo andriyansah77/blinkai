@@ -1,4 +1,4 @@
-# Simple GitHub Push Script for BlinkAI
+# Simple GitHub Push Script for ReAgent
 param(
     [string]$Token = ""
 )
@@ -25,7 +25,7 @@ git config --global user.email "$Username@gmail.com"
 Write-Host "[INFO] Adding and committing changes..." -ForegroundColor Blue
 git add .
 
-$commitMessage = "Update BlinkAI: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+$commitMessage = "Update ReAgent: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 git commit -m $commitMessage
 
 # Setup remote
@@ -102,4 +102,4 @@ Write-Host ""
 Write-Host "Repository URL: https://github.com/$Username/$RepoName" -ForegroundColor Cyan
 Write-Host "Clone URL: git clone https://github.com/$Username/$RepoName.git" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "[SUCCESS] BlinkAI pushed to GitHub successfully!" -ForegroundColor Green
+Write-Host "[SUCCESS] ReAgent pushed to GitHub successfully!" -ForegroundColor Green
