@@ -36,10 +36,12 @@ export interface HermesSkill {
 export interface HermesMemory {
   id: string;
   agentId: string;
+  userId: string;
   type: 'conversation' | 'skill' | 'user_preference' | 'context';
   content: string;
   metadata: Record<string, any>;
   importance: number;
+  embedding?: number[];
   createdAt: Date;
   lastAccessed: Date;
 }
