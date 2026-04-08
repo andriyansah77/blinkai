@@ -1,5 +1,5 @@
-# 🚀 BlinkAI VPS Deployment Script (PowerShell)
-# Script otomatis untuk deploy BlinkAI ke VPS dari Windows
+# 🚀 ReAgent VPS Deployment Script (PowerShell)
+# Script otomatis untuk deploy ReAgent ke VPS dari Windows
 
 param(
     [Parameter(Mandatory=$true)]
@@ -44,7 +44,7 @@ function Show-Usage {
     Write-Host "  -VpsUser <user>     VPS username (required)"
     Write-Host "  -VpsHost <host>     VPS IP address or domain (required)"
     Write-Host "  -VpsPort <port>     SSH port (default: 22)"
-    Write-Host "  -AppDir <dir>       Remote directory (default: /home/user/blinkai)"
+    Write-Host "  -AppDir <dir>       Remote directory (default: /home/user/reagent)"
     Write-Host "  -Help               Show this help message"
     Write-Host ""
     Write-Host "Examples:"
@@ -64,10 +64,10 @@ if (-not $VpsUser -or -not $VpsHost) {
 }
 
 if (-not $AppDir) {
-    $AppDir = "/home/$VpsUser/blinkai"
+    $AppDir = "/home/$VpsUser/reagent"
 }
 
-Write-Status "🚀 Starting BlinkAI deployment to VPS..."
+Write-Status "🚀 Starting ReAgent deployment to VPS..."
 Write-Status "Target: $VpsUser@$VpsHost`:$VpsPort"
 Write-Status "Directory: $AppDir"
 
@@ -103,7 +103,7 @@ try {
 # Create deployment package
 Write-Status "📦 Creating deployment package..."
 $tempDir = [System.IO.Path]::GetTempPath()
-$packagePath = Join-Path $tempDir "blinkai-deploy.zip"
+$packagePath = Join-Path $tempDir "reagent-deploy.zip"
 
 # Remove old package if exists
 if (Test-Path $packagePath) {
@@ -160,7 +160,7 @@ Write-Success "Package created: $packagePath"
 
 # Upload package to VPS
 Write-Status "📤 Uploading package to VPS..."
-scp -P $VpsPort $packagePath "$VpsUser@$VpsHost`:~/blinkai-deploy.zip"
+scp -P $VpsPort $packagePath "$VpsUser@$VpsHost`:~/reagent-deploy.zip"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Failed to upload package"
@@ -180,9 +180,9 @@ mkdir -p $AppDir
 cd $AppDir
 
 echo "📦 Extracting package..."
-if [ -f ~/blinkai-deploy.zip ]; then
-    unzip -o ~/blinkai-deploy.zip
-    rm ~/blinkai-deploy.zip
+if [ -f ~/reagent-deploy.zip ]; then
+    unzip -o ~/reagent-deploy.zip
+    rm ~/reagent-deploy.zip
 else
     echo "❌ Package not found"
     exit 1
@@ -228,8 +228,8 @@ if ! command -v pm2 &> /dev/null; then
 fi
 
 echo "🚀 Starting application..."
-pm2 delete blinkai 2>/dev/null || true
-pm2 start npm --name "blinkai" -- start
+pm2 delete reagent 2>/dev/null || true
+pm2 start npm --name "reagent" -- start
 pm2 save
 pm2 startup | grep -E '^sudo' | bash || true
 
@@ -238,7 +238,7 @@ pm2 status
 "@
 
 # Write deploy script to temp file and execute
-$deployScriptPath = "/tmp/deploy-blinkai.sh"
+$deployScriptPath = "/tmp/deploy-reagent.sh"
 $deployScript | ssh -p $VpsPort "$VpsUser@$VpsHost" "cat > $deployScriptPath && chmod +x $deployScriptPath && bash $deployScriptPath"
 
 if ($LASTEXITCODE -ne 0) {
@@ -250,7 +250,7 @@ if ($LASTEXITCODE -ne 0) {
 Remove-Item $packagePath -Force
 
 # Show success information
-Write-Success "🎉 BlinkAI deployment completed successfully!"
+Write-Success "🎉 ReAgent deployment completed successfully!"
 Write-Host ""
 Write-Host "📋 Access Information:" -ForegroundColor Cyan
 Write-Host "  🔗 Application URL: http://$VpsHost`:3000"
@@ -259,9 +259,9 @@ Write-Host "  🧪 Test Hermes: http://$VpsHost`:3000/api/hermes/test"
 Write-Host ""
 Write-Host "🔧 Management Commands:" -ForegroundColor Cyan
 Write-Host "  📊 Check status: ssh -p $VpsPort $VpsUser@$VpsHost 'pm2 status'"
-Write-Host "  📝 View logs: ssh -p $VpsPort $VpsUser@$VpsHost 'pm2 logs blinkai'"
-Write-Host "  🔄 Restart app: ssh -p $VpsPort $VpsUser@$VpsHost 'pm2 restart blinkai'"
-Write-Host "  🛑 Stop app: ssh -p $VpsPort $VpsUser@$VpsHost 'pm2 stop blinkai'"
+Write-Host "  📝 View logs: ssh -p $VpsPort $VpsUser@$VpsHost 'pm2 logs reagent'"
+Write-Host "  🔄 Restart app: ssh -p $VpsPort $VpsUser@$VpsHost 'pm2 restart reagent'"
+Write-Host "  🛑 Stop app: ssh -p $VpsPort $VpsUser@$VpsHost 'pm2 stop reagent'"
 Write-Host ""
 Write-Host "⚠️  Important Next Steps:" -ForegroundColor Yellow
 Write-Host "  1. Edit .env file on VPS with your API keys"

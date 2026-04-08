@@ -1,40 +1,40 @@
 # 🚀 Quick Deploy ke VPS - 5 Menit Setup
 
-Panduan super cepat untuk deploy BlinkAI ke VPS kamu yang sudah ada Hermes CLI.
+Panduan super cepat untuk deploy ReAgent ke VPS kamu yang sudah ada Hermes CLI.
 
 ## 🎯 Method 1: Via GitHub (Recommended & Professional)
 
 ### Step 1: Push ke GitHub
 ```bash
 # Di local machine
-cd blinkai
+cd reagent
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/username/blinkai.git
+git remote add origin https://github.com/username/reagent.git
 git push -u origin main
 ```
 
 ### Step 2: Deploy ke VPS
 ```bash
 # Otomatis dengan script
-./scripts/setup-github-deploy.sh -r username/blinkai -u root -h 192.168.1.100
+./scripts/setup-github-deploy.sh -r username/reagent -u root -h 192.168.1.100
 
 # Atau manual
 ssh username@your-vps-ip
-git clone https://github.com/username/blinkai.git
-cd blinkai
+git clone https://github.com/username/reagent.git
+cd reagent
 npm install && cp .env.example .env && nano .env
 npm run setup && npm run build
-pm2 start npm --name "blinkai" -- start
+pm2 start npm --name "reagent" -- start
 ```
 
 ### Step 3: Update (Super Mudah!)
 ```bash
 # Di VPS, tinggal jalankan:
-~/update-blinkai.sh
+~/update-reagent.sh
 # atau
-cd blinkai && git pull && npm install && npm run build && pm2 restart blinkai
+cd reagent && git pull && npm install && npm run build && pm2 restart reagent
 ```
 
 ## 🎯 Method 2: Otomatis dengan Script
@@ -42,13 +42,13 @@ cd blinkai && git pull && npm install && npm run build && pm2 restart blinkai
 ### Windows (PowerShell):
 ```powershell
 # Buka PowerShell sebagai Administrator
-cd blinkai
+cd reagent
 .\scripts\deploy-to-vps.ps1 -VpsUser root -VpsHost 192.168.1.100
 ```
 
 ### Linux/macOS (Bash):
 ```bash
-cd blinkai
+cd reagent
 chmod +x scripts/deploy-to-vps.sh
 ./scripts/deploy-to-vps.sh -u root -h 192.168.1.100
 ```
@@ -67,11 +67,11 @@ ssh username@your-vps-ip
 ### Step 2: Clone/Upload Project
 ```bash
 # Option A: Git Clone (jika ada repo)
-git clone https://github.com/your-repo/blinkai.git
-cd blinkai
+git clone https://github.com/your-repo/reagent.git
+cd reagent
 
 # Option B: Upload manual
-# Upload folder blinkai ke VPS via FileZilla/SCP
+# Upload folder reagent ke VPS via FileZilla/SCP
 ```
 
 ### Step 3: Install & Setup
@@ -91,7 +91,7 @@ npm run build        # Build aplikasi
 ### Step 5: Start Production
 ```bash
 npm install -g pm2
-pm2 start npm --name "blinkai" -- start
+pm2 start npm --name "reagent" -- start
 pm2 save
 ```
 
@@ -113,7 +113,7 @@ Setelah deploy, edit file `.env` di VPS:
 ssh username@your-vps-ip
 
 # Edit environment
-cd blinkai
+cd reagent
 nano .env
 ```
 
@@ -164,8 +164,8 @@ sudo iptables -A INPUT -p tcp --dport 3000 -j ACCEPT
 ### Problem: PM2 tidak jalan
 ```bash
 # Di VPS, restart PM2
-pm2 restart blinkai
-pm2 logs blinkai
+pm2 restart reagent
+pm2 logs reagent
 ```
 
 ## 🎉 Success Checklist
@@ -187,13 +187,13 @@ pm2 logs blinkai
 ssh username@vps-ip 'pm2 status'
 
 # Lihat logs
-ssh username@vps-ip 'pm2 logs blinkai'
+ssh username@vps-ip 'pm2 logs reagent'
 
 # Restart aplikasi
-ssh username@vps-ip 'pm2 restart blinkai'
+ssh username@vps-ip 'pm2 restart reagent'
 
 # Update aplikasi (jika ada perubahan)
-ssh username@vps-ip 'cd blinkai && git pull && npm install && npm run build && pm2 restart blinkai'
+ssh username@vps-ip 'cd reagent && git pull && npm install && npm run build && pm2 restart reagent'
 ```
 
 **Total waktu deploy: 5-10 menit** ⏱️

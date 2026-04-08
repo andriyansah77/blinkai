@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 🚀 GitHub Deployment Setup Script
-# Script untuk setup deployment BlinkAI via GitHub ke VPS
+# Script untuk setup deployment ReAgent via GitHub ke VPS
 
 set -e
 
@@ -34,7 +34,7 @@ show_usage() {
     echo "  --help                Show this help message"
     echo ""
     echo "Example:"
-    echo "  $0 -r myusername/blinkai -u root -h 192.168.1.100"
+    echo "  $0 -r myusername/reagent -u root -h 192.168.1.100"
 }
 
 # Parse arguments
@@ -75,7 +75,7 @@ if [[ -z "$GITHUB_REPO" || -z "$VPS_USER" || -z "$VPS_HOST" ]]; then
     exit 1
 fi
 
-print_status "🚀 Setting up GitHub deployment for BlinkAI..."
+print_status "🚀 Setting up GitHub deployment for ReAgent..."
 print_status "Repository: https://github.com/$GITHUB_REPO"
 print_status "Target VPS: $VPS_USER@$VPS_HOST:$VPS_PORT"
 
@@ -140,15 +140,15 @@ fi
 print_status "📦 Cloning repository and setting up application..."
 ssh -p $VPS_PORT $VPS_USER@$VPS_HOST << EOF
     # Remove existing directory if exists
-    if [ -d "blinkai" ]; then
-        echo "Removing existing blinkai directory..."
-        rm -rf blinkai
+    if [ -d "reagent" ]; then
+        echo "Removing existing reagent directory..."
+        rm -rf reagent
     fi
     
     # Clone repository
     echo "Cloning repository..."
-    git clone git@github.com:$GITHUB_REPO.git blinkai
-    cd blinkai
+    git clone git@github.com:$GITHUB_REPO.git reagent
+    cd reagent
     
     # Check prerequisites
     echo "Checking prerequisites..."
@@ -198,8 +198,8 @@ ssh -p $VPS_PORT $VPS_USER@$VPS_HOST << EOF
     
     # Start application
     echo "Starting application with PM2..."
-    pm2 delete blinkai 2>/dev/null || true
-    pm2 start npm --name "blinkai" -- start
+    pm2 delete reagent 2>/dev/null || true
+    pm2 start npm --name "reagent" -- start
     pm2 save
     
     # Setup auto-restart
@@ -217,12 +217,12 @@ fi
 # Step 5: Create update script on VPS
 print_status "📝 Creating update script on VPS..."
 ssh -p $VPS_PORT $VPS_USER@$VPS_HOST << 'EOF'
-    cat > ~/update-blinkai.sh << 'SCRIPT'
+    cat > ~/update-reagent.sh << 'SCRIPT'
 #!/bin/bash
 set -e
 
-echo "🔄 Updating BlinkAI from GitHub..."
-cd ~/blinkai
+echo "🔄 Updating ReAgent from GitHub..."
+cd ~/reagent
 
 echo "📥 Pulling latest changes..."
 git pull origin main
@@ -234,14 +234,14 @@ echo "🏗️ Building application..."
 npm run build
 
 echo "🔄 Restarting application..."
-pm2 restart blinkai
+pm2 restart reagent
 
 echo "✅ Update completed successfully!"
 pm2 status
 SCRIPT
 
-    chmod +x ~/update-blinkai.sh
-    echo "✅ Update script created at ~/update-blinkai.sh"
+    chmod +x ~/update-reagent.sh
+    echo "✅ Update script created at ~/update-reagent.sh"
 EOF
 
 # Step 6: Create GitHub Actions workflow (optional)
@@ -269,11 +269,11 @@ jobs:
         key: \${{ secrets.VPS_SSH_KEY }}
         port: \${{ secrets.VPS_PORT }}
         script: |
-          cd blinkai
+          cd reagent
           git pull origin main
           npm install
           npm run build
-          pm2 restart blinkai
+          pm2 restart reagent
           echo "✅ Auto-deployment completed!"
 EOF
 

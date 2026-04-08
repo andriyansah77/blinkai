@@ -1,6 +1,6 @@
-# BlinkAI + Hermes Agent Setup Instructions
+# ReAgent + Hermes Agent Setup Instructions
 
-Ikuti langkah-langkah berikut untuk mengintegrasikan BlinkAI dengan framework **Hermes Agent asli dari NousResearch** dan mendapatkan flow onboarding yang lengkap.
+Ikuti langkah-langkah berikut untuk mengintegrasikan ReAgent dengan framework **Hermes Agent asli dari NousResearch** dan mendapatkan flow onboarding yang lengkap.
 
 ## 🎯 Status Integrasi Hermes
 
@@ -22,7 +22,7 @@ Ikuti langkah-langkah berikut untuk mengintegrasikan BlinkAI dengan framework **
 
 ### 1. Install Dependencies
 ```bash
-cd blinkai
+cd reagent
 npm install
 ```
 

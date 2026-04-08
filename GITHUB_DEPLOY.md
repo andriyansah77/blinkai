@@ -1,6 +1,6 @@
-# 🚀 Deploy BlinkAI via GitHub ke VPS
+# 🚀 Deploy ReAgent via GitHub ke VPS
 
-Panduan lengkap deploy BlinkAI ke VPS menggunakan GitHub sebagai perantara. Cara ini paling praktis dan profesional!
+Panduan lengkap deploy ReAgent ke VPS menggunakan GitHub sebagai perantara. Cara ini paling praktis dan profesional!
 
 ## 🎯 Keuntungan Deploy via GitHub
 
@@ -30,13 +30,13 @@ Panduan lengkap deploy BlinkAI ke VPS menggunakan GitHub sebagai perantara. Cara
 #### 1.1 Create GitHub Repository
 ```bash
 # Buka https://github.com/new
-# Buat repository baru: "blinkai" atau nama lain
+# Buat repository baru: "reagent" atau nama lain
 # Jangan centang "Initialize with README" (karena project sudah ada)
 ```
 
 #### 1.2 Initialize Git (jika belum)
 ```bash
-cd blinkai
+cd reagent
 
 # Initialize git jika belum
 git init
@@ -45,13 +45,13 @@ git init
 git add .
 
 # Commit pertama
-git commit -m "Initial commit: BlinkAI with Hermes integration"
+git commit -m "Initial commit: ReAgent with Hermes integration"
 ```
 
 #### 1.3 Connect ke GitHub Repository
 ```bash
 # Ganti dengan URL repository kamu
-git remote add origin https://github.com/username/blinkai.git
+git remote add origin https://github.com/username/reagent.git
 
 # Push ke GitHub
 git branch -M main
@@ -93,11 +93,11 @@ ssh -T git@github.com
 #### 3.1 Clone Repository
 ```bash
 # Clone project dari GitHub
-git clone git@github.com/username/blinkai.git
+git clone git@github.com/username/reagent.git
 # atau jika tidak pakai SSH key:
-# git clone https://github.com/username/blinkai.git
+# git clone https://github.com/username/reagent.git
 
-cd blinkai
+cd reagent
 ```
 
 #### 3.2 Setup Environment
@@ -131,7 +131,7 @@ HERMES_MEMORY_ENABLED="true"
 HERMES_SKILLS_ENABLED="true"
 
 # Platform Branding
-NEXT_PUBLIC_PLATFORM_NAME="HermesAI"
+NEXT_PUBLIC_PLATFORM_NAME="ReAgent"
 NEXT_PUBLIC_PLATFORM_TAGLINE="Deploy Your AI Agents in Seconds"
 ```
 
@@ -156,7 +156,7 @@ npm run build
 npm install -g pm2
 
 # Start aplikasi
-pm2 start npm --name "blinkai" -- start
+pm2 start npm --name "reagent" -- start
 
 # Save PM2 config
 pm2 save
