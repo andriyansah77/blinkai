@@ -71,7 +71,7 @@ IMPORTANT RESPONSE GUIDELINES:
       const hermesConfig = getHermesConfig({
         apiKey: aiConfig.apiKey,
         baseUrl: aiConfig.baseUrl,
-        model: dbAgent.model || aiConfig.model,
+        model: aiConfig.model, // Use AI config model instead of agent model for compatibility
         temperature: dbAgent.temperature || 0.7,
         maxTokens: dbAgent.maxTokens || 2000,
         systemPromptOverride: conversationalSystemPrompt,
