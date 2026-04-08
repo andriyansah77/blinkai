@@ -185,6 +185,7 @@ export class HermesAgent {
       await this.storeMemory({
         id: uuidv4(),
         agentId: this.config.id,
+        userId: userId,
         type: 'conversation',
         content: `User: ${message}\nAssistant: ${response.join('')}`,
         metadata: { userId, sessionId: session.id },
