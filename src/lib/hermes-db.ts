@@ -293,8 +293,7 @@ export class HermesAgentDB {
         agentId,
         userId,
         content: {
-          contains: query,
-          mode: 'insensitive'
+          contains: query
         }
       },
       orderBy: { importance: 'desc' },
