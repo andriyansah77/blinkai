@@ -274,11 +274,11 @@ Remember: You are not just answering questions - you are building a relationship
         HERMES_WORK_DIR: instanceDir
       };
 
-      // Start Hermes using full path
+      // Start Hermes using full path with correct arguments
       let hermesProcess;
       try {
-        // Try with full path first
-        hermesProcess = spawn('/root/.local/bin/hermes', ['chat', '--config', instance.configPath], {
+        // Try with full path first - use simple chat command
+        hermesProcess = spawn('/root/.local/bin/hermes', ['chat', '--quiet'], {
           cwd: instanceDir,
           detached: true,
           stdio: 'pipe',
@@ -286,7 +286,7 @@ Remember: You are not just answering questions - you are building a relationship
         });
       } catch (pathError) {
         // Fallback to sudo su with full path
-        hermesProcess = spawn('sudo', ['su', '-c', `/root/.local/bin/hermes chat --config ${instance.configPath}`], {
+        hermesProcess = spawn('sudo', ['su', '-c', `/root/.local/bin/hermes chat --quiet`], {
           cwd: instanceDir,
           detached: true,
           stdio: 'pipe',
@@ -376,12 +376,11 @@ Remember: You are not just answering questions - you are building a relationship
       // Execute Hermes chat command with proper session handling and full path
       let hermesProcess;
       try {
-        // Try with full path first
+        // Try with full path first - use query mode for single message
         hermesProcess = spawn('/root/.local/bin/hermes', [
           'chat', 
-          '--config', configPath,
-          '--session-id', userId,
-          '--message', message
+          '--query', message,
+          '--quiet'
         ], {
           cwd: instanceDir,
           stdio: 'pipe',
@@ -391,7 +390,7 @@ Remember: You are not just answering questions - you are building a relationship
         // Fallback to sudo su with full path
         hermesProcess = spawn('sudo', [
           'su', '-c', 
-          `/root/.local/bin/hermes chat --config ${configPath} --session-id ${userId} --message "${message}"`
+          `/root/.local/bin/hermes chat --query "${message}" --quiet`
         ], {
           cwd: instanceDir,
           stdio: 'pipe',
