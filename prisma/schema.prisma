@@ -23,6 +23,7 @@ model User {
   hermesAgents HermesAgent[]
   hermesSessions HermesSession[]
   hermesMemories HermesMemory[]
+  feedback     Feedback[]
 }
 
 // ─── API Key Config (per user) ─────────────────────────────────────────────────
@@ -213,4 +214,20 @@ model HermesMemory {
 
   @@index([agentId, type])
   @@index([userId, importance])
+}
+
+// ─── Feedback ─────────────────────────────────────────────────────────────────
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String   // "chat" | "feature" | "bug" | "general"
+  rating    Int      // 1-5 stars
+  message   String?  // Optional feedback message
+  context   String?  // JSON object with additional context (agentId, sessionId, etc.)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, type])
 }
