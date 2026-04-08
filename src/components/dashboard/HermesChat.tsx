@@ -60,6 +60,7 @@ export default function HermesChat({ className }: ChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlanningMode, setIsPlanningMode] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showUploadMenu, setShowUploadMenu] = useState(false);
   
@@ -82,19 +83,22 @@ export default function HermesChat({ className }: ChatProps) {
   // File Upload Handler
   const handleFileUpload = async (file: File) => {
     try {
+      setIsUploadingFile(true);
+      
+      // Step 1: Upload file
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload', {
+      const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) {
+      if (!uploadResponse.ok) {
         throw new Error('Upload failed');
       }
 
-      const result = await response.json();
+      const uploadResult = await uploadResponse.json();
       
       // Add file message to chat
       const fileMessage: Message = {
@@ -103,19 +107,64 @@ export default function HermesChat({ className }: ChatProps) {
         content: `Uploaded file: ${file.name}`,
         timestamp: new Date(),
         type: "file",
-        fileInfo: result.file
+        fileInfo: uploadResult.file
       };
 
       setMessages(prev => [...prev, fileMessage]);
       setShowUploadMenu(false);
 
-      // Auto-send a message about the file
-      const contextMessage = `I've uploaded a file: ${file.name} (${file.type}). Please analyze or help me with this file.`;
-      await sendMessage(contextMessage);
+      // Add analyzing message
+      const analyzingMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: file.type.startsWith('image/') 
+          ? "🔍 Analyzing image..." 
+          : "📄 Reading file content...",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, analyzingMessage]);
+
+      // Step 2: Analyze file content
+      const analyzeResponse = await fetch('/api/analyze-file', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileInfo: uploadResult.file
+        }),
+      });
+
+      if (analyzeResponse.ok) {
+        const analyzeResult = await analyzeResponse.json();
+        
+        // Remove analyzing message
+        setMessages(prev => prev.filter(msg => msg.id !== analyzingMessage.id));
+        
+        // Step 3: Send analysis to AI
+        let contextMessage = `I've uploaded a file: ${file.name} (${file.type}).\n\n`;
+        
+        if (file.type.startsWith('image/')) {
+          contextMessage += `Image Analysis:\n${analyzeResult.analysis}\n\nPlease help me understand or work with this image.`;
+        } else {
+          contextMessage += `File Content:\n${analyzeResult.analysis}\n\nPlease analyze this content and help me with any questions or tasks related to it.`;
+        }
+        
+        await sendMessage(contextMessage);
+      } else {
+        // Remove analyzing message
+        setMessages(prev => prev.filter(msg => msg.id !== analyzingMessage.id));
+        
+        // Fallback if analysis fails
+        const contextMessage = `I've uploaded a file: ${file.name} (${file.type}). Please help me with this file.`;
+        await sendMessage(contextMessage);
+      }
 
     } catch (error) {
       console.error('File upload error:', error);
       alert('Failed to upload file. Please try again.');
+    } finally {
+      setIsUploadingFile(false);
     }
   };
 
@@ -426,10 +475,11 @@ export default function HermesChat({ className }: ChatProps) {
         >
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors"
+            disabled={isUploadingFile}
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload className="w-4 h-4" />
-            Upload File
+            {isUploadingFile ? "Uploading..." : "Upload File"}
           </button>
           <button
             onClick={() => {
