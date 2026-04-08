@@ -57,13 +57,44 @@ export class HermesCliWrapper {
         return true;
       }
 
-      // Try to execute hermes command
-      const result = await execAsync('hermes --version');
-      console.log('✅ Hermes CLI detected:', result.stdout.trim());
-      return true;
+      // Try to execute hermes command with sudo su (required on VPS)
+      try {
+        const result = await execAsync('sudo su -c "hermes --version"');
+        console.log('✅ Hermes CLI detected with sudo:', result.stdout.trim());
+        return true;
+      } catch (sudoError) {
+        // Try without sudo as fallback
+        try {
+          const result = await execAsync('hermes --version');
+          console.log('✅ Hermes CLI detected:', result.stdout.trim());
+          return true;
+        } catch (normalError) {
+          console.log('⚠️  Hermes CLI not found with or without sudo');
+          return false;
+        }
+      }
     } catch (error) {
       console.log('⚠️  Hermes CLI not found:', error instanceof Error ? error.message : 'Unknown error');
       return false;
+    }
+  }
+
+  /**
+   * Execute Hermes command with proper sudo handling
+   */
+  private async executeHermesCommand(command: string, args: string[] = [], options: any = {}): Promise<any> {
+    const fullCommand = `hermes ${args.join(' ')}`;
+    
+    try {
+      // Try with sudo su first (required on VPS)
+      return await execAsync(`sudo su -c "${fullCommand}"`, options);
+    } catch (sudoError) {
+      // Fallback to direct execution
+      try {
+        return await execAsync(`hermes ${args.join(' ')}`, options);
+      } catch (normalError) {
+        throw new Error(`Failed to execute Hermes command: ${normalError}`);
+      }
     }
   }
 
@@ -241,13 +272,25 @@ Remember: You are not just answering questions - you are building a relationship
         HERMES_WORK_DIR: instanceDir
       };
 
-      // Start Hermes using the official command structure
-      const hermesProcess = spawn('hermes', ['chat', '--config', instance.configPath], {
-        cwd: instanceDir,
-        detached: true,
-        stdio: 'pipe',
-        env
-      });
+      // Start Hermes using sudo su if needed
+      let hermesProcess;
+      try {
+        // Try with sudo su first (required on VPS)
+        hermesProcess = spawn('sudo', ['su', '-c', `hermes chat --config ${instance.configPath}`], {
+          cwd: instanceDir,
+          detached: true,
+          stdio: 'pipe',
+          env
+        });
+      } catch (sudoError) {
+        // Fallback to direct execution
+        hermesProcess = spawn('hermes', ['chat', '--config', instance.configPath], {
+          cwd: instanceDir,
+          detached: true,
+          stdio: 'pipe',
+          env
+        });
+      }
 
       instance.pid = hermesProcess.pid;
       instance.status = 'running';
@@ -328,17 +371,31 @@ Remember: You are not just answering questions - you are building a relationship
         HERMES_SESSION_DIR: sessionDir
       };
 
-      // Execute Hermes chat command with proper session handling
-      const hermesProcess = spawn('hermes', [
-        'chat', 
-        '--config', configPath,
-        '--session-id', userId,
-        '--message', message
-      ], {
-        cwd: instanceDir,
-        stdio: 'pipe',
-        env
-      });
+      // Execute Hermes chat command with proper session handling and sudo support
+      let hermesProcess;
+      try {
+        // Try with sudo su first (required on VPS)
+        hermesProcess = spawn('sudo', [
+          'su', '-c', 
+          `hermes chat --config ${configPath} --session-id ${userId} --message "${message}"`
+        ], {
+          cwd: instanceDir,
+          stdio: 'pipe',
+          env
+        });
+      } catch (sudoError) {
+        // Fallback to direct execution
+        hermesProcess = spawn('hermes', [
+          'chat', 
+          '--config', configPath,
+          '--session-id', userId,
+          '--message', message
+        ], {
+          cwd: instanceDir,
+          stdio: 'pipe',
+          env
+        });
+      }
 
       let buffer = '';
       

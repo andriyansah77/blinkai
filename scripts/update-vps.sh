@@ -1,20 +1,16 @@
 #!/bin/bash
 
 # Update VPS from GitHub
-set -e
+cd blinkai || exit 1
 
-echo "🔄 Updating BlinkAI from GitHub..."
-
-# Navigate to project directory
-cd ~/blinkai
-
-echo "📥 Pulling latest changes..."
+echo "🔄 Pulling latest changes from GitHub..."
 git pull origin main
 
-echo "🔧 Fixing package.json dependencies..."
-sed -i 's/"@types\/marked": "\^12\.0\.0"/"@types\/marked": "^5.0.0"/' package.json
+echo "📦 Fixing package.json dependencies..."
+# Fix any dependency issues
+sed -i 's/"@types\/marked": "^12\.0\.0"/"@types\/marked": "^5.0.0"/' package.json
 
-echo "📦 Installing dependencies..."
+echo "📦 Installing/updating dependencies..."
 npm install
 
 echo "🗄️ Generating Prisma client..."
@@ -27,10 +23,7 @@ echo "🏗️ Building application..."
 npm run build
 
 echo "🔄 Restarting PM2..."
-pm2 restart blinkai
+pm2 restart blinkai || pm2 start npm --name "blinkai" -- start
 
-echo "📊 Checking status..."
+echo "✅ Update completed!"
 pm2 status
-
-echo "✅ Update completed successfully!"
-echo "🌐 Application: http://159.65.141.68:3000"

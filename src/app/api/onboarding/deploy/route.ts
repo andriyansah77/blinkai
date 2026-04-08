@@ -156,7 +156,11 @@ return helpGuide(params);`
     ];
 
     for (const skillData of defaultSkills) {
-      await HermesAgentDB.createSkill(agent.id, skillData);
+      await HermesAgentDB.createSkill(agent.id, {
+        ...skillData,
+        usage: 0,
+        rating: 0
+      });
       
       // Also add to Hermes CLI if available
       if (hermesInstanceId) {

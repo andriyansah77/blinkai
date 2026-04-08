@@ -4,34 +4,12 @@ $VPS_USER = "root"
 
 Write-Host "Updating VPS from GitHub..." -ForegroundColor Blue
 
-# Pull latest changes and update
-ssh "$VPS_USER@$VPS_HOST" @"
-cd blinkai
+# Upload and execute the update script
+Write-Host "Uploading update script..." -ForegroundColor Yellow
+scp scripts/update-vps.sh "$VPS_USER@$VPS_HOST":/root/
 
-echo "Pulling latest changes from GitHub..."
-git pull origin main
-
-echo "Fixing package.json dependencies..."
-sed -i 's/"@types\/marked": "\^12\.0\.0"/"@types\/marked": "^5.0.0"/' package.json
-
-echo "Installing/updating dependencies..."
-npm install
-
-echo "Generating Prisma client..."
-npx prisma generate
-
-echo "Setting up database..."
-npm run db:push
-
-echo "Building application..."
-npm run build
-
-echo "Restarting PM2..."
-pm2 restart blinkai
-
-echo "Update completed!"
-pm2 status
-"@
+Write-Host "Executing update on VPS..." -ForegroundColor Yellow
+ssh "$VPS_USER@$VPS_HOST" "chmod +x /root/update-vps.sh && /root/update-vps.sh"
 
 Write-Host ""
 Write-Host "VPS update completed!" -ForegroundColor Green
