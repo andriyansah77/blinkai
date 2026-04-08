@@ -57,19 +57,19 @@ export class HermesCliWrapper {
         return true;
       }
 
-      // Try to execute hermes command with sudo su (required on VPS)
+      // Try to execute hermes command with full path first
       try {
-        const result = await execAsync('sudo su -c "hermes --version"');
-        console.log('✅ Hermes CLI detected with sudo:', result.stdout.trim());
+        const result = await execAsync('/root/.local/bin/hermes --version');
+        console.log('✅ Hermes CLI detected with full path:', result.stdout.trim());
         return true;
-      } catch (sudoError) {
-        // Try without sudo as fallback
+      } catch (pathError) {
+        // Try with sudo su and full path as fallback
         try {
-          const result = await execAsync('hermes --version');
-          console.log('✅ Hermes CLI detected:', result.stdout.trim());
+          const result = await execAsync('sudo su -c "/root/.local/bin/hermes --version"');
+          console.log('✅ Hermes CLI detected with sudo and full path:', result.stdout.trim());
           return true;
-        } catch (normalError) {
-          console.log('⚠️  Hermes CLI not found with or without sudo');
+        } catch (sudoError) {
+          console.log('⚠️  Hermes CLI not found with full path or sudo');
           return false;
         }
       }
@@ -83,17 +83,19 @@ export class HermesCliWrapper {
    * Execute Hermes command with proper sudo handling
    */
   private async executeHermesCommand(command: string, args: string[] = [], options: any = {}): Promise<any> {
-    const fullCommand = `hermes ${args.join(' ')}`;
+    // Use full path to Hermes CLI on VPS
+    const hermesPath = '/root/.local/bin/hermes';
+    const fullCommand = `${hermesPath} ${args.join(' ')}`;
     
     try {
-      // Try with sudo su first (required on VPS)
-      return await execAsync(`sudo su -c "${fullCommand}"`, options);
-    } catch (sudoError) {
-      // Fallback to direct execution
+      // Try with full path first
+      return await execAsync(fullCommand, options);
+    } catch (normalError) {
+      // Fallback to sudo su with full path
       try {
-        return await execAsync(`hermes ${args.join(' ')}`, options);
-      } catch (normalError) {
-        throw new Error(`Failed to execute Hermes command: ${normalError}`);
+        return await execAsync(`sudo su -c "${fullCommand}"`, options);
+      } catch (sudoError) {
+        throw new Error(`Failed to execute Hermes command: ${sudoError}`);
       }
     }
   }
@@ -272,19 +274,19 @@ Remember: You are not just answering questions - you are building a relationship
         HERMES_WORK_DIR: instanceDir
       };
 
-      // Start Hermes using sudo su if needed
+      // Start Hermes using full path
       let hermesProcess;
       try {
-        // Try with sudo su first (required on VPS)
-        hermesProcess = spawn('sudo', ['su', '-c', `hermes chat --config ${instance.configPath}`], {
+        // Try with full path first
+        hermesProcess = spawn('/root/.local/bin/hermes', ['chat', '--config', instance.configPath], {
           cwd: instanceDir,
           detached: true,
           stdio: 'pipe',
           env
         });
-      } catch (sudoError) {
-        // Fallback to direct execution
-        hermesProcess = spawn('hermes', ['chat', '--config', instance.configPath], {
+      } catch (pathError) {
+        // Fallback to sudo su with full path
+        hermesProcess = spawn('sudo', ['su', '-c', `/root/.local/bin/hermes chat --config ${instance.configPath}`], {
           cwd: instanceDir,
           detached: true,
           stdio: 'pipe',
@@ -371,25 +373,25 @@ Remember: You are not just answering questions - you are building a relationship
         HERMES_SESSION_DIR: sessionDir
       };
 
-      // Execute Hermes chat command with proper session handling and sudo support
+      // Execute Hermes chat command with proper session handling and full path
       let hermesProcess;
       try {
-        // Try with sudo su first (required on VPS)
-        hermesProcess = spawn('sudo', [
-          'su', '-c', 
-          `hermes chat --config ${configPath} --session-id ${userId} --message "${message}"`
+        // Try with full path first
+        hermesProcess = spawn('/root/.local/bin/hermes', [
+          'chat', 
+          '--config', configPath,
+          '--session-id', userId,
+          '--message', message
         ], {
           cwd: instanceDir,
           stdio: 'pipe',
           env
         });
-      } catch (sudoError) {
-        // Fallback to direct execution
-        hermesProcess = spawn('hermes', [
-          'chat', 
-          '--config', configPath,
-          '--session-id', userId,
-          '--message', message
+      } catch (pathError) {
+        // Fallback to sudo su with full path
+        hermesProcess = spawn('sudo', [
+          'su', '-c', 
+          `/root/.local/bin/hermes chat --config ${configPath} --session-id ${userId} --message "${message}"`
         ], {
           cwd: instanceDir,
           stdio: 'pipe',
