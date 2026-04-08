@@ -44,6 +44,12 @@ export async function POST(request: NextRequest) {
     try {
       // Load user's AI config
       const aiConfig = await getUserAIConfig(session.user.id!);
+      console.log(`🔧 AI Config loaded:`, {
+        mode: aiConfig.mode,
+        baseUrl: aiConfig.baseUrl,
+        model: aiConfig.model,
+        hasApiKey: !!aiConfig.apiKey
+      });
       
       // Convert messages to Hermes format
       const hermesMessages: HermesMessage[] = messages.map((msg: any) => ({
@@ -72,6 +78,13 @@ IMPORTANT RESPONSE GUIDELINES:
         streamingEnabled: true,
       });
 
+      console.log(`🚀 Hermes config:`, {
+        baseUrl: hermesConfig.baseUrl,
+        model: hermesConfig.model,
+        temperature: hermesConfig.temperature,
+        hasApiKey: !!hermesConfig.apiKey
+      });
+
       // Create SSE stream using the original hermesStream function
       const stream = new ReadableStream({
         async start(controller) {
@@ -82,10 +95,13 @@ IMPORTANT RESPONSE GUIDELINES:
           }
 
           try {
+            console.log(`📡 Starting Hermes stream...`);
             const aiStream = await hermesStream(hermesMessages, hermesConfig);
             const reader = aiStream.getReader();
             const decoder = new TextDecoder();
             let buffer = "";
+
+            console.log(`✅ Stream started successfully`);
 
             while (true) {
               const { done, value } = await reader.read();
@@ -128,7 +144,7 @@ IMPORTANT RESPONSE GUIDELINES:
             controller.close();
 
           } catch (streamError) {
-            console.error("Stream error:", streamError);
+            console.error("❌ Stream error:", streamError);
             
             // Fallback response
             const fallbackMessage = "I'm here to help! I'm experiencing some technical difficulties at the moment, but I'm ready to assist you. Could you please tell me what you'd like to know or discuss?";
@@ -163,7 +179,7 @@ IMPORTANT RESPONSE GUIDELINES:
       });
 
     } catch (error) {
-      console.error("Hermes chat error:", error);
+      console.error("❌ Hermes chat error:", error);
       
       // Fallback to simple conversational response
       const fallbackMessage = "I'm here to help! I'm experiencing some technical difficulties at the moment, but I'm ready to assist you. Could you please tell me what you'd like to know or discuss?";

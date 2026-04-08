@@ -10,8 +10,8 @@ export interface AIConfig {
 export function getPlatformConfig(): AIConfig {
   return {
     apiKey: process.env.PLATFORM_API_KEY || "",
-    baseUrl: process.env.PLATFORM_BASE_URL || "https://api.openai.com/v1",
-    model: process.env.PLATFORM_MODEL || "gpt-4o-mini",
+    baseUrl: process.env.PLATFORM_API_BASE_URL || "https://api.openai.com/v1",
+    model: process.env.PLATFORM_API_MODEL || "gpt-4o-mini",
     mode: "platform",
   };
 }
