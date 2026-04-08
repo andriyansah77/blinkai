@@ -4,12 +4,9 @@ $VPS_USER = "root"
 
 Write-Host "Updating VPS from GitHub..." -ForegroundColor Blue
 
-# Upload and execute the update script
-Write-Host "Uploading update script..." -ForegroundColor Yellow
-scp scripts/update-vps.sh "$VPS_USER@$VPS_HOST":/root/
-
+# Execute update commands directly with proper git handling
 Write-Host "Executing update on VPS..." -ForegroundColor Yellow
-ssh "$VPS_USER@$VPS_HOST" "chmod +x /root/update-vps.sh && /root/update-vps.sh"
+ssh "$VPS_USER@$VPS_HOST" "cd blinkai && git stash && git pull origin main && npm install && npx prisma generate && npm run db:push && npm run build && pm2 restart blinkai && pm2 status"
 
 Write-Host ""
 Write-Host "VPS update completed!" -ForegroundColor Green
