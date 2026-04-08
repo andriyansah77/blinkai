@@ -1,0 +1,149 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Zap, Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+
+export function Navbar() {
+  const { data: session } = useSession();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const navLinks = [
+    { href: "#features", label: "Features" },
+    { href: "#how-it-works", label: "How it Works" },
+    { href: "#pricing", label: "Pricing" },
+    { href: "#", label: "Docs" },
+  ];
+
+  return (
+    <nav
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        isScrolled
+          ? "bg-black/80 backdrop-blur-2xl border-b border-white/[0.06] shadow-sm"
+          : "bg-transparent"
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-amber-500/30 transition-shadow">
+              <Zap className="w-4 h-4 text-black" />
+            </div>
+            <span className="font-bold text-xl tracking-tight text-white">
+              Hermes<span className="text-amber-400">AI</span>
+            </span>
+          </Link>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-8">
+            {navLinks.map((link) => (
+              <a
+                key={link.href + link.label}
+                href={link.href}
+                className="text-sm text-white/60 hover:text-white transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="hidden md:flex items-center gap-3">
+            {session ? (
+              <Button variant="gradient" size="sm" asChild>
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
+                <Button
+                  variant="gradient"
+                  size="sm"
+                  asChild
+                >
+                  <Link href="/sign-up">Deploy Free</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden p-2 text-white/70 hover:text-white"
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="md:hidden overflow-hidden bg-black/95 backdrop-blur-2xl border-b border-white/[0.06]"
+          >
+            <div className="px-4 py-4 space-y-1">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href + link.label}
+                  href={link.href}
+                  className="block text-sm text-white/60 hover:text-white py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors"
+                  onClick={() => setIsMobileOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ))}
+              <div className="flex gap-3 pt-3">
+                {session ? (
+                  <Button variant="gradient" size="sm" className="flex-1" asChild>
+                    <Link href="/dashboard">Dashboard</Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1 text-white/70 hover:text-white hover:bg-white/10 border border-white/10"
+                      asChild
+                    >
+                      <Link href="/sign-in">Sign In</Link>
+                    </Button>
+                    <Button variant="gradient" size="sm" className="flex-1" asChild>
+                      <Link href="/sign-up">Deploy Free</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+}

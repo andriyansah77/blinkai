@@ -1,0 +1,79 @@
+import Link from "next/link";
+import { Zap } from "lucide-react";
+
+const footerLinks = {
+  Product: [
+    { label: "Features", href: "#features" },
+    { label: "Pricing", href: "#pricing" },
+    { label: "Docs", href: "#" },
+    { label: "Changelog", href: "/changelog" },
+  ],
+  Company: [
+    { label: "About", href: "/about" },
+    { label: "Blog", href: "/blog" },
+    { label: "Careers", href: "/careers" },
+    { label: "Contact", href: "/contact" },
+  ],
+  Legal: [
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
+    { label: "Security", href: "/security" },
+  ],
+};
+
+export function Footer() {
+  return (
+    <footer className="bg-[#0a0a0a] border-t border-white/[0.06] py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          {/* Brand column */}
+          <div className="col-span-2 md:col-span-1">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-black" />
+              </div>
+              <span className="font-bold text-xl text-white">
+                Hermes<span className="text-amber-400">AI</span>
+              </span>
+            </Link>
+            <p className="text-sm text-white/40 mb-3 leading-relaxed">
+              Deploy Your AI Agents in Seconds.
+            </p>
+            <p className="text-xs text-white/25">Built on Hermes Framework</p>
+          </div>
+
+          {/* Link columns */}
+          {Object.entries(footerLinks).map(([category, links]) => (
+            <div key={category}>
+              <h4 className="font-semibold text-sm text-white/70 mb-4">
+                {category}
+              </h4>
+              <ul className="space-y-3">
+                {links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-white/35 hover:text-white/70 transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-white/[0.05] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-white/25">
+            © 2025 HermesAI · Deploy AI Agents in Seconds
+          </p>
+          <p className="text-xs text-white/20">
+            Built with Next.js · Tailwind CSS · Framer Motion
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}

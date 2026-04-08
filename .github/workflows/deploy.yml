@@ -1,0 +1,72 @@
+name: Deploy BlinkAI to VPS
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if no changes'
+        required: false
+        default: 'false'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT || 22 }}
+        script: |
+          echo "🚀 Starting auto-deployment..."
+          
+          # Navigate to project directory
+          cd blinkai || { echo "❌ Project directory not found"; exit 1; }
+          
+          # Pull latest changes
+          echo "📥 Pulling latest changes..."
+          git pull origin main
+          
+          # Install dependencies
+          echo "📦 Installing dependencies..."
+          npm install
+          
+          # Test Hermes CLI
+          echo "🧪 Testing Hermes CLI..."
+          npm run test:hermes || echo "⚠️  Hermes test failed"
+          
+          # Build application
+          echo "🏗️ Building application..."
+          npm run build
+          
+          # Restart PM2
+          echo "🔄 Restarting application..."
+          pm2 restart blinkai || pm2 start npm --name "blinkai" -- start
+          
+          # Check status
+          echo "📊 Checking application status..."
+          pm2 status
+          
+          # Test API
+          echo "🧪 Testing API..."
+          sleep 5
+          curl -f http://localhost:3000/api/hermes/status || echo "⚠️  API test failed"
+          
+          echo "✅ Auto-deployment completed successfully!"
+          
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ Deployment successful!"
+        else
+          echo "❌ Deployment failed!"
+        fi

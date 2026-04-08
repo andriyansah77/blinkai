@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── User ─────────────────────────────────────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("user") // "user" | "admin"
+  createdAt DateTime @default(now())
+
+  // Relations
+  agents       Agent[]
+  creditLedger CreditLedger[]
+  apiKeyConfig ApiKeyConfig?
+  hermesAgents HermesAgent[]
+  hermesSessions HermesSession[]
+  hermesMemories HermesMemory[]
+}
+
+// ─── API Key Config (per user) ─────────────────────────────────────────────────
+// BYOK = user bawa key sendiri
+// platform = pakai credit dari platform (default)
+model ApiKeyConfig {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  mode       String   @default("platform") // "platform" | "byok"
+
+  // BYOK fields (encrypted at app level)
+  byokApiKey  String?
+  byokBaseUrl String?
+  byokModel   String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ─── Credit Ledger ─────────────────────────────────────────────────────────────
+model CreditLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount    Int      // positive = topup, negative = usage
+  reason    String   // "signup_bonus" | "usage" | "topup" | "admin_grant"
+  meta      String   @default("{}") // JSON: agentId, tokens, etc.
+
+  createdAt DateTime @default(now())
+}
+
+// ─── Agent ────────────────────────────────────────────────────────────────────
+model Agent {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  slug        String   @unique // URL-friendly: used in /agent/:slug
+  description String?
+  avatar      String?  // emoji or URL
+
+  // Hermes config
+  systemPrompt String  @default("")
+  model        String  @default("") // empty = use platform default
+  temperature  Float   @default(0.7)
+  maxTokens    Int     @default(2048)
+
+  // Agent template
+  template     String  @default("assistant") // "assistant" | "support" | "sales" | "custom"
+
+  // Status
+  status       String  @default("active") // "active" | "paused" | "deleted"
+  isPublic     Boolean @default(false) // public shareable link
+
+  // Stats (denormalized for speed)
+  totalMessages Int    @default(0)
+  totalTokens   Int    @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions    AgentSession[]
+}
+
+// ─── Agent Session (conversation) ────────────────────────────────────────────
+model AgentSession {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Anonymous visitor or identified user
+  visitorId String?  // fingerprint/cookie for public agents
+  title     String?  // auto-generated from first message
+
+  messages  String   @default("[]") // JSON array of {role, content, ts}
+  tokenUsed Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Hermes Agent Framework Models ────────────────────────────────────────────
+
+// ─── Hermes Agent ─────────────────────────────────────────────────────────────
+model HermesAgent {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String   @default("")
+  model         String   @default("gpt-4o")
+  provider      String   @default("openai")
+  systemPrompt  String   @default("")
+  temperature   Float    @default(0.7)
+  maxTokens     Int      @default(4000)
+  tools         String   @default("[]") // JSON array of tool names
+  
+  // Learning capabilities
+  memoryEnabled    Boolean @default(true)
+  learningEnabled  Boolean @default(true)
+  
+  // Status
+  status        String   @default("active") // "active" | "paused" | "deleted"
+  
+  // Stats
+  totalSessions    Int @default(0)
+  totalMessages    Int @default(0)
+  totalSkillsUsed  Int @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  skills        HermesSkill[]
+  sessions      HermesSession[]
+  memories      HermesMemory[]
+}
+
+// ─── Hermes Skill ─────────────────────────────────────────────────────────────
+model HermesSkill {
+  id          String      @id @default(cuid())
+  agentId     String
+  agent       HermesAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String      @default("")
+  code        String      // JavaScript code for the skill
+  category    String      @default("general")
+  tags        String      @default("[]") // JSON array of tags
+  
+  // Usage stats
+  usage       Int         @default(0)
+  rating      Float       @default(0.0)
+  
+  // Status
+  status      String      @default("active") // "active" | "disabled" | "error"
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([agentId, name])
+}
+
+// ─── Hermes Session ───────────────────────────────────────────────────────────
+model HermesSession {
+  id        String      @id @default(cuid())
+  agentId   String
+  agent     HermesAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String      @default("New Session")
+  messages  String      @default("[]") // JSON array of messages
+  context   String      @default("{}") // JSON object for session context
+  
+  // Stats
+  messageCount Int       @default(0)
+  tokenUsed    Int       @default(0)
+  skillsUsed   String    @default("[]") // JSON array of skill IDs used
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+// ─── Hermes Memory ────────────────────────────────────────────────────────────
+model HermesMemory {
+  id          String      @id @default(cuid())
+  agentId     String
+  agent       HermesAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        String      // "conversation" | "skill" | "user_preference" | "context"
+  content     String      // The memory content
+  metadata    String      @default("{}") // JSON object for additional data
+  importance  Float       @default(0.5) // 0.0 to 1.0
+  
+  // Vector embedding (for future semantic search)
+  embedding   String?     // JSON array of floats
+  
+  createdAt   DateTime    @default(now())
+  lastAccessed DateTime   @default(now())
+
+  @@index([agentId, type])
+  @@index([userId, importance])
+}
