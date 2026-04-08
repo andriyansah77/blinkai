@@ -40,7 +40,7 @@ async function testHermesIntegration() {
   
   return new Promise((resolve) => {
     try {
-      const hermesProcess = spawn('sudo', ['su', '-c', 'hermes --version'], {
+      const hermesProcess = spawn('/root/.local/bin/hermes', ['--version'], {
         stdio: 'pipe'
       });
 
