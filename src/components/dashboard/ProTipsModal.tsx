@@ -18,28 +18,28 @@ const PRO_TIPS: ProTip[] = [
     id: "install-skills",
     title: "Install Skills",
     description: "Give ReAgent superpowers — browse and install skills like Gmail, Twitter, web scraping, and more.",
-    image: "/api/placeholder/800/400", // Placeholder for skills screenshot
+    image: "skills-marketplace",
     category: "skills"
   },
   {
     id: "connect-apps",
     title: "Connect Your Apps",
     description: "Link Telegram, WhatsApp, Discord, and other services so ReAgent can act on your behalf.",
-    image: "/api/placeholder/800/400", // Placeholder for connections screenshot
+    image: "connections-grid",
     category: "connections"
   },
   {
     id: "schedule-cron",
     title: "Schedule Cron Jobs",
     description: "Automate recurring tasks — check emails, post updates, monitor prices, all on autopilot.",
-    image: "/api/placeholder/800/400", // Placeholder for cron jobs screenshot
+    image: "cron-scheduler",
     category: "automation"
   },
   {
     id: "change-model",
     title: "Change Your AI Model",
     description: "Switch between models right from the dashboard — pick the best one for speed, quality, or cost.",
-    image: "/api/placeholder/800/400", // Placeholder for settings screenshot
+    image: "model-settings",
     category: "settings"
   }
 ];
@@ -98,17 +98,138 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
             <div className="p-6">
               {/* Screenshot/Image Area */}
               <div className="relative mb-8 rounded-xl overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30">
-                <div className="aspect-video bg-[#0a0a0a] rounded-xl p-4 flex items-center justify-center">
-                  {/* Placeholder for actual screenshots */}
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-white/[0.06] rounded-xl flex items-center justify-center mx-auto mb-4">
-                      {currentTipData.category === "skills" && <Lightbulb className="w-8 h-8 text-purple-400" />}
-                      {currentTipData.category === "connections" && <Zap className="w-8 h-8 text-blue-400" />}
-                      {currentTipData.category === "automation" && <Calendar className="w-8 h-8 text-green-400" />}
-                      {currentTipData.category === "settings" && <Settings className="w-8 h-8 text-orange-400" />}
+                <div className="aspect-video bg-[#0a0a0a] rounded-xl p-6 flex items-center justify-center">
+                  {/* Dynamic content based on tip */}
+                  {currentTipData.image === "skills-marketplace" && (
+                    <div className="w-full h-full bg-[#1a1a1a] rounded-lg p-4 border border-white/[0.08]">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-semibold">Skills Marketplace</h3>
+                        <div className="flex gap-2">
+                          <div className="w-6 h-6 bg-blue-500/20 rounded flex items-center justify-center">
+                            <Lightbulb className="w-3 h-3 text-blue-400" />
+                          </div>
+                          <div className="w-6 h-6 bg-green-500/20 rounded flex items-center justify-center">
+                            <Zap className="w-3 h-3 text-green-400" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {["Email Assistant", "Web Scraper", "Social Media", "Data Analyzer"].map((skill, idx) => (
+                          <div key={idx} className="bg-white/[0.06] p-3 rounded-lg border border-white/[0.08]">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-4 h-4 bg-purple-500/20 rounded flex items-center justify-center">
+                                <span className="text-purple-400 text-xs">⚡</span>
+                              </div>
+                              <span className="text-white text-xs font-medium">{skill}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-white/40 text-xs">★ 4.8</span>
+                              <button className="bg-blue-600 text-white text-xs px-2 py-1 rounded">Install</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-white/40 text-sm">Screenshot placeholder for {currentTipData.title}</p>
-                  </div>
+                  )}
+
+                  {currentTipData.image === "connections-grid" && (
+                    <div className="w-full h-full bg-[#1a1a1a] rounded-lg p-4 border border-white/[0.08]">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-semibold">Connect Platforms</h3>
+                        <span className="text-white/40 text-xs">12 platforms available</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-3">
+                        {[
+                          { name: "Telegram", icon: "✈️", status: "ready" },
+                          { name: "Discord", icon: "🎮", status: "ready" },
+                          { name: "WhatsApp", icon: "📱", status: "ready" },
+                          { name: "Slack", icon: "💼", status: "soon" },
+                          { name: "Twitter", icon: "🐦", status: "soon" },
+                          { name: "Facebook", icon: "📘", status: "soon" },
+                          { name: "Instagram", icon: "📷", status: "soon" },
+                          { name: "Email", icon: "📧", status: "soon" }
+                        ].map((platform, idx) => (
+                          <div key={idx} className="bg-white/[0.06] p-2 rounded-lg border border-white/[0.08] text-center">
+                            <div className="text-lg mb-1">{platform.icon}</div>
+                            <div className="text-white text-xs font-medium mb-1">{platform.name}</div>
+                            <div className={`text-xs px-1 py-0.5 rounded ${
+                              platform.status === 'ready' 
+                                ? 'bg-green-500/20 text-green-400' 
+                                : 'bg-orange-500/20 text-orange-400'
+                            }`}>
+                              {platform.status === 'ready' ? 'Ready' : 'Soon'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {currentTipData.image === "cron-scheduler" && (
+                    <div className="w-full h-full bg-[#1a1a1a] rounded-lg p-4 border border-white/[0.08]">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-semibold">Scheduled Jobs</h3>
+                        <button className="bg-blue-600 text-white text-xs px-2 py-1 rounded">+ New Job</button>
+                      </div>
+                      <div className="space-y-3">
+                        {[
+                          { name: "Daily Email Check", schedule: "Every day at 9:00 AM", status: "active" },
+                          { name: "Social Media Post", schedule: "Mon, Wed, Fri at 2:00 PM", status: "active" },
+                          { name: "Price Monitor", schedule: "Every 30 minutes", status: "paused" },
+                          { name: "Backup Reports", schedule: "Weekly on Sunday", status: "active" }
+                        ].map((job, idx) => (
+                          <div key={idx} className="bg-white/[0.06] p-3 rounded-lg border border-white/[0.08]">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-white text-xs font-medium">{job.name}</div>
+                                <div className="text-white/40 text-xs">{job.schedule}</div>
+                              </div>
+                              <div className={`w-2 h-2 rounded-full ${
+                                job.status === 'active' ? 'bg-green-400' : 'bg-orange-400'
+                              }`} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {currentTipData.image === "model-settings" && (
+                    <div className="w-full h-full bg-[#1a1a1a] rounded-lg p-4 border border-white/[0.08]">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-semibold">AI Model Settings</h3>
+                        <div className="text-white/40 text-xs">Current: GPT-4o</div>
+                      </div>
+                      <div className="space-y-3">
+                        {[
+                          { name: "GPT-4o", provider: "OpenAI", speed: "Fast", quality: "High", cost: "$$", selected: true },
+                          { name: "GPT-4o Mini", provider: "OpenAI", speed: "Very Fast", quality: "Good", cost: "$", selected: false },
+                          { name: "Claude 3.5", provider: "Anthropic", speed: "Fast", quality: "High", cost: "$$", selected: false },
+                          { name: "Llama 3.1", provider: "Meta", speed: "Fast", quality: "Good", cost: "$", selected: false }
+                        ].map((model, idx) => (
+                          <div key={idx} className={`p-3 rounded-lg border ${
+                            model.selected 
+                              ? 'bg-blue-500/20 border-blue-500/30' 
+                              : 'bg-white/[0.06] border-white/[0.08]'
+                          }`}>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-white text-xs font-medium">{model.name}</span>
+                                  {model.selected && <span className="text-blue-400 text-xs">✓</span>}
+                                </div>
+                                <div className="text-white/40 text-xs">{model.provider}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-white/60 text-xs">{model.speed}</div>
+                                <div className="text-white/40 text-xs">{model.cost}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
