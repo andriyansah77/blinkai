@@ -113,18 +113,9 @@ export default function HermesChat({ className }: ChatProps) {
       setMessages(prev => [...prev, fileMessage]);
       setShowUploadMenu(false);
 
-      // Add analyzing message
-      const analyzingMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: file.type.startsWith('image/') 
-          ? "🔍 Analyzing image..." 
-          : "📄 Reading file content...",
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, analyzingMessage]);
-
-      // Step 2: Analyze file content
+      // Step 2: Analyze file content and get AI response directly
+      setIsLoading(true);
+      
       const analyzeResponse = await fetch('/api/analyze-file', {
         method: 'POST',
         headers: {
@@ -138,26 +129,90 @@ export default function HermesChat({ className }: ChatProps) {
       if (analyzeResponse.ok) {
         const analyzeResult = await analyzeResponse.json();
         
-        // Remove analyzing message
-        setMessages(prev => prev.filter(msg => msg.id !== analyzingMessage.id));
-        
-        // Step 3: Send analysis to AI
-        let contextMessage = `I've uploaded a file: ${file.name} (${file.type}).\n\n`;
-        
-        if (file.type.startsWith('image/')) {
-          contextMessage += `Image Analysis:\n${analyzeResult.analysis}\n\nPlease help me understand or work with this image.`;
-        } else {
-          contextMessage += `File Content:\n${analyzeResult.analysis}\n\nPlease analyze this content and help me with any questions or tasks related to it.`;
+        // Step 3: Send analysis directly to AI chat API for streaming response
+        const response = await fetch("/api/hermes/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages,
+              fileMessage,
+              {
+                role: "user",
+                content: file.type.startsWith('image/') 
+                  ? `Please analyze this image I just uploaded: ${file.name}\n\nImage Analysis:\n${analyzeResult.analysis}\n\nProvide insights, describe what you see, and let me know how I can work with this image.`
+                  : `Please analyze this file I just uploaded: ${file.name}\n\nFile Content:\n${analyzeResult.analysis}\n\nProvide insights about the content and let me know how I can work with this data.`
+              }
+            ].map(msg => ({
+              role: msg.role,
+              content: msg.content,
+            })),
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
-        await sendMessage(contextMessage);
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error("No response body");
+        }
+
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "",
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+              
+              try {
+                const parsed = JSON.parse(data);
+                const content = parsed.choices?.[0]?.delta?.content;
+                if (content) {
+                  setMessages(prev => prev.map(msg => 
+                    msg.id === assistantMessage.id 
+                      ? { ...msg, content: msg.content + content }
+                      : msg
+                  ));
+                }
+              } catch (e) {
+                // Skip invalid JSON
+              }
+            }
+          }
+        }
       } else {
-        // Remove analyzing message
-        setMessages(prev => prev.filter(msg => msg.id !== analyzingMessage.id));
+        // Fallback if analysis fails - still give AI response
+        const fallbackMessage = `I see you've uploaded a file: ${file.name} (${file.type}). While I couldn't analyze the content automatically, I'm here to help! Please tell me what you'd like to do with this file.`;
         
-        // Fallback if analysis fails
-        const contextMessage = `I've uploaded a file: ${file.name} (${file.type}). Please help me with this file.`;
-        await sendMessage(contextMessage);
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: fallbackMessage,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, assistantMessage]);
       }
 
     } catch (error) {
@@ -165,6 +220,7 @@ export default function HermesChat({ className }: ChatProps) {
       alert('Failed to upload file. Please try again.');
     } finally {
       setIsUploadingFile(false);
+      setIsLoading(false);
     }
   };
 
