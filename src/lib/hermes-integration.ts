@@ -792,20 +792,11 @@ export class HermesIntegration {
     try {
       console.log(`[Gateway] Setting up gateway for user ${userId}`);
       
-      const command: HermesCommand = {
-        command: 'gateway',
-        subcommand: 'setup'
-      };
-
-      const result = await this.executeHermesCommand(userId, command);
+      // Skip interactive gateway setup - we already configured via config.yaml
+      // Just return success so we can proceed to start gateway
+      console.log(`[Gateway] Gateway configuration already set via config.yaml`);
       
-      if (result.success) {
-        console.log(`[Gateway] Gateway setup completed for user ${userId}`);
-      } else {
-        console.error(`[Gateway] Gateway setup failed for user ${userId}:`, result.error);
-      }
-      
-      return { success: result.success, error: result.error };
+      return { success: true };
     } catch (error) {
       console.error(`[Gateway] Exception during gateway setup for user ${userId}:`, error);
       return { success: false, error: `Gateway setup failed: ${error}` };
