@@ -819,15 +819,38 @@ export class HermesIntegration {
     try {
       console.log(`[Platform] Setting up Telegram for user ${userId}`);
       
-      // Set bot token in config
-      const setTokenResult = await this.setConfig(userId, 'telegram.bot_token', botToken);
-      if (!setTokenResult.success) {
-        console.error(`[Platform] Failed to set Telegram token for user ${userId}:`, setTokenResult.error);
-        return setTokenResult;
+      // Edit config.yaml directly instead of using config set
+      const profileName = `user-${userId}`;
+      const configPath = `/root/.hermes/profiles/${profileName}/config.yaml`;
+      
+      try {
+        // Read existing config
+        let configContent = '';
+        try {
+          const { stdout } = await execAsync(`cat ${configPath}`);
+          configContent = stdout;
+        } catch (readError) {
+          console.log(`[Platform] Config file not found, will create new one`);
+          configContent = '';
+        }
+        
+        // Parse YAML and add telegram config
+        const config = configContent ? yaml.parse(configContent) : {};
+        if (!config.telegram) {
+          config.telegram = {};
+        }
+        config.telegram.bot_token = botToken;
+        
+        // Write back to file
+        const newConfigContent = yaml.stringify(config);
+        await execAsync(`cat > ${configPath} << 'EOF'\n${newConfigContent}\nEOF`);
+        
+        console.log(`[Platform] Telegram token set successfully for user ${userId}`);
+      } catch (fileError) {
+        console.error(`[Platform] Failed to edit config file:`, fileError);
+        return { success: false, error: `Failed to set Telegram token: ${fileError}` };
       }
 
-      console.log(`[Platform] Telegram token set successfully for user ${userId}`);
-      
       // Setup gateway
       const setupResult = await this.setupGateway(userId);
       
@@ -846,15 +869,38 @@ export class HermesIntegration {
     try {
       console.log(`[Platform] Setting up Discord for user ${userId}`);
       
-      // Set bot token in config
-      const setTokenResult = await this.setConfig(userId, 'discord.bot_token', botToken);
-      if (!setTokenResult.success) {
-        console.error(`[Platform] Failed to set Discord token for user ${userId}:`, setTokenResult.error);
-        return setTokenResult;
+      // Edit config.yaml directly instead of using config set
+      const profileName = `user-${userId}`;
+      const configPath = `/root/.hermes/profiles/${profileName}/config.yaml`;
+      
+      try {
+        // Read existing config
+        let configContent = '';
+        try {
+          const { stdout } = await execAsync(`cat ${configPath}`);
+          configContent = stdout;
+        } catch (readError) {
+          console.log(`[Platform] Config file not found, will create new one`);
+          configContent = '';
+        }
+        
+        // Parse YAML and add discord config
+        const config = configContent ? yaml.parse(configContent) : {};
+        if (!config.discord) {
+          config.discord = {};
+        }
+        config.discord.bot_token = botToken;
+        
+        // Write back to file
+        const newConfigContent = yaml.stringify(config);
+        await execAsync(`cat > ${configPath} << 'EOF'\n${newConfigContent}\nEOF`);
+        
+        console.log(`[Platform] Discord token set successfully for user ${userId}`);
+      } catch (fileError) {
+        console.error(`[Platform] Failed to edit config file:`, fileError);
+        return { success: false, error: `Failed to set Discord token: ${fileError}` };
       }
 
-      console.log(`[Platform] Discord token set successfully for user ${userId}`);
-      
       // Setup gateway
       const setupResult = await this.setupGateway(userId);
       
