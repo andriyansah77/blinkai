@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { hermesIntegration } from "@/lib/hermes-integration";
+import { getGatewaySetupStatus, setupUserGateway } from "@/lib/setup-user-gateway";
 
 export async function GET() {
   try {
@@ -10,14 +11,19 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get gateway status
     const gatewayStatus = await hermesIntegration.getGatewayStatus(session.user.id!);
     
+    // Get setup status
+    const setupStatus = await getGatewaySetupStatus(session.user.id!);
+
     return NextResponse.json({
-      success: true,
-      gateway: gatewayStatus
+      gateway: gatewayStatus,
+      setup: setupStatus,
+      userId: session.user.id,
     });
   } catch (error) {
-    console.error("Get gateway status error:", error);
+    console.error("Gateway status error:", error);
     return NextResponse.json(
       { error: "Failed to get gateway status" },
       { status: 500 }
@@ -25,67 +31,33 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { action, platform, config } = body;
+    // Setup gateway for user
+    const result = await setupUserGateway(session.user.id!);
 
-    switch (action) {
-      case 'start':
-        const startResult = await hermesIntegration.startGateway(session.user.id!);
-        return NextResponse.json(startResult);
-
-      case 'stop':
-        const stopResult = await hermesIntegration.stopGateway(session.user.id!);
-        return NextResponse.json(stopResult);
-
-      case 'setup':
-        const setupResult = await hermesIntegration.setupGateway(session.user.id!);
-        return NextResponse.json(setupResult);
-
-      case 'setup-platform':
-        if (!platform) {
-          return NextResponse.json({ error: "Platform is required" }, { status: 400 });
-        }
-
-        let platformResult;
-        switch (platform) {
-          case 'telegram':
-            if (!config?.botToken) {
-              return NextResponse.json({ error: "Bot token is required for Telegram" }, { status: 400 });
-            }
-            platformResult = await hermesIntegration.setupTelegram(session.user.id!, config.botToken);
-            break;
-
-          case 'discord':
-            if (!config?.botToken) {
-              return NextResponse.json({ error: "Bot token is required for Discord" }, { status: 400 });
-            }
-            platformResult = await hermesIntegration.setupDiscord(session.user.id!, config.botToken);
-            break;
-
-          case 'whatsapp':
-            platformResult = await hermesIntegration.setupWhatsApp(session.user.id!);
-            break;
-
-          default:
-            return NextResponse.json({ error: "Unsupported platform" }, { status: 400 });
-        }
-
-        return NextResponse.json(platformResult);
-
-      default:
-        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    if (!result.success) {
+      return NextResponse.json({ 
+        error: "Gateway setup failed",
+        details: result.error,
+        result
+      }, { status: 500 });
     }
+
+    return NextResponse.json({
+      success: true,
+      message: "Gateway setup completed successfully",
+      result
+    });
   } catch (error) {
-    console.error("Gateway action error:", error);
+    console.error("Gateway setup error:", error);
     return NextResponse.json(
-      { error: "Failed to perform gateway action" },
+      { error: "Failed to setup gateway" },
       { status: 500 }
     );
   }

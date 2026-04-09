@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { grantCredits, SIGNUP_BONUS } from "@/lib/credits";
-import { hermesIntegration } from "@/lib/hermes-integration";
+import { setupUserGateway } from "@/lib/setup-user-gateway";
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,16 +68,20 @@ export async function POST(request: NextRequest) {
       return newUser;
     });
 
-    // Create isolated Hermes profile for this user (async, don't block registration)
-    console.log(`[Registration] Creating Hermes profile for new user ${user.id}`);
-    hermesIntegration.createProfile(user.id).then((result) => {
+    // Setup Hermes profile and gateway for new user (async, don't block registration)
+    console.log(`[Registration] Starting auto-setup for user ${user.id}`);
+    
+    setupUserGateway(user.id).then((result) => {
       if (result.success) {
-        console.log(`✅ [Registration] Hermes profile created successfully for user ${user.id}`);
+        console.log(`✅ [Registration] Complete setup for user ${user.id}`);
+        console.log(`   - Profile: ${result.profileCreated ? '✅' : '❌'}`);
+        console.log(`   - Gateway Installed: ${result.gatewayInstalled ? '✅' : '❌'}`);
+        console.log(`   - Gateway Running: ${result.gatewayStarted ? '✅' : '❌'}`);
       } else {
-        console.error(`❌ [Registration] Failed to create Hermes profile for user ${user.id}:`, result.error);
+        console.error(`❌ [Registration] Setup failed for user ${user.id}: ${result.error}`);
       }
     }).catch((error) => {
-      console.error(`❌ [Registration] Exception creating Hermes profile for user ${user.id}:`, error);
+      console.error(`❌ [Registration] Setup exception for user ${user.id}:`, error);
     });
 
     return NextResponse.json({
