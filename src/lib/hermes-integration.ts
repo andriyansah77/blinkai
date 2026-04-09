@@ -238,21 +238,29 @@ export class HermesIntegration {
       quiet?: boolean;
     } = {}
   ): AsyncGenerator<string> {
+    console.log(`[Hermes] sendChatMessage called for user ${userId}`);
+    
     // First, try to use Hermes CLI
     const isHermesAvailable = await this.isHermesInstalled();
+    console.log(`[Hermes] CLI available: ${isHermesAvailable}`);
     
     if (isHermesAvailable) {
       try {
+        console.log(`[Hermes] Attempting to use Hermes CLI...`);
         // Try Hermes CLI first
         yield* this.streamHermesResponse(userId, message, options);
+        console.log(`[Hermes] Hermes CLI succeeded`);
         return;
       } catch (hermesError) {
-        console.warn('Hermes CLI failed, falling back to direct AI API:', hermesError);
+        console.warn('[Hermes] CLI failed, falling back to direct AI API:', hermesError);
         // Continue to fallback
       }
+    } else {
+      console.log(`[Hermes] CLI not available, using direct AI API fallback`);
     }
     
     // Fallback to direct AI API
+    console.log(`[Hermes] Using direct AI API fallback`);
     yield* this.streamDirectAIResponse(message, options);
   }
 
