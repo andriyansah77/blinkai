@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Plus, Lightbulb, Users, History, Bot, Zap, Sparkles, TrendingUp, DollarSign, Upload, FileText, MicIcon, Star, MessageSquare, Terminal } from "lucide-react";
+import { Send, Mic, Plus, Lightbulb, Users, History, Bot, Zap, Sparkles, TrendingUp, DollarSign, Upload, FileText, MicIcon, Star, MessageSquare, Terminal, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUserAgent } from "@/hooks/useUserAgent";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import ProTipsModal from "./ProTipsModal";
+import { Suggestion } from "@/lib/suggestions";
 
 interface Message {
   id: string;
@@ -31,21 +33,25 @@ const SUGGESTIONS = [
     icon: Lightbulb,
     title: "Suggestions",
     description: "Get AI-powered recommendations",
+    action: "suggestions"
   },
   {
     icon: Users,
     title: "Explore agents",
     description: "Browse available AI agents",
+    action: "skills"
   },
   {
     icon: History,
     title: "Pro tips",
     description: "Learn advanced techniques",
+    action: "protips"
   },
   {
     icon: Bot,
     title: "Connect bot",
     description: "Connect external bots",
+    action: "channels"
   },
 ];
 
@@ -67,6 +73,9 @@ export default function HermesChat({ className }: ChatProps) {
   const [showUploadMenu, setShowUploadMenu] = useState(false);
   const [showCommandMenu, setShowCommandMenu] = useState(false);
   const [commandSuggestions, setCommandSuggestions] = useState<string[]>([]);
+  const [showProTips, setShowProTips] = useState(false);
+  const [dynamicSuggestions, setDynamicSuggestions] = useState<Suggestion[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -83,6 +92,58 @@ export default function HermesChat({ className }: ChatProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load initial suggestions
+  useEffect(() => {
+    loadSuggestions();
+  }, []);
+
+  // Load dynamic suggestions
+  const loadSuggestions = async (type: string = 'featured') => {
+    try {
+      setIsLoadingSuggestions(true);
+      const response = await fetch(`/api/suggestions?type=${type}&count=4`);
+      if (response.ok) {
+        const data = await response.json();
+        setDynamicSuggestions(data.suggestions);
+      }
+    } catch (error) {
+      console.error('Failed to load suggestions:', error);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+
+  // Regenerate suggestions
+  const regenerateSuggestions = async () => {
+    await loadSuggestions('random');
+  };
+
+  // Handle suggestion card clicks
+  const handleSuggestionClick = (action: string) => {
+    switch (action) {
+      case 'suggestions':
+        regenerateSuggestions();
+        break;
+      case 'skills':
+        // Navigate to skills/agents page
+        window.location.href = '/dashboard/agents';
+        break;
+      case 'protips':
+        setShowProTips(true);
+        break;
+      case 'channels':
+        // Navigate to channels page
+        window.location.href = '/dashboard/channels';
+        break;
+    }
+  };
+
+  // Handle dynamic suggestion click
+  const handleDynamicSuggestionClick = (suggestion: Suggestion) => {
+    setInput(suggestion.text);
+    inputRef.current?.focus();
+  };
 
   // Slash command suggestions
   const SLASH_COMMANDS = [
@@ -910,6 +971,9 @@ export default function HermesChat({ className }: ChatProps) {
         }}
       />
 
+      {/* Pro Tips Modal */}
+      <ProTipsModal isOpen={showProTips} onClose={() => setShowProTips(false)} />
+
       {/* Feedback Modal */}
       <FeedbackModal />
 
@@ -1027,6 +1091,7 @@ export default function HermesChat({ className }: ChatProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
+                  onClick={() => handleSuggestionClick(suggestion.action)}
                   className="p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-left transition-colors group"
                 >
                   <suggestion.icon className="w-5 h-5 text-white/60 mb-3 group-hover:text-white transition-colors" />
@@ -1039,6 +1104,67 @@ export default function HermesChat({ className }: ChatProps) {
                 </motion.button>
               ))}
             </div>
+
+            {/* Dynamic Suggestions */}
+            {dynamicSuggestions.length > 0 && (
+              <div className="w-full max-w-4xl mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-white font-semibold text-lg">Try these suggestions</h3>
+                  <button
+                    onClick={regenerateSuggestions}
+                    disabled={isLoadingSuggestions}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg text-white/60 hover:text-white text-sm transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={cn("w-3 h-3", isLoadingSuggestions && "animate-spin")} />
+                    Regenerate
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {dynamicSuggestions.map((suggestion, index) => (
+                    <motion.button
+                      key={suggestion.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={() => handleDynamicSuggestionClick(suggestion)}
+                      className="p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-left transition-colors group"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={cn(
+                          "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
+                          suggestion.category === 'creative' && "bg-purple-500/20 text-purple-400",
+                          suggestion.category === 'productivity' && "bg-blue-500/20 text-blue-400",
+                          suggestion.category === 'technical' && "bg-green-500/20 text-green-400",
+                          suggestion.category === 'business' && "bg-orange-500/20 text-orange-400",
+                          suggestion.category === 'learning' && "bg-pink-500/20 text-pink-400"
+                        )}>
+                          {suggestion.category === 'creative' && <Sparkles className="w-4 h-4" />}
+                          {suggestion.category === 'productivity' && <TrendingUp className="w-4 h-4" />}
+                          {suggestion.category === 'technical' && <Bot className="w-4 h-4" />}
+                          {suggestion.category === 'business' && <DollarSign className="w-4 h-4" />}
+                          {suggestion.category === 'learning' && <Lightbulb className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white/90 text-sm leading-relaxed group-hover:text-white transition-colors">
+                            {suggestion.text}
+                          </p>
+                          <span className={cn(
+                            "inline-block mt-2 px-2 py-1 rounded-md text-xs font-medium capitalize",
+                            suggestion.category === 'creative' && "bg-purple-500/10 text-purple-400",
+                            suggestion.category === 'productivity' && "bg-blue-500/10 text-blue-400",
+                            suggestion.category === 'technical' && "bg-green-500/10 text-green-400",
+                            suggestion.category === 'business' && "bg-orange-500/10 text-orange-400",
+                            suggestion.category === 'learning' && "bg-pink-500/10 text-pink-400"
+                          )}>
+                            {suggestion.category}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Featured Card */}
             <motion.div

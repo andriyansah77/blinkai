@@ -62,30 +62,98 @@ export default function ChannelsPage() {
       id: "discord", 
       name: "Discord", 
       icon: "🎮", 
-      description: "Connect to Discord servers",
-      color: "from-indigo-500 to-purple-600"
+      description: "Connect to Discord servers and channels",
+      color: "from-indigo-500 to-purple-600",
+      features: ["Text channels", "Voice channels", "Slash commands", "Webhooks"]
     },
     { 
       id: "telegram", 
       name: "Telegram", 
       icon: "✈️", 
-      description: "Telegram bot integration",
-      color: "from-blue-500 to-cyan-600"
+      description: "Telegram bot integration with groups and channels",
+      color: "from-blue-500 to-cyan-600",
+      features: ["Private chats", "Groups", "Channels", "Inline queries"]
     },
     { 
       id: "slack", 
       name: "Slack", 
       icon: "💼", 
-      description: "Slack workspace bot",
-      color: "from-green-500 to-emerald-600"
+      description: "Slack workspace bot for team collaboration",
+      color: "from-green-500 to-emerald-600",
+      features: ["Channels", "Direct messages", "Slash commands", "Interactive messages"]
     },
     { 
       id: "whatsapp", 
       name: "WhatsApp", 
       icon: "📱", 
-      description: "WhatsApp Business API",
-      color: "from-green-600 to-green-700"
+      description: "WhatsApp Business API integration",
+      color: "from-green-600 to-green-700",
+      features: ["Business messaging", "Templates", "Media sharing", "Groups"]
     },
+    { 
+      id: "twitter", 
+      name: "Twitter/X", 
+      icon: "🐦", 
+      description: "Twitter bot for automated posting and replies",
+      color: "from-blue-400 to-blue-600",
+      features: ["Tweet posting", "Reply automation", "DM handling", "Mentions tracking"]
+    },
+    { 
+      id: "facebook", 
+      name: "Facebook", 
+      icon: "📘", 
+      description: "Facebook Messenger and Page integration",
+      color: "from-blue-600 to-indigo-600",
+      features: ["Messenger bot", "Page posts", "Comments", "Live chat"]
+    },
+    { 
+      id: "instagram", 
+      name: "Instagram", 
+      icon: "📷", 
+      description: "Instagram bot for DMs and comments",
+      color: "from-pink-500 to-purple-600",
+      features: ["Direct messages", "Comment replies", "Story interactions", "Media posting"]
+    },
+    { 
+      id: "linkedin", 
+      name: "LinkedIn", 
+      icon: "💼", 
+      description: "LinkedIn automation for professional networking",
+      color: "from-blue-700 to-blue-800",
+      features: ["Connection requests", "Message automation", "Post engagement", "Lead generation"]
+    },
+    { 
+      id: "email", 
+      name: "Email", 
+      icon: "📧", 
+      description: "Email automation and smart replies",
+      color: "from-red-500 to-orange-600",
+      features: ["Auto-reply", "Email classification", "Smart forwarding", "Template responses"]
+    },
+    { 
+      id: "sms", 
+      name: "SMS", 
+      icon: "💬", 
+      description: "SMS messaging and automation",
+      color: "from-green-400 to-green-600",
+      features: ["Bulk messaging", "Auto-replies", "Keyword triggers", "Two-way conversations"]
+    },
+    { 
+      id: "webhook", 
+      name: "Webhook", 
+      icon: "🔗", 
+      description: "Custom webhook integrations",
+      color: "from-gray-500 to-gray-700",
+      features: ["HTTP endpoints", "Custom payloads", "Event triggers", "API integrations"]
+    },
+    { 
+      id: "api", 
+      name: "REST API", 
+      icon: "🔌", 
+      description: "Direct API access for custom integrations",
+      color: "from-purple-500 to-purple-700",
+      features: ["RESTful endpoints", "Authentication", "Rate limiting", "Custom responses"]
+    }
   ];
 
   const getChannelIcon = (type: string) => {
@@ -134,22 +202,47 @@ export default function ChannelsPage() {
 
         {/* Available Channel Types */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-white mb-4">Available Platforms</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {CHANNEL_TYPES.map((type) => (
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">Available Platforms</h2>
+            <span className="text-sm text-white/40">{CHANNEL_TYPES.length} platforms available</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {CHANNEL_TYPES.map((type, index) => (
               <motion.button
                 key={type.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
                 onClick={() => setShowAddModal(true)}
-                className="p-4 bg-white/[0.03] border border-white/[0.08] rounded-xl hover:bg-white/[0.06] transition-colors text-left group"
+                className="p-4 bg-white/[0.03] border border-white/[0.08] rounded-xl hover:bg-white/[0.06] transition-colors text-left group relative overflow-hidden"
               >
-                <div className="text-2xl mb-2">{type.icon}</div>
-                <h3 className="font-medium text-white text-sm mb-1">{type.name}</h3>
-                <p className="text-xs text-white/40">{type.description}</p>
-                <div className="mt-3 flex items-center gap-1 text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Connect</span>
-                  <ExternalLink className="w-3 h-3" />
+                {/* Background gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${type.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                
+                <div className="relative">
+                  <div className="text-2xl mb-3">{type.icon}</div>
+                  <h3 className="font-medium text-white text-sm mb-2">{type.name}</h3>
+                  <p className="text-xs text-white/40 mb-3 line-clamp-2">{type.description}</p>
+                  
+                  {/* Features preview */}
+                  <div className="space-y-1 mb-3">
+                    {type.features.slice(0, 2).map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-1 text-xs text-white/30">
+                        <div className="w-1 h-1 bg-white/30 rounded-full" />
+                        <span>{feature}</span>
+                      </div>
+                    ))}
+                    {type.features.length > 2 && (
+                      <div className="text-xs text-white/20">
+                        +{type.features.length - 2} more features
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-1 text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Connect</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </div>
                 </div>
               </motion.button>
             ))}
