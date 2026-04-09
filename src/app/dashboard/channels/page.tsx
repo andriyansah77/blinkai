@@ -554,7 +554,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
                   </div>
                   <p className="text-white/60 text-sm mb-3">{type.description}</p>
                   <div className="space-y-1">
-                    {type.features.slice(0, 2).map((feature, idx) => (
+                    {type.features.slice(0, 2).map((feature: string, idx: number) => (
                       <div key={idx} className="flex items-center gap-1 text-xs text-white/40">
                         <div className="w-1 h-1 bg-white/40 rounded-full" />
                         <span>{feature}</span>
