@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Check credits if using platform mode
     if (platformConfig.mode === 'platform') {
       const credits = await getUserCredits(session.user.id!);
-      if (credits.remaining <= 0) {
+      if (credits <= 0) {
         return NextResponse.json({ 
           error: "Insufficient credits. Please add more credits or switch to BYOK mode." 
         }, { status: 402 });
