@@ -820,17 +820,6 @@ REAGENT_USER_ID=${userId}
     
     return gateway;
   }
-      
-      if (line.includes('WhatsApp:')) {
-        gateway.platforms.whatsapp = {
-          status: line.includes('connected') ? 'connected' : 'disconnected',
-          paired: line.includes('paired')
-        };
-      }
-    }
-    
-    return gateway;
-  }
 
   async startGateway(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
