@@ -3,80 +3,149 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Calendar, Plus, Play, Pause, Settings, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, Plus, Play, Pause, Settings, Clock, CheckCircle, AlertCircle, Trash2, Edit } from "lucide-react";
 import { motion } from "framer-motion";
 
-interface ScheduledJob {
+interface HermesCronJob {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   schedule: string;
+  prompt: string;
   status: "active" | "paused" | "error";
-  lastRun: string;
-  nextRun: string;
-  runCount: number;
-  type: string;
+  enabled: boolean;
+  lastRun?: string;
+  nextRun?: string;
+  runCount?: number;
+  skills?: string[];
 }
-
-const MOCK_JOBS: ScheduledJob[] = [
-  {
-    id: "1",
-    name: "Daily Report",
-    description: "Generate and send daily analytics report",
-    schedule: "0 9 * * *",
-    status: "active",
-    lastRun: "Today at 9:00 AM",
-    nextRun: "Tomorrow at 9:00 AM",
-    runCount: 45,
-    type: "Report",
-  },
-  {
-    id: "2",
-    name: "Backup Messages",
-    description: "Backup conversation history to storage",
-    schedule: "0 2 * * 0",
-    status: "active",
-    lastRun: "Sunday at 2:00 AM",
-    nextRun: "Next Sunday at 2:00 AM",
-    runCount: 12,
-    type: "Backup",
-  },
-  {
-    id: "3",
-    name: "Clean Temp Files",
-    description: "Remove temporary files and cache",
-    schedule: "0 1 * * *",
-    status: "paused",
-    lastRun: "2 days ago",
-    nextRun: "Paused",
-    runCount: 89,
-    type: "Maintenance",
-  },
-  {
-    id: "4",
-    name: "Health Check",
-    description: "Monitor system health and send alerts",
-    schedule: "*/15 * * * *",
-    status: "error",
-    lastRun: "15 minutes ago (failed)",
-    nextRun: "In 15 minutes",
-    runCount: 2880,
-    type: "Monitoring",
-  },
-];
 
 export default function JobsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [jobs, setJobs] = useState<ScheduledJob[]>(MOCK_JOBS);
+  const [jobs, setJobs] = useState<HermesCronJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newJob, setNewJob] = useState({
+    name: "",
+    schedule: "",
+    prompt: "",
+    skills: [] as string[]
+  });
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/sign-in");
+    } else if (status === "authenticated") {
+      fetchCronJobs();
     }
   }, [status, router]);
 
-  if (status === "loading") {
+  const fetchCronJobs = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/hermes/cron");
+      
+      if (response.ok) {
+        const data = await response.json();
+        const cronJobs: HermesCronJob[] = (data.cronJobs || []).map((job: any) => ({
+          id: job.id,
+          name: job.name,
+          description: job.description || `Automated task: ${job.prompt.substring(0, 50)}...`,
+          schedule: job.schedule,
+          prompt: job.prompt,
+          status: job.enabled ? "active" : "paused",
+          enabled: job.enabled,
+          lastRun: job.lastRun || "Never",
+          nextRun: job.nextRun || calculateNextRun(job.schedule),
+          runCount: job.runCount || 0,
+          skills: job.skills || []
+        }));
+        setJobs(cronJobs);
+      } else {
+        console.error("Failed to fetch cron jobs");
+        setJobs([]);
+      }
+    } catch (error) {
+      console.error("Error fetching cron jobs:", error);
+      setJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateNextRun = (schedule: string): string => {
+    // Simple next run calculation - in production this would be more sophisticated
+    try {
+      if (schedule.includes("* * * * *")) return "Every minute";
+      if (schedule.includes("0 * * * *")) return "Next hour";
+      if (schedule.includes("0 0 * * *")) return "Tomorrow";
+      if (schedule.includes("0 0 * * 0")) return "Next Sunday";
+      return "Calculated based on schedule";
+    } catch {
+      return "Unknown";
+    }
+  };
+
+  const createCronJob = async () => {
+    try {
+      const response = await fetch("/api/hermes/cron", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
+          ...newJob
+        })
+      });
+
+      if (response.ok) {
+        setShowCreateModal(false);
+        setNewJob({ name: "", schedule: "", prompt: "", skills: [] });
+        fetchCronJobs();
+      } else {
+        console.error("Failed to create cron job");
+      }
+    } catch (error) {
+      console.error("Error creating cron job:", error);
+    }
+  };
+
+  const toggleJob = async (jobId: string, enabled: boolean) => {
+    try {
+      const response = await fetch("/api/hermes/cron", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: enabled ? "enable" : "disable",
+          jobId
+        })
+      });
+
+      if (response.ok) {
+        fetchCronJobs();
+      }
+    } catch (error) {
+      console.error("Error toggling job:", error);
+    }
+  };
+
+  const deleteJob = async (jobId: string) => {
+    try {
+      const response = await fetch("/api/hermes/cron", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId })
+      });
+
+      if (response.ok) {
+        fetchCronJobs();
+      }
+    } catch (error) {
+      console.error("Error deleting job:", error);
+    }
+  };
+
+  if (status === "loading" || loading) {
     return (
       <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -122,11 +191,14 @@ export default function JobsPage() {
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
               <Calendar className="w-6 h-6 text-purple-400" />
-              Scheduled Jobs
+              Hermes Scheduled Jobs
             </h1>
-            <p className="text-white/60 mt-1">Manage automated tasks and schedules</p>
+            <p className="text-white/60 mt-1">Manage automated Hermes tasks and cron jobs</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-colors">
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-colors"
+          >
             <Plus className="w-4 h-4" />
             Create Job
           </button>
@@ -168,19 +240,27 @@ export default function JobsPage() {
                   <div className="w-12 h-12 rounded-lg bg-white/[0.06] flex items-center justify-center">
                     <Calendar className="w-5 h-5 text-white/60" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="font-semibold text-white">{job.name}</h3>
                       <span className="text-xs text-white/40 bg-white/[0.06] px-2 py-1 rounded">
-                        {job.type}
+                        Hermes Cron
                       </span>
                     </div>
                     <p className="text-white/60 text-sm mb-2">{job.description}</p>
+                    <div className="text-xs text-white/40 mb-2">
+                      <span className="font-mono bg-white/[0.06] px-2 py-1 rounded mr-2">
+                        {job.schedule}
+                      </span>
+                      <span>Prompt: {job.prompt.substring(0, 60)}...</span>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-white/40">
-                      <span>Schedule: {job.schedule}</span>
                       <span>Last run: {job.lastRun}</span>
                       <span>Next run: {job.nextRun}</span>
-                      <span>Runs: {job.runCount}</span>
+                      <span>Runs: {job.runCount || 0}</span>
+                      {job.skills && job.skills.length > 0 && (
+                        <span>Skills: {job.skills.join(", ")}</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -193,11 +273,22 @@ export default function JobsPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="text-white/40 hover:text-white transition-colors">
-                      <Play className="w-4 h-4" />
+                    <button 
+                      onClick={() => toggleJob(job.id, !job.enabled)}
+                      className="text-white/40 hover:text-white transition-colors"
+                      title={job.enabled ? "Pause job" : "Resume job"}
+                    >
+                      {job.enabled ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                     </button>
                     <button className="text-white/40 hover:text-white transition-colors">
-                      <Settings className="w-4 h-4" />
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => deleteJob(job.id)}
+                      className="text-white/40 hover:text-red-400 transition-colors"
+                      title="Delete job"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -209,8 +300,74 @@ export default function JobsPage() {
         {jobs.length === 0 && (
           <div className="text-center py-12">
             <Calendar className="w-12 h-12 text-white/20 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white/60 mb-2">No scheduled jobs</h3>
-            <p className="text-white/40 text-sm">Create your first scheduled job to automate tasks</p>
+            <h3 className="text-lg font-medium text-white/60 mb-2">No Hermes cron jobs</h3>
+            <p className="text-white/40 text-sm mb-6">Create your first automated task to get started</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Create First Job
+            </button>
+          </div>
+        )}
+
+        {/* Create Job Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-[#1A1A1A] border border-white/[0.08] rounded-xl p-6 w-full max-w-md mx-4">
+              <h3 className="text-white font-semibold text-lg mb-4">Create Hermes Cron Job</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-white/60 text-sm mb-2">Job Name</label>
+                  <input
+                    type="text"
+                    value={newJob.name}
+                    onChange={(e) => setNewJob({ ...newJob, name: e.target.value })}
+                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg px-3 py-2 text-white"
+                    placeholder="Daily report generation"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-white/60 text-sm mb-2">Schedule (Cron)</label>
+                  <input
+                    type="text"
+                    value={newJob.schedule}
+                    onChange={(e) => setNewJob({ ...newJob, schedule: e.target.value })}
+                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono"
+                    placeholder="0 9 * * *"
+                  />
+                  <p className="text-white/40 text-xs mt-1">Example: "0 9 * * *" = Daily at 9 AM</p>
+                </div>
+                
+                <div>
+                  <label className="block text-white/60 text-sm mb-2">Prompt</label>
+                  <textarea
+                    value={newJob.prompt}
+                    onChange={(e) => setNewJob({ ...newJob, prompt: e.target.value })}
+                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg px-3 py-2 text-white h-24 resize-none"
+                    placeholder="Generate a daily report of system status and send it to the admin channel"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 mt-6">
+                <button
+                  onClick={createCronJob}
+                  disabled={!newJob.name || !newJob.schedule || !newJob.prompt}
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-white/[0.06] disabled:text-white/40 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Create Job
+                </button>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 bg-white/[0.06] hover:bg-white/[0.12] text-white rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

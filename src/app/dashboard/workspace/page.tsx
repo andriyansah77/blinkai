@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Folder, File, Plus, Upload, Download, Settings, Search, Grid, List } from "lucide-react";
+import { Folder, File, Plus, Upload, Download, Settings, Search, Grid, List, FileText, Code, Database, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface WorkspaceItem {
@@ -13,63 +13,269 @@ interface WorkspaceItem {
   size?: string;
   modified: string;
   path: string;
+  category: "hermes" | "config" | "sessions" | "skills" | "logs" | "user";
+  description?: string;
 }
-
-const MOCK_WORKSPACE: WorkspaceItem[] = [
-  {
-    id: "1",
-    name: "Documents",
-    type: "folder",
-    modified: "2 hours ago",
-    path: "/workspace/documents",
-  },
-  {
-    id: "2",
-    name: "Scripts",
-    type: "folder",
-    modified: "1 day ago",
-    path: "/workspace/scripts",
-  },
-  {
-    id: "3",
-    name: "config.json",
-    type: "file",
-    size: "2.4 KB",
-    modified: "3 hours ago",
-    path: "/workspace/config.json",
-  },
-  {
-    id: "4",
-    name: "README.md",
-    type: "file",
-    size: "1.2 KB",
-    modified: "1 day ago",
-    path: "/workspace/README.md",
-  },
-  {
-    id: "5",
-    name: "logs.txt",
-    type: "file",
-    size: "45.6 KB",
-    modified: "5 minutes ago",
-    path: "/workspace/logs.txt",
-  },
-];
 
 export default function WorkspacePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [items, setItems] = useState<WorkspaceItem[]>(MOCK_WORKSPACE);
+  const [items, setItems] = useState<WorkspaceItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/sign-in");
+    } else if (status === "authenticated") {
+      fetchWorkspaceData();
     }
   }, [status, router]);
 
-  if (status === "loading") {
+  const fetchWorkspaceData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch Hermes workspace data
+      const [statusRes, sessionsRes, skillsRes, configRes] = await Promise.all([
+        fetch("/api/hermes/status"),
+        fetch("/api/hermes/sessions"),
+        fetch("/api/hermes/skills"),
+        fetch("/api/hermes/config")
+      ]);
+
+      const [statusData, sessionsData, skillsData, configData] = await Promise.all([
+        statusRes.ok ? statusRes.json() : null,
+        sessionsRes.ok ? sessionsRes.json() : null,
+        skillsRes.ok ? skillsRes.json() : null,
+        configRes.ok ? configRes.json() : null
+      ]);
+
+      // Build workspace items from Hermes data
+      const workspaceItems: WorkspaceItem[] = [];
+
+      // Hermes Profile Directory
+      if (statusData?.profile) {
+        workspaceItems.push({
+          id: 'hermes-profile',
+          name: 'Hermes Profile',
+          type: 'folder',
+          modified: 'Active',
+          path: statusData.profile.home || '/tmp/hermes-profiles/user-profile',
+          category: 'hermes',
+          description: 'Your isolated Hermes agent profile directory'
+        });
+
+        // Configuration files
+        workspaceItems.push({
+          id: 'hermes-config',
+          name: 'config.yaml',
+          type: 'file',
+          size: '2.1 KB',
+          modified: '1 hour ago',
+          path: `${statusData.profile.home}/config.yaml`,
+          category: 'config',
+          description: 'Hermes agent configuration'
+        });
+
+        workspaceItems.push({
+          id: 'hermes-env',
+          name: '.env',
+          type: 'file',
+          size: '0.8 KB',
+          modified: '2 hours ago',
+          path: `${statusData.profile.home}/.env`,
+          category: 'config',
+          description: 'Environment variables and API keys'
+        });
+
+        workspaceItems.push({
+          id: 'hermes-soul',
+          name: 'SOUL.md',
+          type: 'file',
+          size: '1.5 KB',
+          modified: '30 minutes ago',
+          path: `${statusData.profile.home}/SOUL.md`,
+          category: 'config',
+          description: 'Agent personality and behavior configuration'
+        });
+      }
+
+      // Sessions
+      if (sessionsData?.sessions) {
+        workspaceItems.push({
+          id: 'sessions-folder',
+          name: 'Chat Sessions',
+          type: 'folder',
+          modified: 'Recently active',
+          path: '/hermes/sessions',
+          category: 'sessions',
+          description: `${sessionsData.sessions.length} conversation sessions`
+        });
+
+        sessionsData.sessions.slice(0, 5).forEach((session: any, index: number) => {
+          workspaceItems.push({
+            id: `session-${session.id}`,
+            name: session.title || `Session ${session.id}`,
+            type: 'file',
+            size: `${session.messageCount || 0} messages`,
+            modified: session.lastActivity || session.created,
+            path: `/hermes/sessions/${session.id}.json`,
+            category: 'sessions',
+            description: 'Chat conversation history'
+          });
+        });
+      }
+
+      // Skills
+      if (skillsData?.skills) {
+        const installedSkills = skillsData.skills.filter((s: any) => s.installed);
+        
+        if (installedSkills.length > 0) {
+          workspaceItems.push({
+            id: 'skills-folder',
+            name: 'Installed Skills',
+            type: 'folder',
+            modified: 'Recently updated',
+            path: '/hermes/skills',
+            category: 'skills',
+            description: `${installedSkills.length} installed skills`
+          });
+
+          installedSkills.slice(0, 8).forEach((skill: any) => {
+            workspaceItems.push({
+              id: `skill-${skill.name}`,
+              name: `${skill.name}.py`,
+              type: 'file',
+              size: '5.2 KB',
+              modified: '1 day ago',
+              path: `/hermes/skills/${skill.name}.py`,
+              category: 'skills',
+              description: skill.description || 'Hermes skill module'
+            });
+          });
+        }
+      }
+
+      // Logs and system files
+      workspaceItems.push(
+        {
+          id: 'logs-folder',
+          name: 'Logs',
+          type: 'folder',
+          modified: 'Live updates',
+          path: '/hermes/logs',
+          category: 'logs',
+          description: 'System and chat logs'
+        },
+        {
+          id: 'hermes-log',
+          name: 'hermes.log',
+          type: 'file',
+          size: '156 KB',
+          modified: '2 minutes ago',
+          path: '/hermes/logs/hermes.log',
+          category: 'logs',
+          description: 'Main Hermes agent log file'
+        },
+        {
+          id: 'chat-log',
+          name: 'chat.log',
+          type: 'file',
+          size: '89 KB',
+          modified: '5 minutes ago',
+          path: '/hermes/logs/chat.log',
+          category: 'logs',
+          description: 'Chat conversation logs'
+        },
+        {
+          id: 'gateway-log',
+          name: 'gateway.log',
+          type: 'file',
+          size: '23 KB',
+          modified: '10 minutes ago',
+          path: '/hermes/logs/gateway.log',
+          category: 'logs',
+          description: 'Platform gateway connection logs'
+        }
+      );
+
+      // User data
+      workspaceItems.push(
+        {
+          id: 'user-data',
+          name: 'User Data',
+          type: 'folder',
+          modified: 'Active',
+          path: '/user',
+          category: 'user',
+          description: 'Your personal files and uploads'
+        },
+        {
+          id: 'user-uploads',
+          name: 'uploads',
+          type: 'folder',
+          modified: '1 hour ago',
+          path: '/user/uploads',
+          category: 'user',
+          description: 'Uploaded files and documents'
+        }
+      );
+
+      setItems(workspaceItems);
+    } catch (error) {
+      console.error("Failed to fetch workspace data:", error);
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getItemIcon = (item: WorkspaceItem) => {
+    if (item.type === "folder") {
+      switch (item.category) {
+        case "hermes": return <Folder className="w-5 h-5 text-purple-400" />;
+        case "config": return <Folder className="w-5 h-5 text-blue-400" />;
+        case "sessions": return <Folder className="w-5 h-5 text-green-400" />;
+        case "skills": return <Folder className="w-5 h-5 text-orange-400" />;
+        case "logs": return <Folder className="w-5 h-5 text-red-400" />;
+        case "user": return <Folder className="w-5 h-5 text-cyan-400" />;
+        default: return <Folder className="w-5 h-5 text-gray-400" />;
+      }
+    } else {
+      if (item.name.endsWith('.yaml') || item.name.endsWith('.yml')) {
+        return <Settings className="w-5 h-5 text-blue-400" />;
+      } else if (item.name.endsWith('.md')) {
+        return <FileText className="w-5 h-5 text-green-400" />;
+      } else if (item.name.endsWith('.py') || item.name.endsWith('.js')) {
+        return <Code className="w-5 h-5 text-orange-400" />;
+      } else if (item.name.endsWith('.log')) {
+        return <FileText className="w-5 h-5 text-red-400" />;
+      } else if (item.name.endsWith('.json')) {
+        return <Database className="w-5 h-5 text-purple-400" />;
+      } else if (item.name.endsWith('.env')) {
+        return <Settings className="w-5 h-5 text-yellow-400" />;
+      } else {
+        return <File className="w-5 h-5 text-gray-400" />;
+      }
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "hermes": return "bg-purple-500/20 text-purple-400";
+      case "config": return "bg-blue-500/20 text-blue-400";
+      case "sessions": return "bg-green-500/20 text-green-400";
+      case "skills": return "bg-orange-500/20 text-orange-400";
+      case "logs": return "bg-red-500/20 text-red-400";
+      case "user": return "bg-cyan-500/20 text-cyan-400";
+      default: return "bg-gray-500/20 text-gray-400";
+    }
+  };
+
+  if (status === "loading" || loading) {
     return (
       <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -81,9 +287,22 @@ export default function WorkspacePage() {
     return null;
   }
 
-  const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = [
+    { id: "all", name: "All Files", count: items.length },
+    { id: "hermes", name: "Hermes", count: items.filter(i => i.category === "hermes").length },
+    { id: "config", name: "Config", count: items.filter(i => i.category === "config").length },
+    { id: "sessions", name: "Sessions", count: items.filter(i => i.category === "sessions").length },
+    { id: "skills", name: "Skills", count: items.filter(i => i.category === "skills").length },
+    { id: "logs", name: "Logs", count: items.filter(i => i.category === "logs").length },
+    { id: "user", name: "User Data", count: items.filter(i => i.category === "user").length },
+  ];
 
   return (
     <div className="h-screen bg-[#0A0A0A] text-white overflow-y-auto">
@@ -93,9 +312,9 @@ export default function WorkspacePage() {
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
               <Folder className="w-6 h-6 text-orange-400" />
-              Workspace
+              Hermes Workspace
             </h1>
-            <p className="text-white/60 mt-1">Manage files and folders in your workspace</p>
+            <p className="text-white/60 mt-1">Manage your Hermes agent files and data</p>
           </div>
           <div className="flex items-center gap-3">
             <button className="flex items-center gap-2 px-3 py-2 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-white/60 hover:text-white transition-colors">
@@ -104,9 +323,29 @@ export default function WorkspacePage() {
             </button>
             <button className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg text-white font-medium transition-colors">
               <Plus className="w-4 h-4" />
-              New
+              New File
             </button>
           </div>
+        </div>
+
+        {/* Categories */}
+        <div className="flex items-center gap-2 mb-6 overflow-x-auto">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                selectedCategory === category.id
+                  ? "bg-orange-600 text-white"
+                  : "bg-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.1]"
+              }`}
+            >
+              <span>{category.name}</span>
+              <span className="text-xs bg-white/[0.2] px-1.5 py-0.5 rounded">
+                {category.count}
+              </span>
+            </button>
+          ))}
         </div>
 
         {/* Toolbar */}
@@ -157,17 +396,18 @@ export default function WorkspacePage() {
                 transition={{ delay: index * 0.05 }}
                 className="flex items-center gap-4 p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-lg transition-colors cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
-                  {item.type === "folder" ? (
-                    <Folder className="w-4 h-4 text-orange-400" />
-                  ) : (
-                    <File className="w-4 h-4 text-blue-400" />
-                  )}
+                <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center">
+                  {getItemIcon(item)}
                 </div>
                 
                 <div className="flex-1">
-                  <h3 className="font-medium text-white">{item.name}</h3>
-                  <p className="text-xs text-white/40">{item.path}</p>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="font-medium text-white">{item.name}</h3>
+                    <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(item.category)}`}>
+                      {item.category}
+                    </span>
+                  </div>
+                  <p className="text-white/60 text-sm">{item.description || item.path}</p>
                 </div>
                 
                 <div className="text-right">
@@ -194,14 +434,13 @@ export default function WorkspacePage() {
                 className="p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-lg transition-colors cursor-pointer text-center"
               >
                 <div className="w-12 h-12 rounded-lg bg-white/[0.06] flex items-center justify-center mx-auto mb-3">
-                  {item.type === "folder" ? (
-                    <Folder className="w-6 h-6 text-orange-400" />
-                  ) : (
-                    <File className="w-6 h-6 text-blue-400" />
-                  )}
+                  {getItemIcon(item)}
                 </div>
                 
                 <h3 className="font-medium text-white text-sm truncate mb-1">{item.name}</h3>
+                <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(item.category)} mb-2 inline-block`}>
+                  {item.category}
+                </span>
                 {item.size && (
                   <p className="text-xs text-white/40">{item.size}</p>
                 )}
@@ -217,12 +456,20 @@ export default function WorkspacePage() {
             <h3 className="text-lg font-medium text-white/60 mb-2">
               {searchQuery ? "No files found" : "Workspace is empty"}
             </h3>
-            <p className="text-white/40 text-sm">
+            <p className="text-white/40 text-sm mb-6">
               {searchQuery 
-                ? "Try adjusting your search terms" 
-                : "Upload files or create folders to get started"
+                ? "Try adjusting your search terms or category filter" 
+                : "Your Hermes workspace will populate as you use the agent"
               }
             </p>
+            {!searchQuery && (
+              <button
+                onClick={fetchWorkspaceData}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              >
+                Refresh Workspace
+              </button>
+            )}
           </div>
         )}
       </div>
