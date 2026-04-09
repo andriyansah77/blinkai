@@ -172,7 +172,7 @@ export class HermesIntegration {
       
       if (result.success) {
         const profile = await this.getProfile(userId);
-        return { success: true, profile };
+        return { success: true, profile: profile || undefined };
       } else {
         return { success: false, error: result.error };
       }
