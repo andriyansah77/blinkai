@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get platform configuration for credit management
-    const platformConfig = await getPlatformConfig(session.user.id!);
+    const platformConfig = getPlatformConfig();
     
     // Check credits if using platform mode
     if (platformConfig.mode === 'platform') {
