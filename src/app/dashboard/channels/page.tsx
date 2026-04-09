@@ -421,7 +421,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
   };
 
   const getFieldPlaceholder = (field: string, channelType: string) => {
-    const placeholders = {
+    const placeholders: Record<string, Record<string, string>> = {
       telegram: {
         botToken: "123456789:EXAMPLE_BOT_TOKEN_PLACEHOLDER",
         username: "@your_bot_username"
@@ -436,11 +436,11 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
         webhookUrl: "https://your-domain.com/webhook"
       }
     };
-    return placeholders[channelType as keyof typeof placeholders]?.[field as keyof any] || `Enter ${field}`;
+    return placeholders[channelType]?.[field] || `Enter ${field}`;
   };
 
   const getSetupInstructions = (channelType: string) => {
-    const instructions = {
+    const instructions: Record<string, { title: string; steps: string[] }> = {
       telegram: {
         title: "Setup Telegram Bot",
         steps: [
@@ -469,7 +469,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
         ]
       }
     };
-    return instructions[channelType as keyof typeof instructions];
+    return instructions[channelType];
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
