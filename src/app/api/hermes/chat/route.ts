@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const responseGenerator = await hermesIntegration.sendChatMessage(
+          const responseGenerator = hermesIntegration.sendChatMessage(
             session.user.id!,
             lastMessage.content,
             {
