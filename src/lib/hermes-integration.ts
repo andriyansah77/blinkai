@@ -237,10 +237,10 @@ export class HermesIntegration {
       command: 'chat',
       flags: {
         query: message,
-        model: options.model,
-        provider: options.provider,
-        skills: options.skills?.join(','),
-        toolsets: options.toolsets?.join(','),
+        ...(options.model && { model: options.model }),
+        ...(options.provider && { provider: options.provider }),
+        ...(options.skills && { skills: options.skills.join(',') }),
+        ...(options.toolsets && { toolsets: options.toolsets.join(',') }),
         quiet: options.quiet || true
       }
     };
@@ -431,7 +431,7 @@ export class HermesIntegration {
         subcommand: 'install',
         args: [skillName],
         flags: {
-          source: options.source,
+          ...(options.source && { source: options.source }),
           force: options.force || false
         }
       };
@@ -722,7 +722,7 @@ export class HermesIntegration {
         subcommand: 'create',
         args: [options.name, options.schedule, options.prompt],
         flags: {
-          skill: options.skills?.join(',')
+          ...(options.skills && { skill: options.skills.join(',') })
         }
       };
 
