@@ -80,20 +80,35 @@ export class HermesCliWrapper {
   }
 
   /**
-   * Execute Hermes command with proper sudo handling
+   * Execute Hermes command with proper sudo handling and user isolation
    */
-  private async executeHermesCommand(command: string, args: string[] = [], options: any = {}): Promise<any> {
+  private async executeHermesCommand(command: string, args: string[] = [], options: any = {}, userId?: string): Promise<any> {
     // Use full path to Hermes CLI on VPS
     const hermesPath = '/root/.local/bin/hermes';
-    const fullCommand = `${hermesPath} ${args.join(' ')}`;
+    
+    // Add user profile isolation if userId provided
+    let profileArgs: string[] = [];
+    let workingDir = process.cwd();
+    
+    if (userId) {
+      // Create user-specific directory
+      workingDir = `/tmp/hermes-users/${userId}`;
+      await execAsync(`mkdir -p ${workingDir}`);
+      
+      // Use Hermes profiles for isolation
+      profileArgs = ['--profile', `user-${userId}`];
+    }
+    
+    const fullArgs = [...profileArgs, command, ...args];
+    const fullCommand = `${hermesPath} ${fullArgs.join(' ')}`;
     
     try {
       // Try with full path first
-      return await execAsync(fullCommand, options);
+      return await execAsync(fullCommand, { ...options, cwd: workingDir });
     } catch (normalError) {
       // Fallback to sudo su with full path
       try {
-        return await execAsync(`sudo su -c "${fullCommand}"`, options);
+        return await execAsync(`sudo su -c "${fullCommand}"`, { ...options, cwd: workingDir });
       } catch (sudoError) {
         throw new Error(`Failed to execute Hermes command: ${sudoError}`);
       }
@@ -342,7 +357,7 @@ Remember: You are not just answering questions - you are building a relationship
   }
 
   /**
-   * Send a message to a Hermes agent
+   * Send a message to a Hermes agent with user isolation
    */
   async sendMessage(instanceId: string, message: string, userId: string): Promise<AsyncGenerator<string>> {
     const instance = this.instances.get(instanceId);
@@ -352,12 +367,12 @@ Remember: You are not just answering questions - you are building a relationship
 
     const instanceDir = path.dirname(instance.configPath);
     
-    // Use Hermes CLI to send message with proper session handling
+    // Use Hermes CLI to send message with proper session handling and user isolation
     return this.streamHermesResponse(instanceDir, message, userId, instance.configPath);
   }
 
   /**
-   * Stream response from Hermes CLI
+   * Stream response from Hermes CLI with user isolation
    */
   private async *streamHermesResponse(instanceDir: string, message: string, userId: string, configPath: string): AsyncGenerator<string> {
     try {
@@ -365,19 +380,21 @@ Remember: You are not just answering questions - you are building a relationship
       const sessionDir = path.join(instanceDir, 'sessions', userId);
       await fs.ensureDir(sessionDir);
 
-      // Set environment for Hermes
+      // Set environment for Hermes with user isolation
       const env = {
         ...process.env,
         HERMES_CONFIG_PATH: configPath,
         HERMES_WORK_DIR: instanceDir,
-        HERMES_SESSION_DIR: sessionDir
+        HERMES_SESSION_DIR: sessionDir,
+        HERMES_USER_ID: userId
       };
 
-      // Execute Hermes chat command with proper session handling and full path
+      // Execute Hermes chat command with proper session handling, full path, and user profile
       let hermesProcess;
       try {
-        // Try with full path first - use query mode for single message
+        // Try with full path first - use query mode for single message with user profile
         hermesProcess = spawn('/root/.local/bin/hermes', [
+          '--profile', `user-${userId}`,
           'chat', 
           '--query', message,
           '--quiet'
@@ -387,10 +404,10 @@ Remember: You are not just answering questions - you are building a relationship
           env
         });
       } catch (pathError) {
-        // Fallback to sudo su with full path
+        // Fallback to sudo su with full path and user profile
         hermesProcess = spawn('sudo', [
           'su', '-c', 
-          `/root/.local/bin/hermes chat --query "${message}" --quiet`
+          `/root/.local/bin/hermes --profile user-${userId} chat --query "${message}" --quiet`
         ], {
           cwd: instanceDir,
           stdio: 'pipe',

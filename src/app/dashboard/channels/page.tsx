@@ -172,7 +172,7 @@ export default function ChannelsPage() {
               <Database className="w-6 h-6 text-blue-400" />
               Channels
             </h1>
-            <p className="text-white/60 mt-1">Connect your AI agent to Discord, Telegram, and other platforms using Hermes framework</p>
+            <p className="text-white/60 mt-1">Connect your AI agent to Discord, Telegram, and other platforms using your isolated Hermes instance</p>
           </div>
           <button 
             onClick={() => {
@@ -195,7 +195,7 @@ export default function ChannelsPage() {
                 Channels
                 <span className="text-sm text-white/40 font-normal">{CHANNEL_TYPES.length} channels</span>
               </h2>
-              <p className="text-white/60 text-sm mt-1">Powered by Hermes framework - setup and manage channels through integrated CLI.</p>
+              <p className="text-white/60 text-sm mt-1">Each user gets their own isolated Hermes instance - your platforms won't interfere with others.</p>
             </div>
           </div>
           
@@ -303,7 +303,7 @@ export default function ChannelsPage() {
               </div>
               <h3 className="text-white font-semibold text-lg mb-2">No channels connected</h3>
               <p className="text-white/60 mb-6 max-w-md mx-auto">
-                Connect your first channel using Hermes framework integration for seamless platform management
+                Connect your first channel using your own isolated Hermes instance - completely separate from other users
               </p>
               <button
                 onClick={() => {
@@ -529,7 +529,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
 
       if (response.ok) {
         const result = await response.json();
-        alert(`✅ ${selectedChannel?.name} channel connected successfully to your agent!`);
+        alert(`✅ ${selectedChannel?.name} channel connected successfully to your isolated Hermes instance!\n\n${result.hermesSetup || 'Platform configured and your personal gateway started.'}\n\nNote: This is completely isolated from other users.`);
         onSuccess();
       } else {
         const error = await response.json();

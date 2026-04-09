@@ -40,64 +40,85 @@ const SUPPORTED_PLATFORMS = {
   }
 };
 
-async function executeHermesCommand(command: string, args: string[] = []): Promise<any> {
+async function executeHermesCommand(command: string, args: string[] = [], userId?: string): Promise<any> {
   const hermesPath = '/root/.local/bin/hermes';
-  const fullCommand = `${hermesPath} ${command} ${args.join(' ')}`;
+  
+  // Create user-specific working directory and profile
+  let workingDir = process.cwd();
+  let profileArgs: string[] = [];
+  
+  if (userId) {
+    // Create user-specific directory
+    workingDir = `/tmp/hermes-users/${userId}`;
+    await execAsync(`mkdir -p ${workingDir}`);
+    
+    // Use Hermes profiles for isolation
+    profileArgs = ['--profile', `user-${userId}`];
+  }
+  
+  const fullArgs = [...profileArgs, command, ...args];
+  const fullCommand = `${hermesPath} ${fullArgs.join(' ')}`;
   
   try {
-    const result = await execAsync(fullCommand);
+    const result = await execAsync(fullCommand, { cwd: workingDir });
     return { success: true, output: result.stdout, error: result.stderr };
   } catch (error: any) {
     return { success: false, output: '', error: error.message };
   }
 }
 
-async function setupHermesPlatform(type: string, config: any): Promise<{ success: boolean; message: string }> {
+async function setupHermesPlatform(type: string, config: any, userId: string): Promise<{ success: boolean; message: string }> {
   const platform = SUPPORTED_PLATFORMS[type as keyof typeof SUPPORTED_PLATFORMS];
   if (!platform) {
     return { success: false, message: `Unsupported platform: ${type}` };
   }
 
   try {
+    // Initialize user profile if not exists
+    const profileResult = await executeHermesCommand('profile', ['create', `user-${userId}`], userId);
+    if (!profileResult.success && !profileResult.error.includes('already exists')) {
+      console.warn(`Profile creation warning: ${profileResult.error}`);
+    }
+
     switch (type) {
       case 'telegram':
-        // Use Hermes gateway setup for Telegram
-        const telegramResult = await executeHermesCommand('gateway', ['setup']);
+        // Use Hermes gateway setup for Telegram with user isolation
+        const telegramResult = await executeHermesCommand('gateway', ['setup'], userId);
         if (!telegramResult.success) {
           return { success: false, message: `Telegram setup failed: ${telegramResult.error}` };
         }
         
-        // Configure Telegram bot token via Hermes config
-        const configResult = await executeHermesCommand('config', ['set', 'telegram.bot_token', config.botToken]);
+        // Configure Telegram bot token via Hermes config for this user
+        const configResult = await executeHermesCommand('config', ['set', 'telegram.bot_token', config.botToken], userId);
         if (!configResult.success) {
           return { success: false, message: `Failed to set Telegram token: ${configResult.error}` };
         }
         
-        return { success: true, message: "Telegram bot configured successfully via Hermes" };
+        return { success: true, message: "Telegram bot configured successfully for your isolated Hermes instance" };
 
       case 'discord':
-        // Use Hermes gateway setup for Discord
-        const discordResult = await executeHermesCommand('gateway', ['setup']);
+        // Use Hermes gateway setup for Discord with user isolation
+        const discordResult = await executeHermesCommand('gateway', ['setup'], userId);
         if (!discordResult.success) {
           return { success: false, message: `Discord setup failed: ${discordResult.error}` };
         }
         
-        // Configure Discord bot token via Hermes config
-        const discordConfigResult = await executeHermesCommand('config', ['set', 'discord.bot_token', config.botToken]);
+        // Configure Discord bot token via Hermes config for this user
+        const discordConfigResult = await executeHermesCommand('config', ['set', 'discord.bot_token', config.botToken], userId);
         if (!discordConfigResult.success) {
           return { success: false, message: `Failed to set Discord token: ${discordConfigResult.error}` };
         }
         
-        return { success: true, message: "Discord bot configured successfully via Hermes" };
+        return { success: true, message: "Discord bot configured successfully for your isolated Hermes instance" };
 
       case 'whatsapp':
-        // Use Hermes WhatsApp setup (QR code pairing)
-        const whatsappResult = await executeHermesCommand('whatsapp');
+        // Use Hermes WhatsApp setup (QR code pairing) with user isolation
+        const whatsappResult = await executeHermesCommand('whatsapp', [], userId);
         if (!whatsappResult.success) {
           return { success: false, message: `WhatsApp setup failed: ${whatsappResult.error}` };
         }
         
-        return { success: true, message: "WhatsApp configured successfully via Hermes (QR code pairing)" };
+        return { success: true, message: "WhatsApp configured successfully for your isolated Hermes instance (QR code pairing)" };
 
       default:
         return { success: false, message: `Platform ${type} not implemented yet` };
@@ -107,22 +128,22 @@ async function setupHermesPlatform(type: string, config: any): Promise<{ success
   }
 }
 
-async function startHermesGateway(): Promise<{ success: boolean; message: string }> {
+async function startHermesGateway(userId: string): Promise<{ success: boolean; message: string }> {
   try {
-    const result = await executeHermesCommand('gateway', ['start']);
+    const result = await executeHermesCommand('gateway', ['start'], userId);
     if (result.success) {
-      return { success: true, message: "Hermes gateway started successfully" };
+      return { success: true, message: "Your isolated Hermes gateway started successfully" };
     } else {
-      return { success: false, message: `Failed to start gateway: ${result.error}` };
+      return { success: false, message: `Failed to start your gateway: ${result.error}` };
     }
   } catch (error) {
     return { success: false, message: `Gateway start failed: ${error}` };
   }
 }
 
-async function getHermesGatewayStatus(): Promise<{ success: boolean; status: string; platforms: any[] }> {
+async function getHermesGatewayStatus(userId: string): Promise<{ success: boolean; status: string; platforms: any[] }> {
   try {
-    const result = await executeHermesCommand('gateway', ['status']);
+    const result = await executeHermesCommand('gateway', ['status'], userId);
     if (result.success) {
       // Parse gateway status output
       const statusLines = result.output.split('\n').filter((line: string) => line.trim());
@@ -156,21 +177,23 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get Hermes gateway status to see connected platforms
-    const gatewayStatus = await getHermesGatewayStatus();
+    // Get Hermes gateway status to see connected platforms for this user
+    const gatewayStatus = await getHermesGatewayStatus(session.user.id!);
     
-    // Get user's connected channels from Hermes
+    // Get user's connected channels from Hermes for this specific user
     const channels = gatewayStatus.platforms.map((platform, index) => ({
-      id: `hermes-${platform.name.toLowerCase()}-${index}`,
+      id: `hermes-${session.user.id}-${platform.name.toLowerCase()}-${index}`,
       type: platform.name.toLowerCase(),
-      name: `${platform.name} via Hermes`,
-      agentId: "hermes-default",
-      agentName: "Hermes Agent",
+      name: `${platform.name} (Your Instance)`,
+      agentId: `hermes-${session.user.id}`,
+      agentName: "Your Hermes Agent",
       status: platform.status,
       lastActivity: new Date().toISOString(),
       messageCount: 0,
       config: {
-        hermesManaged: true
+        hermesManaged: true,
+        userIsolated: true,
+        userId: session.user.id
       }
     }));
 
@@ -178,7 +201,9 @@ export async function GET() {
       channels,
       gatewayStatus: gatewayStatus.status,
       supportedPlatforms: Object.keys(SUPPORTED_PLATFORMS),
-      hermesIntegration: true
+      hermesIntegration: true,
+      userIsolation: true,
+      userId: session.user.id
     });
   } catch (error) {
     console.error("Get channels error:", error);
@@ -219,23 +244,23 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Setup platform using Hermes CLI
-      const setupResult = await setupHermesPlatform(type, config);
+      // Setup platform using Hermes CLI with user isolation
+      const setupResult = await setupHermesPlatform(type, config, session.user.id!);
       if (!setupResult.success) {
         return NextResponse.json({ 
           error: `Platform setup failed: ${setupResult.message}` 
         }, { status: 400 });
       }
 
-      // Start Hermes gateway if not already running
-      const gatewayResult = await startHermesGateway();
+      // Start Hermes gateway for this user if not already running
+      const gatewayResult = await startHermesGateway(session.user.id!);
       if (!gatewayResult.success) {
-        console.warn(`Gateway start warning: ${gatewayResult.message}`);
+        console.warn(`Gateway start warning for user ${session.user.id}: ${gatewayResult.message}`);
       }
 
-      // Create channel record with Hermes integration
+      // Create channel record with Hermes integration and user isolation
       const channel = {
-        id: `hermes-${type}-${Date.now()}`,
+        id: `hermes-${session.user.id}-${type}-${Date.now()}`,
         type,
         name,
         agentId, // Store the connected agent ID
@@ -244,7 +269,10 @@ export async function POST(request: NextRequest) {
         messageCount: 0,
         config: {
           hermesManaged: true,
-          setupMethod: "hermes-cli"
+          setupMethod: "hermes-cli",
+          userIsolated: true,
+          userId: session.user.id,
+          hermesProfile: `user-${session.user.id}`
         },
         createdAt: new Date().toISOString(),
         userId: session.user.id
@@ -253,18 +281,20 @@ export async function POST(request: NextRequest) {
       // In production, save to database:
       // await prisma.channel.create({ data: channel });
 
-      console.log(`✅ ${SUPPORTED_PLATFORMS[type as keyof typeof SUPPORTED_PLATFORMS].name} channel created via Hermes:`, {
+      console.log(`✅ ${SUPPORTED_PLATFORMS[type as keyof typeof SUPPORTED_PLATFORMS].name} channel created via isolated Hermes:`, {
         id: channel.id,
         name: channel.name,
         type: channel.type,
         userId: session.user.id,
-        hermesIntegration: true
+        hermesProfile: `user-${session.user.id}`,
+        isolated: true
       });
 
       return NextResponse.json({ 
         channel,
-        message: `${SUPPORTED_PLATFORMS[type as keyof typeof SUPPORTED_PLATFORMS].name} channel connected successfully via Hermes!`,
-        hermesSetup: setupResult.message
+        message: `${SUPPORTED_PLATFORMS[type as keyof typeof SUPPORTED_PLATFORMS].name} channel connected successfully to your isolated Hermes instance!`,
+        hermesSetup: setupResult.message,
+        userIsolation: true
       }, { status: 201 });
 
     } catch (validationError) {
