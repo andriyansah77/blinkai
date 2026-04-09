@@ -164,7 +164,7 @@ export class HermesIntegration {
         flags: {
           clone: options.clone || false,
           'clone-all': options.cloneAll || false,
-          'clone-from': options.cloneFrom || undefined
+          ...(options.cloneFrom && { 'clone-from': options.cloneFrom })
         }
       };
 
