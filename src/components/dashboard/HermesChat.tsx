@@ -5,6 +5,8 @@ import { Send, Mic, Plus, Lightbulb, Users, History, Bot, Zap, Sparkles, Trendin
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUserAgent } from "@/hooks/useUserAgent";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   id: string;
@@ -859,7 +861,34 @@ export default function HermesChat({ className }: ChatProps) {
                     </div>
                   )}
 
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                  <div className="text-sm leading-relaxed">
+                    {message.role === "assistant" ? (
+                      <div className="prose prose-sm prose-invert max-w-none">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            // Custom styling for markdown elements
+                            h1: ({children}) => <h1 className="text-lg font-bold mb-2 text-white">{children}</h1>,
+                            h2: ({children}) => <h2 className="text-base font-semibold mb-2 text-white">{children}</h2>,
+                            h3: ({children}) => <h3 className="text-sm font-medium mb-1 text-white">{children}</h3>,
+                            p: ({children}) => <p className="mb-2 text-white/90 last:mb-0">{children}</p>,
+                            ul: ({children}) => <ul className="list-disc list-inside mb-2 text-white/90">{children}</ul>,
+                            ol: ({children}) => <ol className="list-decimal list-inside mb-2 text-white/90">{children}</ol>,
+                            li: ({children}) => <li className="mb-1">{children}</li>,
+                            strong: ({children}) => <strong className="font-semibold text-white">{children}</strong>,
+                            em: ({children}) => <em className="italic text-white/80">{children}</em>,
+                            code: ({children}) => <code className="bg-white/10 px-1 py-0.5 rounded text-xs font-mono text-blue-300">{children}</code>,
+                            pre: ({children}) => <pre className="bg-white/5 p-3 rounded-lg overflow-x-auto text-xs font-mono mb-2">{children}</pre>,
+                            blockquote: ({children}) => <blockquote className="border-l-2 border-white/20 pl-3 italic text-white/70 mb-2">{children}</blockquote>,
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap text-white/90">{message.content}</p>
+                    )}
+                  </div>
                   <p className="text-xs opacity-60 mt-2">
                     {message.timestamp.toLocaleTimeString([], { 
                       hour: '2-digit', 
