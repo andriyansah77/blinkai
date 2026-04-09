@@ -744,20 +744,56 @@ export class HermesIntegration {
     try {
       console.log(`[Gateway] Starting gateway for user ${userId}`);
       
-      const command: HermesCommand = {
-        command: 'gateway',
-        subcommand: 'start'
-      };
-
-      const result = await this.executeHermesCommand(userId, command);
+      const profileName = `user-${userId}`;
       
-      if (result.success) {
-        console.log(`[Gateway] Gateway started successfully for user ${userId}`);
-      } else {
-        console.error(`[Gateway] Failed to start gateway for user ${userId}:`, result.error);
+      // First, check if gateway service is installed
+      try {
+        const { stdout: statusOutput } = await execAsync(
+          `${this.hermesPath} --profile ${profileName} gateway status`,
+          { timeout: 10000 }
+        );
+        
+        // If service not found, install it first
+        if (statusOutput.includes('not found') || statusOutput.includes('not running')) {
+          console.log(`[Gateway] Installing gateway service for user ${userId}`);
+          
+          await execAsync(
+            `${this.hermesPath} --profile ${profileName} gateway install`,
+            { timeout: 30000 }
+          );
+          
+          console.log(`[Gateway] Gateway service installed for user ${userId}`);
+        }
+      } catch (checkError) {
+        console.log(`[Gateway] Installing gateway service (first time setup)`);
+        
+        try {
+          await execAsync(
+            `${this.hermesPath} --profile ${profileName} gateway install`,
+            { timeout: 30000 }
+          );
+        } catch (installError) {
+          console.warn(`[Gateway] Install warning:`, installError);
+          // Continue anyway, might already be installed
+        }
       }
       
-      return { success: result.success, error: result.error };
+      // Now start the gateway
+      try {
+        await execAsync(
+          `${this.hermesPath} --profile ${profileName} gateway start`,
+          { timeout: 10000 }
+        );
+        
+        console.log(`[Gateway] Gateway started successfully for user ${userId}`);
+        return { success: true };
+      } catch (startError: any) {
+        console.error(`[Gateway] Failed to start gateway:`, startError);
+        return { 
+          success: false, 
+          error: `Gateway start failed: ${startError.message || startError}` 
+        };
+      }
     } catch (error) {
       console.error(`[Gateway] Exception starting gateway for user ${userId}:`, error);
       return { success: false, error: `Gateway start failed: ${error}` };
