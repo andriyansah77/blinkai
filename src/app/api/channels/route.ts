@@ -49,7 +49,7 @@ async function validateChannelConfig(type: string, config: any) {
     }
     
     // Validate field format if validator exists
-    const validator = platform.validation[field as keyof typeof platform.validation];
+    const validator = platform.validation[field as keyof typeof platform.validation] as ((value: string) => boolean) | undefined;
     if (validator && !validator(config[field])) {
       throw new Error(`Invalid format for ${field}`);
     }
@@ -58,7 +58,7 @@ async function validateChannelConfig(type: string, config: any) {
   // Validate optional fields if provided
   for (const field of platform.optionalFields) {
     if (config[field]) {
-      const validator = platform.validation[field as keyof typeof platform.validation];
+      const validator = platform.validation[field as keyof typeof platform.validation] as ((value: string) => boolean) | undefined;
       if (validator && !validator(config[field])) {
         throw new Error(`Invalid format for ${field}`);
       }
