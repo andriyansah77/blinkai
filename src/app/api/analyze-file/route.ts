@@ -5,9 +5,6 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { getUserAIConfig } from "@/lib/platform";
 
-// Dynamic import for pdf-parse to avoid build issues
-const pdfParse = require('pdf-parse');
-
 // File analysis utilities
 async function analyzeTextFile(filepath: string): Promise<string> {
   const content = await readFile(filepath, 'utf-8');
@@ -16,12 +13,12 @@ async function analyzeTextFile(filepath: string): Promise<string> {
 
 async function analyzePDF(filepath: string): Promise<string> {
   try {
-    const dataBuffer = await readFile(filepath);
-    const data = await pdfParse(dataBuffer);
-    return data.text.slice(0, 10000); // Limit to 10k chars
+    // For now, return a placeholder until we can properly configure PDF parsing
+    const stats = await readFile(filepath);
+    return `[PDF file uploaded: ${Math.round(stats.length / 1024)}KB - PDF text extraction will be available in a future update. For now, please describe what you need help with regarding this PDF.]`;
   } catch (error) {
-    console.error("PDF parsing error:", error);
-    return "[PDF file uploaded - could not extract text content]";
+    console.error("PDF file access error:", error);
+    return "[PDF file uploaded - could not access file]";
   }
 }
 
