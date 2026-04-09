@@ -219,20 +219,53 @@ export class HermesIntegration {
   async getProfile(userId: string): Promise<HermesProfile | null> {
     try {
       const profileName = `user-${userId}`;
-      const hermesHome = path.join(this.profilesDir, profileName);
       
-      const profile: HermesProfile = {
-        userId,
-        profileName,
-        hermesHome,
-        configPath: path.join(hermesHome, 'config.yaml'),
-        envPath: path.join(hermesHome, '.env'),
-        soulPath: path.join(hermesHome, 'SOUL.md'),
-        status: await fs.pathExists(hermesHome) ? 'active' : 'inactive'
-      };
-      
-      return profile;
+      // Check if profile exists in Hermes by listing profiles
+      try {
+        const { stdout } = await execAsync(`${this.hermesPath} profile list`);
+        const profileExists = stdout.includes(profileName);
+        
+        if (!profileExists) {
+          console.log(`[Profile] Profile ${profileName} not found in Hermes`);
+          return {
+            userId,
+            profileName,
+            hermesHome: `/root/.hermes/profiles/${profileName}`,
+            configPath: `/root/.hermes/profiles/${profileName}/config.yaml`,
+            envPath: `/root/.hermes/profiles/${profileName}/.env`,
+            soulPath: `/root/.hermes/profiles/${profileName}/SOUL.md`,
+            status: 'inactive'
+          };
+        }
+        
+        console.log(`[Profile] Profile ${profileName} found in Hermes`);
+        
+        const profile: HermesProfile = {
+          userId,
+          profileName,
+          hermesHome: `/root/.hermes/profiles/${profileName}`,
+          configPath: `/root/.hermes/profiles/${profileName}/config.yaml`,
+          envPath: `/root/.hermes/profiles/${profileName}/.env`,
+          soulPath: `/root/.hermes/profiles/${profileName}/SOUL.md`,
+          status: 'active'
+        };
+        
+        return profile;
+      } catch (listError) {
+        console.error(`[Profile] Error checking profile list:`, listError);
+        // Fallback to inactive
+        return {
+          userId,
+          profileName,
+          hermesHome: `/root/.hermes/profiles/${profileName}`,
+          configPath: `/root/.hermes/profiles/${profileName}/config.yaml`,
+          envPath: `/root/.hermes/profiles/${profileName}/.env`,
+          soulPath: `/root/.hermes/profiles/${profileName}/SOUL.md`,
+          status: 'inactive'
+        };
+      }
     } catch (error) {
+      console.error(`[Profile] Exception in getProfile:`, error);
       return null;
     }
   }
