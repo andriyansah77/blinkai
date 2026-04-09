@@ -11,6 +11,11 @@ import yaml from 'yaml';
 
 const execAsync = promisify(exec);
 
+// AI API Configuration for fallback
+const AI_API_KEY = process.env.AI_API_KEY || process.env.OPENAI_API_KEY || '';
+const AI_API_BASE_URL = process.env.AI_API_BASE_URL || 'https://api.openai.com/v1';
+const AI_MODEL = process.env.AI_MODEL || 'gpt-4o-mini';
+
 export interface HermesProfile {
   userId: string;
   profileName: string;
@@ -220,9 +225,9 @@ export class HermesIntegration {
   }
 
   /**
-   * Chat and Sessions
+   * Chat and Sessions with AI API Fallback
    */
-  sendChatMessage(
+  async *sendChatMessage(
     userId: string,
     message: string,
     options: {
@@ -233,6 +238,125 @@ export class HermesIntegration {
       quiet?: boolean;
     } = {}
   ): AsyncGenerator<string> {
+    // First, try to use Hermes CLI
+    const isHermesAvailable = await this.isHermesInstalled();
+    
+    if (isHermesAvailable) {
+      try {
+        // Try Hermes CLI first
+        yield* this.streamHermesResponse(userId, message, options);
+        return;
+      } catch (hermesError) {
+        console.warn('Hermes CLI failed, falling back to direct AI API:', hermesError);
+        // Continue to fallback
+      }
+    }
+    
+    // Fallback to direct AI API
+    yield* this.streamDirectAIResponse(message, options);
+  }
+
+  private async *streamDirectAIResponse(
+    message: string,
+    options: {
+      model?: string;
+      provider?: string;
+    } = {}
+  ): AsyncGenerator<string> {
+    try {
+      const model = options.model || AI_MODEL;
+      const apiKey = AI_API_KEY;
+      
+      if (!apiKey) {
+        yield "Error: AI API key not configured. Please set AI_API_KEY or OPENAI_API_KEY environment variable.";
+        return;
+      }
+
+      // Prepare request to AI API
+      const response = await fetch(`${AI_API_BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful AI assistant powered by ReAgent with Hermes integration.'
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          stream: true,
+          temperature: 0.7,
+          max_tokens: 4000
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`AI API error: ${response.status} - ${error}`);
+      }
+
+      if (!response.body) {
+        throw new Error('No response body from AI API');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) {
+                yield content;
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Direct AI API error:', error);
+      yield `I apologize, but I'm experiencing technical difficulties at the moment. `;
+      yield `Error: ${error instanceof Error ? error.message : 'Unknown error'}. `;
+      yield `Please try again in a moment or contact support if the issue persists.`;
+    }
+  }
+
+  private async *streamHermesResponse(
+    userId: string, 
+    message: string,
+    options: {
+      model?: string;
+      provider?: string;
+      skills?: string[];
+      toolsets?: string[];
+      quiet?: boolean;
+    } = {}
+  ): AsyncGenerator<string> {
+    const profileName = `user-${userId}`;
+    const profileHome = path.join(this.profilesDir, profileName);
+    
     const command: HermesCommand = {
       command: 'chat',
       flags: {
@@ -244,13 +368,6 @@ export class HermesIntegration {
         quiet: options.quiet || true
       }
     };
-
-    return this.streamHermesResponse(userId, command);
-  }
-
-  private async *streamHermesResponse(userId: string, command: HermesCommand): AsyncGenerator<string> {
-    const profileName = `user-${userId}`;
-    const profileHome = path.join(this.profilesDir, profileName);
     
     const args = [
       '--profile', profileName,
@@ -284,13 +401,37 @@ export class HermesIntegration {
       });
 
       let buffer = '';
+      let hasOutput = false;
       
-      for await (const chunk of hermesProcess.stdout) {
-        buffer += chunk.toString();
-      }
+      // Handle stdout
+      hermesProcess.stdout.on('data', (data) => {
+        buffer += data.toString();
+      });
 
-      await new Promise((resolve) => {
-        hermesProcess.on('close', resolve);
+      // Handle stderr
+      hermesProcess.stderr.on('data', (data) => {
+        console.error('Hermes stderr:', data.toString());
+      });
+
+      // Wait for process to complete
+      await new Promise((resolve, reject) => {
+        hermesProcess.on('close', (code) => {
+          if (code === 0 || code === null) {
+            resolve(undefined);
+          } else {
+            reject(new Error(`Hermes process exited with code ${code}`));
+          }
+        });
+        
+        hermesProcess.on('error', (error) => {
+          reject(error);
+        });
+
+        // Timeout after 60 seconds
+        setTimeout(() => {
+          hermesProcess.kill();
+          reject(new Error('Hermes process timeout'));
+        }, 60000);
       });
 
       // Process and stream response
@@ -305,15 +446,21 @@ export class HermesIntegration {
         }
         
         if (response.trim()) {
+          hasOutput = true;
           const words = response.trim().split(' ');
           for (let i = 0; i < words.length; i++) {
             yield words[i] + (i < words.length - 1 ? ' ' : '');
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, 30)); // Faster streaming
           }
         }
       }
+
+      if (!hasOutput) {
+        throw new Error('No output from Hermes CLI');
+      }
     } catch (error) {
-      yield `Error: ${error}`;
+      console.error('Hermes stream error:', error);
+      throw error; // Let caller handle fallback
     }
   }
 
