@@ -55,8 +55,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    console.log(`[Channels] POST request from user ${session.user.id}`);
+
     const body = await request.json();
     const { type, name, agentId, ...config } = body;
+
+    console.log(`[Channels] Request body:`, { type, name, agentId, hasConfig: !!config });
 
     if (!type || !name) {
       return NextResponse.json({ 
@@ -71,14 +75,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure user profile exists
+    console.log(`[Channels] Checking profile for user ${session.user.id}`);
     const profile = await hermesIntegration.getProfile(session.user.id!);
+    console.log(`[Channels] Profile status:`, profile?.status);
+    
     if (!profile || profile.status === 'inactive') {
+      console.log(`[Channels] Creating profile for user ${session.user.id}`);
       const createResult = await hermesIntegration.createProfile(session.user.id!);
+      console.log(`[Channels] Profile creation result:`, createResult);
+      
       if (!createResult.success) {
+        console.error(`[Channels] Profile creation failed:`, createResult.error);
         return NextResponse.json({ 
-          error: "Failed to initialize user profile" 
+          error: `Failed to initialize user profile: ${createResult.error}` 
         }, { status: 500 });
       }
+      
+      console.log(`[Channels] Profile created successfully`);
+    } else {
+      console.log(`[Channels] Profile already exists and is active`);
     }
 
     try {
