@@ -112,7 +112,7 @@ export default function DashboardPage() {
           total: skillsData?.skills?.length || 0,
           installed: skillsData?.skills?.filter((s: any) => s.installed).length || 0,
           categories: statusData?.skills?.list ? 
-            [...new Set(statusData.skills.list.map((s: any) => s.source))].length : 0
+            Array.from(new Set(statusData.skills.list.map((s: any) => s.source))).length : 0
         },
         sessions: {
           total: sessionsData?.sessions?.length || 0,
