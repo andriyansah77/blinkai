@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Zap, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
@@ -81,11 +82,19 @@ function SignInContent() {
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-black" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center relative">
+              <Image
+                src="/logo.jpg"
+                alt="ReAgent"
+                width={32}
+                height={32}
+                className="object-cover"
+                priority
+                unoptimized
+              />
             </div>
             <span className="font-bold text-xl text-white">
-              Hermes<span className="text-amber-400">AI</span>
+              Re<span className="text-amber-400">Agent</span>
             </span>
           </Link>
 
@@ -158,11 +167,19 @@ function SignInContent() {
 
             {/* Mobile logo */}
             <div className="flex items-center gap-2 lg:hidden mb-6">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                <Zap className="w-4 h-4 text-black" />
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center relative">
+                <Image
+                  src="/logo.jpg"
+                  alt="ReAgent"
+                  width={32}
+                  height={32}
+                  className="object-cover"
+                  priority
+                  unoptimized
+                />
               </div>
               <span className="font-bold text-xl text-white">
-                Hermes<span className="text-amber-400">AI</span>
+                Re<span className="text-amber-400">Agent</span>
               </span>
             </div>
 
