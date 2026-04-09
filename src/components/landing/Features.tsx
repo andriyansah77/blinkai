@@ -61,7 +61,7 @@ export function Features() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section id="features" className="py-32 relative bg-[#0a0a0a]">
+    <section id="features" className="py-32 relative bg-background">
       {/* Subtle ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div

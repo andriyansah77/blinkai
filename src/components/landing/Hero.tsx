@@ -16,7 +16,7 @@ const fadeUp = {
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-[#0a0a0a]">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-background">
       {/* Radial gradient glow at center */}
       <div className="absolute inset-0 pointer-events-none">
         <div

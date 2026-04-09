@@ -84,9 +84,9 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
   const { agent, hasAgent, loading } = useUserAgent();
 
   return (
-    <div className="w-64 h-screen bg-[#0A0A0A] border-r border-white/[0.06] flex flex-col">
+    <div className="w-64 h-screen bg-card border-r border-border flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-white/[0.06]">
+      <div className="p-4 border-b border-border">
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center relative">
             <Image

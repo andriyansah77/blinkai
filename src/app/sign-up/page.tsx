@@ -89,9 +89,9 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#0a0a0a]">
+    <div className="min-h-screen flex bg-background">
       {/* Left panel — decorative */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-[#0d0d0d] border-r border-white/[0.05]">
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-card border-r border-border">
         {/* Amber gradient orbs */}
         <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-amber-500/[0.1] rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-orange-500/[0.07] rounded-full blur-3xl" />

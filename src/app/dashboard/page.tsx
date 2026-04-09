@@ -306,7 +306,7 @@ export default function DashboardPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-white/60 text-sm">Loading dashboard...</p>
@@ -321,7 +321,7 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
           <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <XCircle className="w-8 h-8 text-red-400" />
@@ -340,9 +340,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-full bg-[#0A0A0A] overflow-auto">
+    <div className="h-full bg-background overflow-auto">
       {/* Header */}
-      <div className="border-b border-white/[0.06] p-6">
+      <div className="border-b border-border p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white mb-2">

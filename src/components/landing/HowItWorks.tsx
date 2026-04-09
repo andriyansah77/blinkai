@@ -38,7 +38,7 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="py-32 relative bg-[#0a0a0a] overflow-hidden"
+      className="py-32 relative bg-background overflow-hidden"
     >
       {/* Subtle background */}
       <div className="absolute inset-0 pointer-events-none">

@@ -73,7 +73,7 @@ export function Pricing() {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="pricing" className="py-32 bg-[#0a0a0a]">
+    <section id="pricing" className="py-32 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">

@@ -39,8 +39,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (status === "loading") {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-[#0A0A0A] overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       <HermesSidebar credits={credits} />
       <main className="flex-1 overflow-hidden">
         {children}
