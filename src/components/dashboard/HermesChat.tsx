@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Plus, Lightbulb, Users, History, Bot, Zap, Sparkles, TrendingUp, DollarSign, Upload, FileText, MicIcon, Star, MessageSquare } from "lucide-react";
+import { Send, Mic, Plus, Lightbulb, Users, History, Bot, Zap, Sparkles, TrendingUp, DollarSign, Upload, FileText, MicIcon, Star, MessageSquare, Terminal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUserAgent } from "@/hooks/useUserAgent";
@@ -65,6 +65,8 @@ export default function HermesChat({ className }: ChatProps) {
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const [showCommandMenu, setShowCommandMenu] = useState(false);
+  const [commandSuggestions, setCommandSuggestions] = useState<string[]>([]);
   
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -81,6 +83,111 @@ export default function HermesChat({ className }: ChatProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Slash command suggestions
+  const SLASH_COMMANDS = [
+    '/help', '/skills', '/memory', '/clear', '/agent', 
+    '/learn', '/forget', '/mode', '/export', '/reset'
+  ];
+
+  // Handle input change for slash command detection
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setInput(value);
+
+    // Show command suggestions when typing slash commands
+    if (value.startsWith('/')) {
+      const query = value.slice(1).toLowerCase();
+      const suggestions = SLASH_COMMANDS.filter(cmd => 
+        cmd.slice(1).toLowerCase().startsWith(query)
+      );
+      setCommandSuggestions(suggestions);
+      setShowCommandMenu(suggestions.length > 0);
+    } else {
+      setShowCommandMenu(false);
+      setCommandSuggestions([]);
+    }
+  };
+
+  // Handle slash command execution
+  const executeSlashCommand = async (commandText: string) => {
+    const parts = commandText.trim().split(' ');
+    const command = parts[0];
+    const args = parts.slice(1);
+
+    try {
+      const response = await fetch('/api/hermes/commands', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ command, args }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Command failed');
+      }
+
+      const result = await response.json();
+      
+      // Add command result to chat
+      const commandMessage: Message = {
+        id: Date.now().toString(),
+        role: "user",
+        content: commandText,
+        timestamp: new Date(),
+        type: "text"
+      };
+
+      const resultMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: result.result.message,
+        timestamp: new Date(),
+        type: "text"
+      };
+
+      setMessages(prev => [...prev, commandMessage, resultMessage]);
+
+      // Handle special actions
+      if (result.result.action === 'clear_chat') {
+        setTimeout(() => setMessages([]), 1000);
+      } else if (result.result.action === 'export_chat') {
+        // Handle chat export
+        exportChatHistory(result.result.format);
+      }
+
+    } catch (error) {
+      console.error('Slash command error:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `❌ Command failed: ${commandText}. Type /help for available commands.`,
+        timestamp: new Date(),
+        type: "text"
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
+  // Export chat history
+  const exportChatHistory = (format: string = 'json') => {
+    const data = format === 'json' 
+      ? JSON.stringify(messages, null, 2)
+      : messages.map(m => `[${m.timestamp.toLocaleString()}] ${m.role}: ${m.content}`).join('\n');
+    
+    const blob = new Blob([data], { type: format === 'json' ? 'application/json' : 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-history.${format === 'json' ? 'json' : 'txt'}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   // File Upload Handler
   const handleFileUpload = async (file: File) => {
@@ -509,6 +616,16 @@ export default function HermesChat({ className }: ChatProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if it's a slash command
+    if (input.trim().startsWith('/')) {
+      await executeSlashCommand(input.trim());
+      setInput("");
+      setShowCommandMenu(false);
+      setCommandSuggestions([]);
+      return;
+    }
+    
     await sendMessage();
   };
 
@@ -553,6 +670,61 @@ export default function HermesChat({ className }: ChatProps) {
       )}
     </AnimatePresence>
   );
+
+  // Command Menu Component
+  const CommandMenu = () => (
+    <AnimatePresence>
+      {showCommandMenu && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          className="absolute bottom-12 left-0 bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] rounded-xl p-2 min-w-[250px] z-50"
+        >
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-white/50 border-b border-white/[0.08] mb-1">
+            <Terminal className="w-3 h-3" />
+            Hermes Commands
+          </div>
+          {commandSuggestions.map((command) => (
+            <button
+              key={command}
+              onClick={() => {
+                setInput(command + ' ');
+                setShowCommandMenu(false);
+                inputRef.current?.focus();
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors text-left"
+            >
+              <span className="font-mono text-blue-400">{command}</span>
+              <span className="text-xs text-white/40">
+                {getCommandDescription(command)}
+              </span>
+            </button>
+          ))}
+          <div className="px-3 py-2 text-xs text-white/40 border-t border-white/[0.08] mt-1">
+            Type <span className="font-mono text-blue-400">/help</span> for all commands
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  // Get command description helper
+  const getCommandDescription = (command: string) => {
+    const descriptions: Record<string, string> = {
+      '/help': 'Show all commands',
+      '/skills': 'List agent skills',
+      '/memory': 'Show agent memory',
+      '/clear': 'Clear chat history',
+      '/agent': 'Agent information',
+      '/learn': 'Teach agent',
+      '/forget': 'Remove memory',
+      '/mode': 'Change agent mode',
+      '/export': 'Export chat',
+      '/reset': 'Reset agent'
+    };
+    return descriptions[command] || '';
+  };
 
   // Feedback Modal Component
   const FeedbackModal = () => (
@@ -688,6 +860,7 @@ export default function HermesChat({ className }: ChatProps) {
                       <Plus className="w-4 h-4" />
                     </button>
                     <UploadMenu />
+                    <CommandMenu />
                   </div>
 
                   {/* Input Field */}
@@ -695,7 +868,7 @@ export default function HermesChat({ className }: ChatProps) {
                     <textarea
                       ref={inputRef}
                       value={input}
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
                       placeholder="Ask anything... (type / for commands)"
                       className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 pr-20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
@@ -945,6 +1118,7 @@ export default function HermesChat({ className }: ChatProps) {
                   <Plus className="w-4 h-4" />
                 </button>
                 <UploadMenu />
+                <CommandMenu />
               </div>
 
               {/* Input Field */}
@@ -952,7 +1126,7 @@ export default function HermesChat({ className }: ChatProps) {
                 <textarea
                   ref={inputRef}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask anything... (type / for commands)"
                   className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 pr-20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"

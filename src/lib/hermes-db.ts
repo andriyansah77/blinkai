@@ -134,6 +134,58 @@ export class HermesAgentDB {
     }));
   }
 
+  // Memory Management for slash commands
+  static async getAgentMemories(agentId: string, search?: string) {
+    const where: any = { agentId };
+    
+    if (search) {
+      where.content = {
+        contains: search
+      };
+    }
+
+    return await prisma.hermesMemory.findMany({
+      where,
+      orderBy: { importance: 'desc' },
+      take: 20
+    });
+  }
+
+  static async addMemory(agentId: string, memory: { type: string; content: string; importance: number; metadata?: any }) {
+    return await prisma.hermesMemory.create({
+      data: {
+        agentId,
+        userId: '', // Will be set by the API
+        type: memory.type,
+        content: memory.content,
+        importance: memory.importance,
+        metadata: JSON.stringify(memory.metadata || {}),
+        lastAccessed: new Date()
+      }
+    });
+  }
+
+  static async deleteMemory(agentId: string, searchTerm: string) {
+    const memories = await prisma.hermesMemory.findMany({
+      where: {
+        agentId,
+        content: {
+          contains: searchTerm
+        }
+      }
+    });
+
+    if (memories.length > 0) {
+      await prisma.hermesMemory.deleteMany({
+        where: {
+          id: { in: memories.map(m => m.id) }
+        }
+      });
+      return true;
+    }
+    return false;
+  }
+
   static async getAllSkills(userId?: string) {
     const where = userId ? {
       agent: { userId },
