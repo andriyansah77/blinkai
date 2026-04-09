@@ -43,19 +43,27 @@ export async function POST(request: NextRequest) {
             };
           } else {
             const message = args.join(' ');
-            const chatGenerator = hermesIntegration.sendChatMessage(userId, message, { quiet: true });
-            let response = '';
-            
-            // Collect streaming response
-            for await (const chunk of chatGenerator) {
-              response += chunk;
+            try {
+              const chatGenerator = hermesIntegration.sendChatMessage(userId, message, { quiet: true });
+              let response = '';
+              
+              // Collect streaming response
+              for await (const chunk of chatGenerator) {
+                response += chunk;
+              }
+              
+              result = {
+                success: true,
+                output: response || 'Chat response received',
+                error: ''
+              };
+            } catch (error) {
+              result = {
+                success: false,
+                output: '',
+                error: `Chat failed: ${error}`
+              };
             }
-            
-            result = {
-              success: true,
-              output: response || 'Chat response received',
-              error: ''
-            };
           }
           break;
 
