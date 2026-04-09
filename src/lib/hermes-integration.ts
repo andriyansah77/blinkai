@@ -679,42 +679,72 @@ export class HermesIntegration {
 
   async startGateway(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`[Gateway] Starting gateway for user ${userId}`);
+      
       const command: HermesCommand = {
         command: 'gateway',
         subcommand: 'start'
       };
 
       const result = await this.executeHermesCommand(userId, command);
+      
+      if (result.success) {
+        console.log(`[Gateway] Gateway started successfully for user ${userId}`);
+      } else {
+        console.error(`[Gateway] Failed to start gateway for user ${userId}:`, result.error);
+      }
+      
       return { success: result.success, error: result.error };
     } catch (error) {
+      console.error(`[Gateway] Exception starting gateway for user ${userId}:`, error);
       return { success: false, error: `Gateway start failed: ${error}` };
     }
   }
 
   async stopGateway(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`[Gateway] Stopping gateway for user ${userId}`);
+      
       const command: HermesCommand = {
         command: 'gateway',
         subcommand: 'stop'
       };
 
       const result = await this.executeHermesCommand(userId, command);
+      
+      if (result.success) {
+        console.log(`[Gateway] Gateway stopped successfully for user ${userId}`);
+      } else {
+        console.error(`[Gateway] Failed to stop gateway for user ${userId}:`, result.error);
+      }
+      
       return { success: result.success, error: result.error };
     } catch (error) {
+      console.error(`[Gateway] Exception stopping gateway for user ${userId}:`, error);
       return { success: false, error: `Gateway stop failed: ${error}` };
     }
   }
 
   async setupGateway(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`[Gateway] Setting up gateway for user ${userId}`);
+      
       const command: HermesCommand = {
         command: 'gateway',
         subcommand: 'setup'
       };
 
       const result = await this.executeHermesCommand(userId, command);
+      
+      if (result.success) {
+        console.log(`[Gateway] Gateway setup completed for user ${userId}`);
+      } else {
+        console.error(`[Gateway] Gateway setup failed for user ${userId}:`, result.error);
+      }
+      
       return { success: result.success, error: result.error };
     } catch (error) {
+      console.error(`[Gateway] Exception during gateway setup for user ${userId}:`, error);
       return { success: false, error: `Gateway setup failed: ${error}` };
     }
   }
@@ -724,43 +754,77 @@ export class HermesIntegration {
    */
   async setupTelegram(userId: string, botToken: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`[Platform] Setting up Telegram for user ${userId}`);
+      
       // Set bot token in config
       const setTokenResult = await this.setConfig(userId, 'telegram.bot_token', botToken);
       if (!setTokenResult.success) {
+        console.error(`[Platform] Failed to set Telegram token for user ${userId}:`, setTokenResult.error);
         return setTokenResult;
       }
 
+      console.log(`[Platform] Telegram token set successfully for user ${userId}`);
+      
       // Setup gateway
-      return await this.setupGateway(userId);
+      const setupResult = await this.setupGateway(userId);
+      
+      if (setupResult.success) {
+        console.log(`[Platform] Telegram setup completed for user ${userId}`);
+      }
+      
+      return setupResult;
     } catch (error) {
+      console.error(`[Platform] Exception during Telegram setup for user ${userId}:`, error);
       return { success: false, error: `Telegram setup failed: ${error}` };
     }
   }
 
   async setupDiscord(userId: string, botToken: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`[Platform] Setting up Discord for user ${userId}`);
+      
       // Set bot token in config
       const setTokenResult = await this.setConfig(userId, 'discord.bot_token', botToken);
       if (!setTokenResult.success) {
+        console.error(`[Platform] Failed to set Discord token for user ${userId}:`, setTokenResult.error);
         return setTokenResult;
       }
 
+      console.log(`[Platform] Discord token set successfully for user ${userId}`);
+      
       // Setup gateway
-      return await this.setupGateway(userId);
+      const setupResult = await this.setupGateway(userId);
+      
+      if (setupResult.success) {
+        console.log(`[Platform] Discord setup completed for user ${userId}`);
+      }
+      
+      return setupResult;
     } catch (error) {
+      console.error(`[Platform] Exception during Discord setup for user ${userId}:`, error);
       return { success: false, error: `Discord setup failed: ${error}` };
     }
   }
 
   async setupWhatsApp(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`[Platform] Setting up WhatsApp for user ${userId}`);
+      
       const command: HermesCommand = {
         command: 'whatsapp'
       };
 
       const result = await this.executeHermesCommand(userId, command);
+      
+      if (result.success) {
+        console.log(`[Platform] WhatsApp setup completed for user ${userId}. QR code should be displayed.`);
+      } else {
+        console.error(`[Platform] WhatsApp setup failed for user ${userId}:`, result.error);
+      }
+      
       return { success: result.success, error: result.error };
     } catch (error) {
+      console.error(`[Platform] Exception during WhatsApp setup for user ${userId}:`, error);
       return { success: false, error: `WhatsApp setup failed: ${error}` };
     }
   }
