@@ -161,27 +161,57 @@ export class HermesIntegration {
     cloneFrom?: string;
   } = {}): Promise<{ success: boolean; profile?: HermesProfile; error?: string }> {
     try {
-      const profileName = `user-${userId}`;
-      const command: HermesCommand = {
-        command: 'profile',
-        subcommand: 'create',
-        args: [profileName],
-        flags: {
-          clone: options.clone || false,
-          'clone-all': options.cloneAll || false,
-          ...(options.cloneFrom && { 'clone-from': options.cloneFrom })
-        }
-      };
-
-      const result = await this.executeHermesCommand(userId, command);
+      console.log(`[Profile] Creating profile for user ${userId}`);
       
-      if (result.success) {
+      const profileName = `user-${userId}`;
+      
+      // Build command WITHOUT --profile flag (profile doesn't exist yet!)
+      const args = ['profile', 'create', profileName];
+      
+      if (options.clone) args.push('--clone');
+      if (options.cloneAll) args.push('--clone-all');
+      if (options.cloneFrom) args.push('--clone-from', options.cloneFrom);
+      
+      const fullCommand = `${this.hermesPath} ${args.join(' ')}`;
+      
+      console.log(`[Profile] Executing: ${fullCommand}`);
+      
+      try {
+        const result = await execAsync(fullCommand, {
+          timeout: 30000,
+          env: {
+            ...process.env
+          }
+        });
+        
+        console.log(`[Profile] Profile created successfully for user ${userId}`);
+        console.log(`[Profile] Output:`, result.stdout);
+        
+        // Now get the profile info
         const profile = await this.getProfile(userId);
+        
+        // Set default AI configuration
+        if (profile && profile.status === 'active') {
+          console.log(`[Profile] Setting default AI configuration for user ${userId}`);
+          
+          // Set API key and model
+          await this.setConfig(userId, 'model.api_key', AI_API_KEY);
+          await this.setConfig(userId, 'model.base_url', AI_API_BASE_URL);
+          await this.setConfig(userId, 'model.model', AI_MODEL);
+          
+          console.log(`[Profile] AI configuration set for user ${userId}`);
+        }
+        
         return { success: true, profile: profile || undefined };
-      } else {
-        return { success: false, error: result.error };
+      } catch (execError: any) {
+        console.error(`[Profile] Failed to create profile for user ${userId}:`, execError);
+        return { 
+          success: false, 
+          error: `Profile creation failed: ${execError.message || execError}` 
+        };
       }
     } catch (error) {
+      console.error(`[Profile] Exception during profile creation for user ${userId}:`, error);
       return { success: false, error: `Profile creation failed: ${error}` };
     }
   }
