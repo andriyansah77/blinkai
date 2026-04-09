@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // Get the async generator
           const responseGenerator = hermesIntegration.sendChatMessage(
             session.user.id!,
             lastMessage.content,
@@ -76,19 +77,26 @@ export async function POST(request: NextRequest) {
 
           let fullResponse = '';
           
-          for await (const chunk of responseGenerator) {
-            fullResponse += chunk;
-            
-            // Send in OpenAI-compatible format for frontend compatibility
-            const data = JSON.stringify({
-              choices: [{
-                delta: {
-                  content: chunk
-                }
-              }]
-            });
-            
-            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+          // Iterate through the async generator
+          try {
+            for await (const chunk of responseGenerator) {
+              fullResponse += chunk;
+              
+              // Send in OpenAI-compatible format for frontend compatibility
+              const data = JSON.stringify({
+                choices: [{
+                  delta: {
+                    content: chunk
+                  }
+                }]
+              });
+              
+              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+            }
+          } catch (genError) {
+            console.error("Generator iteration error:", genError);
+            // Continue to fallback
+            throw genError;
           }
 
           // Deduct credits after successful response (platform mode only)
