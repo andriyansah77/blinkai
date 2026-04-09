@@ -731,22 +731,61 @@ REAGENT_USER_ID=${userId}
    */
   async getGatewayStatus(userId: string): Promise<HermesGateway> {
     try {
-      const command: HermesCommand = {
-        command: 'gateway',
-        subcommand: 'status'
-      };
-
-      const result = await this.executeHermesCommand(userId, command);
+      const profileName = `user-${userId}`;
       
-      if (result.success) {
-        return this.parseGatewayStatus(result.output);
+      // Check if gateway service is running
+      try {
+        const { stdout } = await execAsync(
+          `${this.hermesPath} --profile ${profileName} gateway status`,
+          { timeout: 10000 }
+        );
+        
+        // Parse the output
+        const gateway = this.parseGatewayStatus(stdout);
+        
+        // If gateway is running, check config.yaml for configured platforms
+        if (gateway.status === 'running') {
+          const configPath = `/root/.hermes/profiles/${profileName}/config.yaml`;
+          try {
+            const { stdout: configContent } = await execAsync(`cat ${configPath}`);
+            const config = yaml.parse(configContent);
+            
+            // Check which platforms are configured
+            if (config.telegram?.bot_token) {
+              gateway.platforms.telegram = {
+                status: 'connected',
+                botToken: '***' // Hide token
+              };
+            }
+            
+            if (config.discord?.bot_token) {
+              gateway.platforms.discord = {
+                status: 'connected',
+                botToken: '***' // Hide token
+              };
+            }
+            
+            if (config.whatsapp) {
+              gateway.platforms.whatsapp = {
+                status: 'connected',
+                paired: true
+              };
+            }
+          } catch (configError) {
+            console.warn(`[Gateway] Could not read config for user ${userId}:`, configError);
+          }
+        }
+        
+        return gateway;
+      } catch (statusError) {
+        console.warn(`[Gateway] Status check failed for user ${userId}:`, statusError);
+        return {
+          status: 'stopped',
+          platforms: {}
+        };
       }
-      
-      return {
-        status: 'stopped',
-        platforms: {}
-      };
     } catch (error) {
+      console.error(`[Gateway] Error getting status for user ${userId}:`, error);
       return {
         status: 'error',
         platforms: {}
@@ -763,21 +802,24 @@ REAGENT_USER_ID=${userId}
     const lines = output.split('\n');
     
     for (const line of lines) {
-      if (line.includes('Gateway:') && line.includes('running')) {
+      // Check if gateway service is running
+      if (line.includes('Active:') && line.includes('active') && line.includes('running')) {
         gateway.status = 'running';
       }
       
-      if (line.includes('Telegram:')) {
-        gateway.platforms.telegram = {
-          status: line.includes('connected') ? 'connected' : 'disconnected'
-        };
+      // Alternative check for running status
+      if (line.includes('gateway service is running')) {
+        gateway.status = 'running';
       }
       
-      if (line.includes('Discord:')) {
-        gateway.platforms.discord = {
-          status: line.includes('connected') ? 'connected' : 'disconnected'
-        };
+      // Check systemd status
+      if (line.includes('Loaded:') && line.includes('loaded')) {
+        // Service is loaded, likely running
       }
+    }
+    
+    return gateway;
+  }
       
       if (line.includes('WhatsApp:')) {
         gateway.platforms.whatsapp = {
