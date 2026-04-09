@@ -5,6 +5,7 @@ const nextConfig = {
   },
   images: {
     domains: ["avatars.githubusercontent.com", "lh3.googleusercontent.com"],
+    unoptimized: true, // Allow unoptimized images for logo
   },
   // Trust Cloudflare / reverse proxy forwarded headers
   async headers() {

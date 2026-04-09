@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Zap, Menu, X } from "lucide-react";
@@ -39,16 +40,15 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-white/5">
-              <img 
-                src="/logo.jpg" 
-                alt="ReAgent Logo" 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Fallback if image fails to load
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-sm font-bold">R</div>';
-                }}
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center relative">
+              <Image
+                src="/logo.jpg"
+                alt="ReAgent"
+                width={32}
+                height={32}
+                className="object-cover"
+                priority
+                unoptimized
               />
             </div>
             <span className="font-bold text-xl tracking-tight text-white">

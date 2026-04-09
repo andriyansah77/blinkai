@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
   MessageSquare, 
@@ -87,16 +88,15 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
       {/* Header */}
       <div className="p-4 border-b border-white/[0.06]">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5">
-            <img 
-              src="/logo.jpg" 
-              alt="ReAgent Logo" 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback if image fails to load
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-lg font-bold">R</div>';
-              }}
+          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center relative">
+            <Image
+              src="/logo.jpg"
+              alt="ReAgent"
+              width={40}
+              height={40}
+              className="object-cover"
+              priority
+              unoptimized
             />
           </div>
           <div className="flex-1 min-w-0">
