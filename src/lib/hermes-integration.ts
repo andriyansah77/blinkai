@@ -194,12 +194,62 @@ export class HermesIntegration {
         if (profile && profile.status === 'active') {
           console.log(`[Profile] Setting default AI configuration for user ${userId}`);
           
-          // Set API key and model
-          await this.setConfig(userId, 'model.api_key', AI_API_KEY);
-          await this.setConfig(userId, 'model.base_url', AI_API_BASE_URL);
-          await this.setConfig(userId, 'model.model', AI_MODEL);
+          // Set API key in both config.yaml and .env
+          const configPath = `/root/.hermes/profiles/${profileName}/config.yaml`;
+          const envPath = `/root/.hermes/profiles/${profileName}/.env`;
           
-          console.log(`[Profile] AI configuration set for user ${userId}`);
+          try {
+            // 1. Update config.yaml
+            let configContent = '';
+            try {
+              const { stdout } = await execAsync(`cat ${configPath}`);
+              configContent = stdout;
+            } catch (readError) {
+              configContent = '';
+            }
+            
+            const config = configContent ? yaml.parse(configContent) : {};
+            if (!config.model) {
+              config.model = {};
+            }
+            // Set model configuration - Hermes will read API key from .env
+            config.model.provider = 'openai'; // Use openai-compatible provider
+            config.model.model = AI_MODEL;
+            config.model.base_url = AI_API_BASE_URL;
+            
+            const newConfigContent = yaml.stringify(config);
+            await execAsync(`cat > ${configPath} << 'EOF'\n${newConfigContent}\nEOF`);
+            
+            console.log(`[Profile] Config.yaml updated for user ${userId}`);
+            
+            // 2. Update .env file (Hermes reads API keys from here)
+            // IMPORTANT: Use exact environment variable names that Hermes expects
+            const envContent = `# Hermes Profile Environment Variables
+# Auto-configured by ReAgent Platform
+
+# OpenAI-compatible API (Platform-provided)
+OPENAI_API_KEY=${AI_API_KEY}
+OPENAI_API_BASE=${AI_API_BASE_URL}
+
+# Model Configuration  
+LLM_MODEL=${AI_MODEL}
+LLM_PROVIDER=openai
+
+# Platform Mode - Credits will be deducted from user account
+REAGENT_PLATFORM_MODE=true
+REAGENT_USER_ID=${userId}
+`;
+            
+            // Write .env file using echo to avoid EOF issues
+            const escapedEnvContent = envContent.replace(/'/g, "'\\''");
+            await execAsync(`echo '${escapedEnvContent}' > ${envPath}`);
+            
+            console.log(`[Profile] .env file created for user ${userId}`);
+            console.log(`[Profile] AI configuration set successfully`);
+          } catch (configError) {
+            console.error(`[Profile] Failed to set AI configuration:`, configError);
+            // Continue anyway, profile is created
+          }
         }
         
         return { success: true, profile: profile || undefined };
