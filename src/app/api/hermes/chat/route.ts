@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
           // Deduct credits after successful response (platform mode only)
           if (platformConfig.mode === 'platform' && fullResponse.length > 0) {
             const estimatedTokens = Math.ceil(fullResponse.length / 4); // Rough estimation
-            await deductCredits(session.user.id!, estimatedTokens);
+            await deductCredits(session.user.id!, estimatedTokens, "Hermes chat response");
           }
 
           // Send completion signal
