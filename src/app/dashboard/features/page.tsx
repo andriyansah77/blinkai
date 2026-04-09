@@ -341,7 +341,7 @@ export default function FeaturesPage() {
     }
   };
 
-  const categories = [...new Set(features.map(f => f.category))];
+  const categories = Array.from(new Set(features.map(f => f.category)));
   const featuresByCategory = categories.reduce((acc, category) => {
     acc[category] = features.filter(f => f.category === category);
     return acc;
