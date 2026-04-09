@@ -222,7 +222,7 @@ export class HermesIntegration {
   /**
    * Chat and Sessions
    */
-  async sendChatMessage(
+  sendChatMessage(
     userId: string,
     message: string,
     options: {
@@ -232,7 +232,7 @@ export class HermesIntegration {
       toolsets?: string[];
       quiet?: boolean;
     } = {}
-  ): Promise<AsyncGenerator<string>> {
+  ): AsyncGenerator<string> {
     const command: HermesCommand = {
       command: 'chat',
       flags: {
