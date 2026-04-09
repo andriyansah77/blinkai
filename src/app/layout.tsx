@@ -18,8 +18,9 @@ export const metadata: Metadata = {
   keywords: ["AI", "agent deployment", "AI agents", "deploy AI", "Hermes", "ReAgent"],
   authors: [{ name: "ReAgent" }],
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/logo.jpg",
+    shortcut: "/logo.jpg",
+    apple: "/logo.jpg",
   },
   openGraph: {
     title: "ReAgent — Deploy your Agent in Minutes",

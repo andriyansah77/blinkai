@@ -39,8 +39,12 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-amber-500/30 transition-shadow">
-              <Zap className="w-4 h-4 text-black" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+              <img 
+                src="/logo.jpg" 
+                alt="ReAgent Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="font-bold text-xl tracking-tight text-white">
               Re<span className="text-amber-400">Agent</span>

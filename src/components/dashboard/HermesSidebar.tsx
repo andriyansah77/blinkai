@@ -87,20 +87,26 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
       {/* Header */}
       <div className="p-4 border-b border-white/[0.06]">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-            <Bot className="w-4 h-4 text-white" />
+          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+            <img 
+              src="/logo.jpg" 
+              alt="ReAgent Logo" 
+              className="w-full h-full object-cover"
+            />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-white font-semibold text-sm">ReAgent</h1>
             <div className="flex items-center gap-2 mt-0.5">
               <div className={`w-2 h-2 rounded-full ${hasAgent ? 'bg-green-400' : 'bg-gray-400'}`}></div>
               <span className={`text-xs font-medium ${hasAgent ? 'text-green-400' : 'text-gray-400'}`}>
                 {loading ? 'Loading...' : hasAgent ? 'Running' : 'Setup Required'}
               </span>
-              <span className="text-xs text-white/40">
-                {loading ? '...' : agent?.name || 'No Agent'}
-              </span>
             </div>
+            {agent?.name && (
+              <div className="text-xs text-white/60 truncate mt-0.5">
+                {agent.name}
+              </div>
+            )}
           </div>
         </Link>
       </div>
