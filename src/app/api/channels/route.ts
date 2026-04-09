@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { hermesIntegration } from "@/lib/hermes-integration";
+import { ensureHermesProfile } from "@/lib/ensure-hermes-profile";
 
 export async function GET() {
   try {
@@ -9,6 +10,9 @@ export async function GET() {
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Ensure user has Hermes profile (auto-create if needed)
+    await ensureHermesProfile(session.user.id!);
 
     // Get Hermes gateway status for this user
     const gatewayStatus = await hermesIntegration.getGatewayStatus(session.user.id!);

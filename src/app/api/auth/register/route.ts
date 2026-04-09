@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { grantCredits, SIGNUP_BONUS } from "@/lib/credits";
+import { hermesIntegration } from "@/lib/hermes-integration";
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,6 +66,18 @@ export async function POST(request: NextRequest) {
       });
 
       return newUser;
+    });
+
+    // Create isolated Hermes profile for this user (async, don't block registration)
+    console.log(`[Registration] Creating Hermes profile for new user ${user.id}`);
+    hermesIntegration.createProfile(user.id).then((result) => {
+      if (result.success) {
+        console.log(`✅ [Registration] Hermes profile created successfully for user ${user.id}`);
+      } else {
+        console.error(`❌ [Registration] Failed to create Hermes profile for user ${user.id}:`, result.error);
+      }
+    }).catch((error) => {
+      console.error(`❌ [Registration] Exception creating Hermes profile for user ${user.id}:`, error);
     });
 
     return NextResponse.json({

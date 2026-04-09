@@ -94,6 +94,20 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
       
+      // Ensure Hermes profile exists for this user (auto-create if needed)
+      try {
+        const profileRes = await fetch("/api/hermes/profile");
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          if (profileData.created) {
+            console.log("✅ Hermes profile auto-created for user");
+          }
+        }
+      } catch (profileError) {
+        console.warn("Profile check failed:", profileError);
+        // Continue anyway - not critical for dashboard display
+      }
+      
       // Fetch comprehensive Hermes status
       const statusRes = await fetch("/api/hermes/status");
       if (!statusRes.ok) {
