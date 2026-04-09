@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Zap } from "lucide-react";
 
 const footerLinks = {
@@ -29,8 +30,15 @@ export function Footer() {
           {/* Brand column */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                <Zap className="w-4 h-4 text-black" />
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center relative">
+                <Image
+                  src="/logo.jpg"
+                  alt="ReAgent"
+                  width={32}
+                  height={32}
+                  className="object-cover"
+                  unoptimized
+                />
               </div>
               <span className="font-bold text-xl text-white">
                 Re<span className="text-amber-400">Agent</span>

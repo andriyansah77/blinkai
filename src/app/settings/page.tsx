@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronLeft,
   Save,
@@ -105,8 +106,15 @@ export default function SettingsPage() {
             </Link>
             <div className="w-px h-4 bg-border" />
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5 text-white" />
+              <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center relative">
+                <Image
+                  src="/logo.jpg"
+                  alt="ReAgent"
+                  width={24}
+                  height={24}
+                  className="object-cover"
+                  unoptimized
+                />
               </div>
               <span className="font-bold text-sm bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
                 ReAgent
