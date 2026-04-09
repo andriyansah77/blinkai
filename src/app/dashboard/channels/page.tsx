@@ -97,11 +97,11 @@ export default function ChannelsPage() {
       id: "whatsapp", 
       name: "WhatsApp", 
       icon: "💬", // Changed from 📱 to 💬 to differentiate from Telegram
-      description: "Scan QR code to link your WhatsApp",
+      description: "QR code pairing via Hermes framework",
       color: "from-green-600 to-green-700",
-      features: ["Business messaging", "Templates", "Media sharing", "Groups"],
+      features: ["QR code setup", "Business messaging", "Media sharing", "Groups"],
       enabled: true,
-      setupFields: ["phoneNumber", "apiKey", "webhookUrl"],
+      setupFields: [], // WhatsApp uses QR code, no manual fields needed
       status: "NOT CONNECTED"
     },
     { 
@@ -172,7 +172,7 @@ export default function ChannelsPage() {
               <Database className="w-6 h-6 text-blue-400" />
               Channels
             </h1>
-            <p className="text-white/60 mt-1">Connect your AI agent to Discord, Telegram, and other platforms</p>
+            <p className="text-white/60 mt-1">Connect your AI agent to Discord, Telegram, and other platforms using Hermes framework</p>
           </div>
           <button 
             onClick={() => {
@@ -195,7 +195,7 @@ export default function ChannelsPage() {
                 Channels
                 <span className="text-sm text-white/40 font-normal">{CHANNEL_TYPES.length} channels</span>
               </h2>
-              <p className="text-white/60 text-sm mt-1">Want to set up or manage a channel? Just ask your bot.</p>
+              <p className="text-white/60 text-sm mt-1">Powered by Hermes framework - setup and manage channels through integrated CLI.</p>
             </div>
           </div>
           
@@ -303,7 +303,7 @@ export default function ChannelsPage() {
               </div>
               <h3 className="text-white font-semibold text-lg mb-2">No channels connected</h3>
               <p className="text-white/60 mb-6 max-w-md mx-auto">
-                Connect your first channel to start chatting with your AI agent on different platforms
+                Connect your first channel using Hermes framework integration for seamless platform management
               </p>
               <button
                 onClick={() => {
@@ -479,12 +479,12 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
         ]
       },
       whatsapp: {
-        title: "Setup WhatsApp Business",
+        title: "Setup WhatsApp via Hermes",
         steps: [
-          "1. Register WhatsApp Business Account",
-          "2. Get API credentials from provider",
-          "3. Set up webhook endpoint",
-          "4. Verify phone number ownership"
+          "1. Click 'Connect to WhatsApp' below",
+          "2. Hermes will generate a QR code",
+          "3. Open WhatsApp on your phone",
+          "4. Scan the QR code to pair your account"
         ]
       }
     };
@@ -685,7 +685,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
                   </button>
                   <button
                     type="submit"
-                    disabled={loading || !formData.name || !selectedAgent || (!formData.botToken && selectedType !== 'whatsapp')}
+                    disabled={loading || !formData.name || !selectedAgent || (selectedType !== 'whatsapp' && !formData.botToken)}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-2 px-4 rounded-lg font-medium transition-colors"
                   >
                     {loading ? "Connecting..." : `Connect to ${selectedChannel?.name}`}
@@ -726,7 +726,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
               {selectedType === 'whatsapp' && (
                 <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                   <p className="text-green-400 text-xs">
-                    💡 Tip: WhatsApp Business API requires approval and may take 1-2 business days to activate.
+                    💡 Tip: WhatsApp setup uses QR code pairing through Hermes framework - no API keys needed!
                   </p>
                 </div>
               )}
