@@ -601,7 +601,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
                   />
                 </div>
 
-                {selectedChannel?.setupFields?.map((field) => (
+                {selectedChannel?.setupFields?.map((field: string) => (
                   <div key={field}>
                     <label className="block text-white/60 text-sm mb-2">
                       {getFieldLabel(field)}
