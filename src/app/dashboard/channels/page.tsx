@@ -11,6 +11,8 @@ interface Channel {
   id: string;
   type: string;
   name: string;
+  agentId?: string;
+  agentName?: string;
   status: 'connected' | 'disconnected' | 'error';
   lastActivity: string;
   messageCount: number;
@@ -21,8 +23,10 @@ export default function ChannelsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -34,13 +38,21 @@ export default function ChannelsPage() {
 
   const fetchChannels = async () => {
     try {
-      const response = await fetch('/api/channels');
-      if (response.ok) {
-        const data = await response.json();
-        setChannels(data.channels || []);
+      // Fetch channels
+      const channelsResponse = await fetch('/api/channels');
+      if (channelsResponse.ok) {
+        const channelsData = await channelsResponse.json();
+        setChannels(channelsData.channels || []);
+      }
+
+      // Fetch user agents
+      const agentsResponse = await fetch('/api/hermes/agents');
+      if (agentsResponse.ok) {
+        const agentsData = await agentsResponse.json();
+        setAgents(agentsData.agents || []);
       }
     } catch (error) {
-      console.error('Failed to fetch channels:', error);
+      console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
     }
@@ -62,122 +74,68 @@ export default function ChannelsPage() {
     { 
       id: "telegram", 
       name: "Telegram", 
-      icon: "✈️", 
-      description: "Telegram bot integration with groups and channels",
+      icon: "📱", // Changed from ✈️ to 📱 for better representation
+      description: "Bot API via grammY, supports groups",
       color: "from-blue-500 to-cyan-600",
       features: ["Private chats", "Groups", "Channels", "Inline queries"],
       enabled: true,
-      setupFields: ["botToken", "username"]
+      setupFields: ["botToken", "username"],
+      status: "NOT CONNECTED"
     },
     { 
       id: "discord", 
       name: "Discord", 
       icon: "🎮", 
-      description: "Connect to Discord servers and channels",
+      description: "Servers, channels, and DMs",
       color: "from-indigo-500 to-purple-600",
       features: ["Text channels", "Voice channels", "Slash commands", "Webhooks"],
       enabled: true,
-      setupFields: ["botToken", "serverId"]
+      setupFields: ["botToken", "serverId"],
+      status: "NOT CONNECTED"
     },
     { 
       id: "whatsapp", 
       name: "WhatsApp", 
-      icon: "📱", 
-      description: "WhatsApp Business API integration",
+      icon: "💬", // Changed from 📱 to 💬 to differentiate from Telegram
+      description: "Scan QR code to link your WhatsApp",
       color: "from-green-600 to-green-700",
       features: ["Business messaging", "Templates", "Media sharing", "Groups"],
       enabled: true,
-      setupFields: ["phoneNumber", "apiKey", "webhookUrl"]
+      setupFields: ["phoneNumber", "apiKey", "webhookUrl"],
+      status: "NOT CONNECTED"
     },
     { 
       id: "slack", 
       name: "Slack", 
-      icon: "💼", 
-      description: "Slack workspace bot for team collaboration",
+      icon: "🔧", // More appropriate icon for Slack
+      description: "Bolt SDK, workspace apps",
       color: "from-green-500 to-emerald-600",
       features: ["Channels", "Direct messages", "Slash commands", "Interactive messages"],
       enabled: false,
-      comingSoon: true
+      comingSoon: true,
+      status: "COMING SOON"
     },
     { 
-      id: "twitter", 
-      name: "Twitter/X", 
-      icon: "🐦", 
-      description: "Twitter bot for automated posting and replies",
+      id: "signal", 
+      name: "Signal", 
+      icon: "🔒", // Privacy-focused icon
+      description: "Privacy-focused via signal-cli",
       color: "from-blue-400 to-blue-600",
-      features: ["Tweet posting", "Reply automation", "DM handling", "Mentions tracking"],
+      features: ["End-to-end encryption", "Groups", "Disappearing messages", "Voice calls"],
       enabled: false,
-      comingSoon: true
+      comingSoon: true,
+      status: "SOON"
     },
     { 
-      id: "facebook", 
-      name: "Facebook", 
-      icon: "📘", 
-      description: "Facebook Messenger and Page integration",
-      color: "from-blue-600 to-indigo-600",
-      features: ["Messenger bot", "Page posts", "Comments", "Live chat"],
-      enabled: false,
-      comingSoon: true
-    },
-    { 
-      id: "instagram", 
-      name: "Instagram", 
-      icon: "📷", 
-      description: "Instagram bot for DMs and comments",
-      color: "from-pink-500 to-purple-600",
-      features: ["Direct messages", "Comment replies", "Story interactions", "Media posting"],
-      enabled: false,
-      comingSoon: true
-    },
-    { 
-      id: "linkedin", 
-      name: "LinkedIn", 
-      icon: "💼", 
-      description: "LinkedIn automation for professional networking",
-      color: "from-blue-700 to-blue-800",
-      features: ["Connection requests", "Message automation", "Post engagement", "Lead generation"],
-      enabled: false,
-      comingSoon: true
-    },
-    { 
-      id: "email", 
-      name: "Email", 
-      icon: "📧", 
-      description: "Email automation and smart replies",
-      color: "from-red-500 to-orange-600",
-      features: ["Auto-reply", "Email classification", "Smart forwarding", "Template responses"],
-      enabled: false,
-      comingSoon: true
-    },
-    { 
-      id: "sms", 
-      name: "SMS", 
+      id: "imessage", 
+      name: "iMessage", 
       icon: "💬", 
-      description: "SMS messaging and automation",
+      description: "Via BlueBubbles macOS server",
       color: "from-green-400 to-green-600",
-      features: ["Bulk messaging", "Auto-replies", "Keyword triggers", "Two-way conversations"],
+      features: ["iPhone integration", "Group chats", "Media sharing", "Read receipts"],
       enabled: false,
-      comingSoon: true
-    },
-    { 
-      id: "webhook", 
-      name: "Webhook", 
-      icon: "🔗", 
-      description: "Custom webhook integrations",
-      color: "from-gray-500 to-gray-700",
-      features: ["HTTP endpoints", "Custom payloads", "Event triggers", "API integrations"],
-      enabled: false,
-      comingSoon: true
-    },
-    { 
-      id: "api", 
-      name: "REST API", 
-      icon: "🔌", 
-      description: "Direct API access for custom integrations",
-      color: "from-purple-500 to-purple-700",
-      features: ["RESTful endpoints", "Authentication", "Rate limiting", "Custom responses"],
-      enabled: false,
-      comingSoon: true
+      comingSoon: true,
+      status: "SOON"
     }
   ];
 
@@ -217,7 +175,10 @@ export default function ChannelsPage() {
             <p className="text-white/60 mt-1">Connect your AI agent to Discord, Telegram, and other platforms</p>
           </div>
           <button 
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setSelectedType("");
+              setShowAddModal(true);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -227,72 +188,106 @@ export default function ChannelsPage() {
 
         {/* Available Channel Types */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Available Platforms</h2>
-            <span className="text-sm text-white/40">{CHANNEL_TYPES.length} platforms available</span>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Channels
+                <span className="text-sm text-white/40 font-normal">{CHANNEL_TYPES.length} channels</span>
+              </h2>
+              <p className="text-white/60 text-sm mt-1">Want to set up or manage a channel? Just ask your bot.</p>
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {CHANNEL_TYPES.map((type, index) => (
-              <motion.button
+              <motion.div
                 key={type.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => type.enabled ? setShowAddModal(true) : null}
+                transition={{ delay: index * 0.1 }}
                 className={cn(
-                  "p-4 bg-white/[0.03] border border-white/[0.08] rounded-xl text-left group relative overflow-hidden transition-colors",
+                  "relative p-6 bg-white/[0.03] border border-white/[0.08] rounded-xl transition-all duration-300",
                   type.enabled 
-                    ? "hover:bg-white/[0.06] cursor-pointer" 
-                    : "opacity-60 cursor-not-allowed"
+                    ? "hover:bg-white/[0.06] cursor-pointer hover:border-white/[0.12]" 
+                    : "opacity-60"
                 )}
+                onClick={() => {
+                  if (type.enabled) {
+                    setSelectedType(type.id);
+                    setShowAddModal(true);
+                  }
+                }}
               >
                 {/* Background gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${type.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${type.color} opacity-0 hover:opacity-5 transition-opacity rounded-xl`} />
+                
+                {/* Coming Soon Badge */}
+                {type.comingSoon && (
+                  <div className="absolute top-4 right-4">
+                    <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full font-medium">
+                      {type.status}
+                    </span>
+                  </div>
+                )}
                 
                 <div className="relative">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-2xl">{type.icon}</div>
-                    {type.comingSoon && (
-                      <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full">
-                        Coming Soon
-                      </span>
-                    )}
-                    {type.enabled && (
-                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
-                        Available
-                      </span>
-                    )}
+                  {/* Icon and Title */}
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center text-2xl",
+                      type.enabled ? "bg-white/[0.08]" : "bg-white/[0.04]"
+                    )}>
+                      {type.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-white text-lg mb-1">{type.name}</h3>
+                      <p className="text-white/60 text-sm leading-relaxed">{type.description}</p>
+                    </div>
                   </div>
-                  <h3 className="font-medium text-white text-sm mb-2">{type.name}</h3>
-                  <p className="text-xs text-white/40 mb-3 line-clamp-2">{type.description}</p>
-                  
-                  {/* Features preview */}
-                  <div className="space-y-1 mb-3">
-                    {type.features.slice(0, 2).map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-1 text-xs text-white/30">
-                        <div className="w-1 h-1 bg-white/30 rounded-full" />
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                    {type.features.length > 2 && (
-                      <div className="text-xs text-white/20">
-                        +{type.features.length - 2} more features
-                      </div>
-                    )}
+
+                  {/* Status */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className={cn(
+                        "w-2 h-2 rounded-full",
+                        type.enabled && type.status === "NOT CONNECTED" ? "bg-gray-400" :
+                        type.enabled && type.status === "CONNECTED" ? "bg-green-400" :
+                        "bg-orange-400"
+                      )} />
+                      <span className={cn(
+                        "text-sm font-medium",
+                        type.enabled && type.status === "NOT CONNECTED" ? "text-gray-400" :
+                        type.enabled && type.status === "CONNECTED" ? "text-green-400" :
+                        "text-orange-400"
+                      )}>
+                        {type.status}
+                      </span>
+                    </div>
                   </div>
-                  
+
+                  {/* Action Button */}
                   {type.enabled ? (
-                    <div className="flex items-center gap-1 text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span>Connect</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedType(type.id);
+                        setShowAddModal(true);
+                      }}
+                      className="w-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg py-2.5 px-4 text-white/70 hover:text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                      Click to configure →
+                    </button>
                   ) : (
-                    <div className="flex items-center gap-1 text-xs text-orange-400">
-                      <span>Coming Soon</span>
-                    </div>
+                    <button
+                      disabled
+                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg py-2.5 px-4 text-white/40 text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      Ask your bot to configure →
+                    </button>
                   )}
                 </div>
-              </motion.button>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -311,7 +306,10 @@ export default function ChannelsPage() {
                 Connect your first channel to start chatting with your AI agent on different platforms
               </p>
               <button
-                onClick={() => setShowAddModal(true)}
+                onClick={() => {
+                  setSelectedType("");
+                  setShowAddModal(true);
+                }}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
               >
                 Connect Your First Channel
@@ -338,6 +336,11 @@ export default function ChannelsPage() {
                           <span className="text-xs text-white/40 bg-white/[0.06] px-2 py-1 rounded capitalize">
                             {channel.type}
                           </span>
+                          {channel.agentName && (
+                            <span className="text-xs text-blue-400 bg-blue-500/20 px-2 py-1 rounded">
+                              → {channel.agentName}
+                            </span>
+                          )}
                           <div className="flex items-center gap-1">
                             <div className={`w-2 h-2 rounded-full ${getStatusDot(channel.status)}`} />
                             <span className={`text-xs font-medium ${getStatusColor(channel.status)} capitalize`}>
@@ -374,12 +377,18 @@ export default function ChannelsPage() {
       {/* Add Channel Modal */}
       {showAddModal && (
         <AddChannelModal
-          onClose={() => setShowAddModal(false)}
+          onClose={() => {
+            setShowAddModal(false);
+            setSelectedType("");
+          }}
           onSuccess={() => {
             setShowAddModal(false);
+            setSelectedType("");
             fetchChannels();
           }}
           channelTypes={CHANNEL_TYPES}
+          selectedType={selectedType}
+          agents={agents}
         />
       )}
     </div>
@@ -390,10 +399,13 @@ interface AddChannelModalProps {
   onClose: () => void;
   onSuccess: () => void;
   channelTypes: any[];
+  selectedType?: string;
+  agents: any[];
 }
 
-function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalProps) {
-  const [selectedType, setSelectedType] = useState("");
+function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initialType, agents }: AddChannelModalProps) {
+  const [selectedType, setSelectedType] = useState(initialType || "");
+  const [selectedAgent, setSelectedAgent] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     botToken: "",
@@ -407,6 +419,13 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
 
   const selectedChannel = channelTypes.find(t => t.id === selectedType);
   const enabledChannels = channelTypes.filter(t => t.enabled);
+
+  // Auto-select first agent if only one exists
+  useEffect(() => {
+    if (agents.length === 1 && !selectedAgent) {
+      setSelectedAgent(agents[0].id);
+    }
+  }, [agents, selectedAgent]);
 
   const getFieldLabel = (field: string) => {
     const labels = {
@@ -474,12 +493,19 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!selectedAgent) {
+      alert('Please select an agent to connect this channel to.');
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const config: any = {
         name: formData.name,
-        type: selectedType
+        type: selectedType,
+        agentId: selectedAgent
       };
 
       // Add platform-specific config
@@ -502,6 +528,8 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
       });
 
       if (response.ok) {
+        const result = await response.json();
+        alert(`✅ ${selectedChannel?.name} channel connected successfully to your agent!`);
         onSuccess();
       } else {
         const error = await response.json();
@@ -589,6 +617,35 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
             {/* Setup Form */}
             <div>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Agent Selection */}
+                <div>
+                  <label className="block text-white/60 text-sm mb-2">
+                    Select Agent to Connect
+                    <span className="text-red-400 ml-1">*</span>
+                  </label>
+                  {agents.length === 0 ? (
+                    <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                      <p className="text-orange-400 text-sm">
+                        No agents found. Please create an agent first in the Agents section.
+                      </p>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedAgent}
+                      onChange={(e) => setSelectedAgent(e.target.value)}
+                      className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      required
+                    >
+                      <option value="" className="bg-[#1a1a1a]">Choose an agent...</option>
+                      {agents.map((agent) => (
+                        <option key={agent.id} value={agent.id} className="bg-[#1a1a1a]">
+                          {agent.name} ({agent.model})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-white/60 text-sm mb-2">Channel Name</label>
                   <input
@@ -628,10 +685,10 @@ function AddChannelModal({ onClose, onSuccess, channelTypes }: AddChannelModalPr
                   </button>
                   <button
                     type="submit"
-                    disabled={loading || !formData.name || !formData.botToken}
+                    disabled={loading || !formData.name || !selectedAgent || (!formData.botToken && selectedType !== 'whatsapp')}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-2 px-4 rounded-lg font-medium transition-colors"
                   >
-                    {loading ? "Connecting..." : "Connect"}
+                    {loading ? "Connecting..." : `Connect to ${selectedChannel?.name}`}
                   </button>
                 </div>
               </form>

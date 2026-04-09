@@ -111,6 +111,8 @@ export async function GET() {
         id: "telegram-demo",
         type: "telegram",
         name: "Demo Telegram Bot",
+        agentId: "agent-demo-1",
+        agentName: "Customer Support Agent",
         status: "connected",
         lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
         messageCount: 1250,
@@ -123,6 +125,8 @@ export async function GET() {
         id: "discord-demo", 
         type: "discord",
         name: "Demo Discord Bot",
+        agentId: "agent-demo-2",
+        agentName: "Gaming Assistant",
         status: "connected",
         lastActivity: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
         messageCount: 890,
@@ -154,11 +158,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type, name, ...config } = body;
+    const { type, name, agentId, ...config } = body;
 
     if (!type || !name) {
       return NextResponse.json({ 
         error: "Channel type and name are required" 
+      }, { status: 400 });
+    }
+
+    if (!agentId) {
+      return NextResponse.json({ 
+        error: "Agent selection is required" 
       }, { status: 400 });
     }
 
@@ -181,11 +191,19 @@ export async function POST(request: NextRequest) {
         }, { status: 400 });
       }
 
-      // Create channel record
+      // Create channel record with agent connection
+      const channelData = {
+        type,
+        name,
+        agentId,
+        ...config
+      };
+
       const channel = {
         id: `${type}-${Date.now()}`,
         type,
         name,
+        agentId, // Store the connected agent ID
         status: "connected" as const,
         lastActivity: new Date().toISOString(),
         messageCount: 0,
