@@ -21,6 +21,16 @@ const HERMES_COMMANDS = {
     usage: '/memory [search]',
     category: 'Memory'
   },
+  '/sessions': {
+    description: 'List chat sessions',
+    usage: '/sessions [limit]',
+    category: 'Sessions'
+  },
+  '/session': {
+    description: 'Session management',
+    usage: '/session [new|save|load|delete] [id]',
+    category: 'Sessions'
+  },
   '/clear': {
     description: 'Clear chat history',
     usage: '/clear',
@@ -95,6 +105,14 @@ export async function POST(request: NextRequest) {
       
       case '/memory':
         result = await handleMemoryCommand(agent.id, args[0]);
+        break;
+      
+      case '/sessions':
+        result = await handleSessionsCommand(agent.id, session.user.id!, args[0]);
+        break;
+      
+      case '/session':
+        result = await handleSessionCommand(agent.id, session.user.id!, args[0], args[1]);
         break;
       
       case '/clear':
@@ -419,6 +437,150 @@ async function handleResetCommand(agentId: string) {
     return {
       type: 'error',
       message: "Failed to reset agent"
+    };
+  }
+}
+
+async function handleSessionsCommand(agentId: string, userId: string, limitStr?: string) {
+  try {
+    const limit = limitStr ? parseInt(limitStr) : 10;
+    const sessions = await HermesAgentDB.getAgentSessions(agentId, limit);
+    
+    if (sessions.length === 0) {
+      return {
+        type: 'info',
+        message: "No chat sessions found."
+      };
+    }
+
+    let sessionsText = `# 💬 Chat Sessions (${sessions.length})\n\n`;
+    
+    sessions.forEach((session, index) => {
+      const messages = JSON.parse(session.messages);
+      const messageCount = messages.length;
+      const lastMessage = messages[messages.length - 1];
+      
+      sessionsText += `## Session ${index + 1}\n`;
+      sessionsText += `- **ID**: \`${session.id}\`\n`;
+      sessionsText += `- **Title**: ${session.title}\n`;
+      sessionsText += `- **Messages**: ${messageCount}\n`;
+      sessionsText += `- **Tokens Used**: ${session.tokenUsed}\n`;
+      sessionsText += `- **Created**: ${new Date(session.createdAt).toLocaleDateString()}\n`;
+      sessionsText += `- **Last Updated**: ${new Date(session.updatedAt).toLocaleDateString()}\n`;
+      if (lastMessage) {
+        const preview = lastMessage.content.slice(0, 100);
+        sessionsText += `- **Last Message**: "${preview}${lastMessage.content.length > 100 ? '...' : ''}"\n`;
+      }
+      sessionsText += `\n`;
+    });
+
+    sessionsText += `\nUse \`/session load <id>\` to load a session or \`/session save <title>\` to save current chat.`;
+
+    return {
+      type: 'info',
+      message: sessionsText
+    };
+  } catch (error) {
+    return {
+      type: 'error',
+      message: "Failed to retrieve sessions"
+    };
+  }
+}
+
+async function handleSessionCommand(agentId: string, userId: string, action?: string, param?: string) {
+  if (!action) {
+    return {
+      type: 'info',
+      message: `# 💬 Session Management\n\n` +
+        `Available actions:\n` +
+        `- \`/session new\` - Start a new session\n` +
+        `- \`/session save <title>\` - Save current chat as session\n` +
+        `- \`/session load <id>\` - Load a saved session\n` +
+        `- \`/session delete <id>\` - Delete a session\n\n` +
+        `Use \`/sessions\` to list all sessions.`
+    };
+  }
+
+  try {
+    switch (action) {
+      case 'new':
+        return {
+          type: 'action',
+          action: 'new_session',
+          message: "🆕 Starting new session..."
+        };
+
+      case 'save':
+        if (!param) {
+          return {
+            type: 'error',
+            message: "Please provide a title. Usage: `/session save <title>`"
+          };
+        }
+        
+        return {
+          type: 'action',
+          action: 'save_session',
+          title: param,
+          message: `💾 Saving current session as "${param}"...`
+        };
+
+      case 'load':
+        if (!param) {
+          return {
+            type: 'error',
+            message: "Please provide session ID. Usage: `/session load <id>`"
+          };
+        }
+
+        const session = await HermesAgentDB.getSession(param);
+        if (!session || session.agentId !== agentId) {
+          return {
+            type: 'error',
+            message: `Session not found: ${param}`
+          };
+        }
+
+        return {
+          type: 'action',
+          action: 'load_session',
+          sessionId: param,
+          session: session,
+          message: `📂 Loading session "${session.title}"...`
+        };
+
+      case 'delete':
+        if (!param) {
+          return {
+            type: 'error',
+            message: "Please provide session ID. Usage: `/session delete <id>`"
+          };
+        }
+
+        const deleted = await HermesAgentDB.deleteSession(param, agentId);
+        if (!deleted) {
+          return {
+            type: 'error',
+            message: `Session not found: ${param}`
+          };
+        }
+
+        return {
+          type: 'success',
+          message: `🗑️ Session deleted: ${param}`
+        };
+
+      default:
+        return {
+          type: 'error',
+          message: `Unknown action: ${action}. Use /session for help.`
+        };
+    }
+  } catch (error) {
+    return {
+      type: 'error',
+      message: "Failed to process session command"
     };
   }
 }

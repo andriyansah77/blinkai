@@ -86,8 +86,8 @@ export default function HermesChat({ className }: ChatProps) {
 
   // Slash command suggestions
   const SLASH_COMMANDS = [
-    '/help', '/skills', '/memory', '/clear', '/agent', 
-    '/learn', '/forget', '/mode', '/export', '/reset'
+    '/help', '/skills', '/memory', '/sessions', '/session', '/clear', 
+    '/agent', '/learn', '/forget', '/mode', '/export', '/reset'
   ];
 
   // Handle input change for slash command detection
@@ -155,6 +155,15 @@ export default function HermesChat({ className }: ChatProps) {
       } else if (result.result.action === 'export_chat') {
         // Handle chat export
         exportChatHistory(result.result.format);
+      } else if (result.result.action === 'new_session') {
+        // Start new session
+        setTimeout(() => setMessages([]), 1000);
+      } else if (result.result.action === 'save_session') {
+        // Save current session
+        await saveCurrentSession(result.result.title);
+      } else if (result.result.action === 'load_session') {
+        // Load session
+        await loadSession(result.result.session);
       }
 
     } catch (error) {
@@ -187,6 +196,79 @@ export default function HermesChat({ className }: ChatProps) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  // Save current session
+  const saveCurrentSession = async (title: string) => {
+    if (!agent || messages.length === 0) {
+      console.error('No agent or messages to save');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/hermes/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agentId: agent.id,
+          title,
+          messages: messages.map(m => ({
+            role: m.role,
+            content: m.content,
+            timestamp: m.timestamp,
+            type: m.type
+          }))
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Session saved:', result.sessionId);
+        
+        // Add success message
+        const successMessage: Message = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `✅ Session saved as "${title}" (ID: ${result.sessionId})`,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, successMessage]);
+      }
+    } catch (error) {
+      console.error('Failed to save session:', error);
+    }
+  };
+
+  // Load session
+  const loadSession = async (session: any) => {
+    try {
+      const sessionMessages = JSON.parse(session.messages);
+      const loadedMessages: Message[] = sessionMessages.map((msg: any, index: number) => ({
+        id: `loaded-${index}`,
+        role: msg.role,
+        content: msg.content,
+        timestamp: new Date(msg.timestamp),
+        type: msg.type || 'text'
+      }));
+
+      setMessages(loadedMessages);
+      
+      // Add load confirmation
+      setTimeout(() => {
+        const confirmMessage: Message = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `📂 Loaded session "${session.title}" with ${loadedMessages.length} messages`,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, confirmMessage]);
+      }, 500);
+      
+    } catch (error) {
+      console.error('Failed to load session:', error);
+    }
   };
 
   // File Upload Handler
@@ -715,6 +797,8 @@ export default function HermesChat({ className }: ChatProps) {
       '/help': 'Show all commands',
       '/skills': 'List agent skills',
       '/memory': 'Show agent memory',
+      '/sessions': 'List chat sessions',
+      '/session': 'Manage sessions',
       '/clear': 'Clear chat history',
       '/agent': 'Agent information',
       '/learn': 'Teach agent',

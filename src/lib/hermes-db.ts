@@ -186,6 +186,84 @@ export class HermesAgentDB {
     return false;
   }
 
+  // Session Management for slash commands
+  static async getAgentSessions(agentId: string, limit: number = 10) {
+    return await prisma.hermesSession.findMany({
+      where: { agentId },
+      orderBy: { updatedAt: 'desc' },
+      take: limit
+    });
+  }
+
+  // Session Management
+  static async createSession(agentId: string, userId: string, title: string, messages: any[]) {
+    return await prisma.hermesSession.create({
+      data: {
+        agentId,
+        userId,
+        title,
+        messages: JSON.stringify(messages),
+        messageCount: messages.length,
+        tokenUsed: 0, // Will be calculated later
+        skillsUsed: JSON.stringify([]),
+        context: JSON.stringify({})
+      }
+    });
+  }
+
+  static async getSession(sessionId: string) {
+    const session = await prisma.hermesSession.findUnique({
+      where: { id: sessionId },
+      include: { agent: true }
+    });
+
+    if (session) {
+      return {
+        ...session,
+        messages: JSON.parse(session.messages),
+        context: JSON.parse(session.context),
+        skillsUsed: JSON.parse(session.skillsUsed)
+      };
+    }
+    return null;
+  }
+
+  static async updateSession(sessionId: string, updates: { title?: string; messages?: any[]; tokenUsed?: number }) {
+    const data: any = {};
+    
+    if (updates.title) data.title = updates.title;
+    if (updates.messages) {
+      data.messages = JSON.stringify(updates.messages);
+      data.messageCount = updates.messages.length;
+    }
+    if (updates.tokenUsed !== undefined) data.tokenUsed = updates.tokenUsed;
+    
+    return await prisma.hermesSession.update({
+      where: { id: sessionId },
+      data
+    });
+  }
+
+  static async deleteSession(sessionId: string, agentId: string) {
+    try {
+      const session = await prisma.hermesSession.findUnique({
+        where: { id: sessionId }
+      });
+
+      if (!session || session.agentId !== agentId) {
+        return false;
+      }
+
+      await prisma.hermesSession.delete({
+        where: { id: sessionId }
+      });
+
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   static async getAllSkills(userId?: string) {
     const where = userId ? {
       agent: { userId },
@@ -223,55 +301,6 @@ export class HermesAgentDB {
     return await prisma.hermesSkill.update({
       where: { id: skillId },
       data: { rating }
-    });
-  }
-
-  // Session Management
-  static async createSession(agentId: string, userId: string, title?: string) {
-    return await prisma.hermesSession.create({
-      data: {
-        agentId,
-        userId,
-        title: title || `Session ${new Date().toLocaleString()}`,
-        messages: JSON.stringify([]),
-        context: JSON.stringify({}),
-      }
-    });
-  }
-
-  static async getSession(sessionId: string) {
-    const session = await prisma.hermesSession.findUnique({
-      where: { id: sessionId },
-      include: { agent: true }
-    });
-
-    if (session) {
-      return {
-        ...session,
-        messages: JSON.parse(session.messages),
-        context: JSON.parse(session.context),
-        skillsUsed: JSON.parse(session.skillsUsed)
-      };
-    }
-    return null;
-  }
-
-  static async updateSession(sessionId: string, updates: {
-    messages?: any[];
-    context?: any;
-    skillsUsed?: string[];
-    tokenUsed?: number;
-  }) {
-    return await prisma.hermesSession.update({
-      where: { id: sessionId },
-      data: {
-        messages: updates.messages ? JSON.stringify(updates.messages) : undefined,
-        context: updates.context ? JSON.stringify(updates.context) : undefined,
-        skillsUsed: updates.skillsUsed ? JSON.stringify(updates.skillsUsed) : undefined,
-        tokenUsed: updates.tokenUsed,
-        messageCount: updates.messages ? updates.messages.length : undefined,
-        updatedAt: new Date()
-      }
     });
   }
 

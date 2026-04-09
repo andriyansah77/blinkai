@@ -192,7 +192,8 @@ return helpGuide(params);`
     const session_id = await HermesAgentDB.createSession(
       agent.id, 
       session.user.id!, 
-      `Welcome Session with ${agentName}`
+      `Welcome Session with ${agentName}`,
+      [] // Empty messages array for new session
     );
 
     return NextResponse.json({
