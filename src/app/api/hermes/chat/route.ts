@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { HermesAgentDB } from "@/lib/hermes-db";
-import { getUserAIConfig } from "@/lib/platform";
-import { hermesStream, getHermesConfig, HermesMessage } from "@/lib/hermes";
-import { getUserCredits, deductCredits, estimateCreditCost } from "@/lib/credits";
-
-const ESTIMATED_TOKENS_PER_MESSAGE = 500;
+import { hermesIntegration } from "@/lib/hermes-integration";
+import { deductCredits, getUserCredits } from "@/lib/credits";
+import { getPlatformConfig } from "@/lib/platform";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,24 +13,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { messages, agentId } = body;
+    const { messages, model, provider, skills, toolsets } = body;
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
-    }
-
-    // Get user's agent from database
-    let dbAgent;
-    if (agentId) {
-      dbAgent = await HermesAgentDB.getAgent(agentId);
-    } else {
-      // Get user's primary agent
-      const userAgents = await HermesAgentDB.getUserAgents(session.user.id!);
-      dbAgent = userAgents[0];
-    }
-
-    if (!dbAgent) {
-      return NextResponse.json({ error: "No agent found. Please complete onboarding." }, { status: 404 });
     }
 
     // Get the last user message
@@ -42,235 +25,119 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Last message must be from user" }, { status: 400 });
     }
 
-    console.log(`💬 Processing chat for agent: ${dbAgent.name}`);
+    // Get platform configuration for credit management
+    const platformConfig = await getPlatformConfig(session.user.id!);
     
-    try {
-      // Load user's AI config
-      const aiConfig = await getUserAIConfig(session.user.id!);
-      const isPlatformMode = aiConfig.mode === "platform";
-      
-      console.log(`🔧 AI Config loaded:`, {
-        mode: aiConfig.mode,
-        baseUrl: aiConfig.baseUrl,
-        model: aiConfig.model,
-        hasApiKey: !!aiConfig.apiKey
-      });
-
-      // Estimate cost and check credits (platform mode only)
-      const estimatedTokens = ESTIMATED_TOKENS_PER_MESSAGE;
-      const estimatedCost = estimateCreditCost(estimatedTokens);
-
-      if (isPlatformMode) {
-        const balance = await getUserCredits(session.user.id!);
-        console.log(`💰 Credit check - Balance: ${balance}, Cost: ${estimatedCost}`);
-        
-        if (balance < estimatedCost) {
-          return NextResponse.json(
-            { error: "Insufficient credits. Please add more credits or configure your own API key." },
-            { status: 402 }
-          );
-        }
+    // Check credits if using platform mode
+    if (platformConfig.mode === 'platform') {
+      const credits = await getUserCredits(session.user.id!);
+      if (credits.remaining <= 0) {
+        return NextResponse.json({ 
+          error: "Insufficient credits. Please add more credits or switch to BYOK mode." 
+        }, { status: 402 });
       }
-      
-      // Convert messages to Hermes format
-      const hermesMessages: HermesMessage[] = messages.map((msg: any) => ({
-        role: msg.role as "user" | "assistant",
-        content: msg.content,
-      }));
+    }
 
-      // Build hermes config with conversational system prompt
-      const conversationalSystemPrompt = `${dbAgent.systemPrompt}
+    // Ensure user profile exists
+    const profile = await hermesIntegration.getProfile(session.user.id!);
+    if (!profile || profile.status === 'inactive') {
+      const createResult = await hermesIntegration.createProfile(session.user.id!);
+      if (!createResult.success) {
+        return NextResponse.json({ 
+          error: "Failed to initialize user profile" 
+        }, { status: 500 });
+      }
+    }
 
-IMPORTANT RESPONSE GUIDELINES:
-- Respond naturally and conversationally, like a helpful AI assistant
-- Do not include any technical metadata, CLI output, or system information
-- Keep responses focused, helpful, and engaging
-- Use a friendly, professional tone
-- Provide clear, actionable information when possible
-- If you need clarification, ask follow-up questions naturally`;
+    // Set model and provider if specified
+    if (model) {
+      await hermesIntegration.setConfig(session.user.id!, 'model.model', model);
+    }
+    if (provider) {
+      await hermesIntegration.setConfig(session.user.id!, 'model.provider', provider);
+    }
 
-      const hermesConfig = getHermesConfig({
-        apiKey: aiConfig.apiKey,
-        baseUrl: aiConfig.baseUrl,
-        model: aiConfig.model, // Use AI config model instead of agent model for compatibility
-        temperature: dbAgent.temperature || 0.7,
-        maxTokens: dbAgent.maxTokens || 2000,
-        systemPromptOverride: conversationalSystemPrompt,
-        streamingEnabled: true,
-      });
+    // Create streaming response
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          const responseGenerator = await hermesIntegration.sendChatMessage(
+            session.user.id!,
+            lastMessage.content,
+            {
+              model,
+              provider,
+              skills,
+              toolsets,
+              quiet: true
+            }
+          );
 
-      console.log(`🚀 Hermes config:`, {
-        baseUrl: hermesConfig.baseUrl,
-        model: hermesConfig.model,
-        temperature: hermesConfig.temperature,
-        hasApiKey: !!hermesConfig.apiKey
-      });
-
-      // Create SSE stream using the original hermesStream function
-      const stream = new ReadableStream({
-        async start(controller) {
-          const encoder = new TextEncoder();
-
-          function send(data: string) {
+          let fullResponse = '';
+          
+          for await (const chunk of responseGenerator) {
+            fullResponse += chunk;
+            
+            // Send in OpenAI-compatible format for frontend compatibility
+            const data = JSON.stringify({
+              choices: [{
+                delta: {
+                  content: chunk
+                }
+              }]
+            });
+            
             controller.enqueue(encoder.encode(`data: ${data}\n\n`));
           }
 
-          try {
-            console.log(`📡 Starting Hermes stream...`);
-            const aiStream = await hermesStream(hermesMessages, hermesConfig);
-            const reader = aiStream.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
-
-            console.log(`✅ Stream started successfully`);
-
-            let totalTokensUsed = 0;
-
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split("\n");
-              buffer = lines.pop() ?? "";
-
-              for (const line of lines) {
-                const trimmed = line.trim();
-                if (!trimmed.startsWith("data:")) continue;
-                const data = trimmed.slice(5).trim();
-                if (data === "[DONE]") continue;
-
-                try {
-                  const json = JSON.parse(data) as {
-                    choices?: Array<{ delta?: { content?: string } }>;
-                  };
-                  const delta = json.choices?.[0]?.delta?.content;
-                  if (delta) {
-                    totalTokensUsed += Math.ceil(delta.length / 4); // Rough token estimation
-                    // Send the content directly in the expected format
-                    send(JSON.stringify({
-                      choices: [{
-                        delta: {
-                          content: delta
-                        }
-                      }]
-                    }));
-                  }
-                } catch (parseError) {
-                  // Skip invalid JSON
-                  continue;
-                }
-              }
-            }
-
-            // Deduct credits after successful completion (platform mode only)
-            if (isPlatformMode && totalTokensUsed > 0) {
-              try {
-                const actualCost = estimateCreditCost(totalTokensUsed);
-                await deductCredits(session.user.id!, actualCost, "Chat completion", {
-                  agentId: dbAgent.id,
-                  tokensUsed: totalTokensUsed,
-                  model: hermesConfig.model
-                });
-                console.log(`💸 Credits deducted: ${actualCost} (${totalTokensUsed} tokens)`);
-              } catch (creditError) {
-                console.error("Failed to deduct credits:", creditError);
-              }
-            }
-
-            // Send done signal
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
-
-          } catch (streamError) {
-            console.error("❌ Stream error:", streamError);
-            
-            // Fallback response
-            const fallbackMessage = "I'm here to help! I'm experiencing some technical difficulties at the moment, but I'm ready to assist you. Could you please tell me what you'd like to know or discuss?";
-            const words = fallbackMessage.split(' ');
-            
-            for (let i = 0; i < words.length; i++) {
-              const word = words[i] + (i < words.length - 1 ? ' ' : '');
-              send(JSON.stringify({
-                choices: [{
-                  delta: {
-                    content: word
-                  }
-                }]
-              }));
-              await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
+          // Deduct credits after successful response (platform mode only)
+          if (platformConfig.mode === 'platform' && fullResponse.length > 0) {
+            const estimatedTokens = Math.ceil(fullResponse.length / 4); // Rough estimation
+            await deductCredits(session.user.id!, estimatedTokens);
           }
-        }
-      });
 
-      return new Response(stream, {
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
-          "X-Agent-Id": dbAgent.id,
-          "X-Response-Type": "hermes-stream",
-        },
-      });
-
-    } catch (error) {
-      console.error("❌ Hermes chat error:", error);
-      
-      // Fallback to simple conversational response
-      const fallbackMessage = "I'm here to help! I'm experiencing some technical difficulties at the moment, but I'm ready to assist you. Could you please tell me what you'd like to know or discuss?";
-      
-      const stream = new ReadableStream({
-        start(controller) {
-          const encoder = new TextEncoder();
+          // Send completion signal
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        } catch (error) {
+          console.error("Hermes chat error:", error);
+          
+          // Fallback response
+          const fallbackMessage = "I'm here to help! I'm experiencing some technical difficulties at the moment, but I'm ready to assist you. Could you please tell me what you'd like to know or discuss?";
           const words = fallbackMessage.split(' ');
-          let wordIndex = 0;
           
-          const sendWord = () => {
-            if (wordIndex < words.length) {
-              const word = words[wordIndex] + (wordIndex < words.length - 1 ? ' ' : '');
-              const data = `data: ${JSON.stringify({
-                choices: [{
-                  delta: {
-                    content: word
-                  }
-                }]
-              })}\n\n`;
-              
-              controller.enqueue(encoder.encode(data));
-              wordIndex++;
-              
-              setTimeout(sendWord, 50);
-            } else {
-              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-              controller.close();
-            }
-          };
+          for (let i = 0; i < words.length; i++) {
+            const word = words[i] + (i < words.length - 1 ? ' ' : '');
+            const data = JSON.stringify({
+              choices: [{
+                delta: {
+                  content: word
+                }
+              }]
+            });
+            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
           
-          sendWord();
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
         }
-      });
+      }
+    });
 
-      return new Response(stream, {
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
-          "X-Fallback": "true",
-        },
-      });
-    }
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
 
   } catch (error) {
-    console.error("Chat API error:", error);
-    
-    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-    
+    console.error("Hermes chat API error:", error);
     return NextResponse.json(
-      { error: "Failed to process chat request", details: errorMessage },
+      { error: "Failed to process chat message" },
       { status: 500 }
     );
   }
@@ -280,22 +147,28 @@ export async function GET() {
   try {
     return NextResponse.json({ 
       message: "Hermes Agent Chat API",
-      version: "3.2.0",
-      framework: "ReAgent with Hermes integration",
+      version: "4.0.0",
+      framework: "ReAgent with Full Hermes Integration",
       status: {
         hermesEnabled: true,
         streamingEnabled: true,
+        userIsolation: true,
         platform: process.platform
       },
       endpoints: {
-        POST: "Send messages to AI agents with conversational responses",
-        "GET /api/hermes/test": "Test Hermes connection and configuration",
-        "GET /api/hermes/status": "Get detailed Hermes status and agent info"
+        POST: "Send messages to isolated Hermes agents with conversational responses",
+        "GET /api/hermes/profile": "Get user profile status",
+        "GET /api/hermes/skills": "Get user skills",
+        "GET /api/hermes/gateway": "Get gateway status",
+        "GET /api/hermes/diagnostics": "Get system diagnostics"
       },
-      configuration: {
-        conversationalMode: true,
-        naturalResponses: true,
-        streamingEnabled: true
+      features: {
+        profiles: "Isolated user profiles",
+        skills: "Dynamic skill management",
+        gateway: "Multi-platform messaging",
+        cron: "Scheduled tasks",
+        memory: "Persistent memory systems",
+        config: "Per-user configuration"
       }
     });
   } catch (error) {

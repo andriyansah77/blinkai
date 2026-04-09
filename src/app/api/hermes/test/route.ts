@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { hermesCliWrapper } from "@/lib/hermes-cli-wrapper";
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { hermesIntegration } from "@/lib/hermes-integration";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,99 +12,84 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Testing Hermes CLI connection...');
 
-    // Test 1: Check environment variable
-    const envAvailable = process.env.HERMES_CLI_AVAILABLE === 'true';
-    console.log(`Environment HERMES_CLI_AVAILABLE: ${envAvailable}`);
+    // Test 1: Check Hermes CLI installation
+    const hermesInstalled = await hermesIntegration.isHermesInstalled();
+    const hermesVersion = await hermesIntegration.getVersion();
 
-    // Test 2: Check Hermes CLI installation
-    let hermesInstalled = false;
-    let hermesVersion = null;
-    let hermesError = null;
+    // Test 2: Check user profile
+    const profile = await hermesIntegration.getProfile(session.user.id!);
+    
+    // Test 3: Get comprehensive status
+    const status = await hermesIntegration.getStatus(session.user.id!);
+    const gatewayStatus = await hermesIntegration.getGatewayStatus(session.user.id!);
+    const memoryStatus = await hermesIntegration.getMemoryStatus(session.user.id!);
+    const skills = await hermesIntegration.getSkills(session.user.id!);
+    const sessions = await hermesIntegration.getSessions(session.user.id!);
+    const cronJobs = await hermesIntegration.getCronJobs(session.user.id!);
 
-    try {
-      hermesInstalled = await hermesCliWrapper.isHermesInstalled();
-      if (hermesInstalled) {
-        const versionResult = await execAsync('hermes --version');
-        hermesVersion = versionResult.stdout.trim();
-        console.log(`✅ Hermes version: ${hermesVersion}`);
-      }
-    } catch (error) {
-      hermesError = error instanceof Error ? error.message : 'Unknown error';
-      console.log(`❌ Hermes CLI error: ${hermesError}`);
-    }
-
-    // Test 3: Check Hermes configuration
-    let hermesConfig = null;
-    let configError = null;
-
-    try {
-      const configResult = await execAsync('hermes config check');
-      hermesConfig = configResult.stdout.trim();
-      console.log(`✅ Hermes config: ${hermesConfig}`);
-    } catch (error) {
-      configError = error instanceof Error ? error.message : 'Config check failed';
-      console.log(`⚠️  Hermes config: ${configError}`);
-    }
-
-    // Test 4: Check available models
-    let availableModels = null;
-    let modelsError = null;
-
-    try {
-      const modelsResult = await execAsync('hermes model list');
-      availableModels = modelsResult.stdout.trim();
-      console.log(`✅ Available models: ${availableModels}`);
-    } catch (error) {
-      modelsError = error instanceof Error ? error.message : 'Models check failed';
-      console.log(`⚠️  Models check: ${modelsError}`);
-    }
-
-    // Test 5: Test simple chat
-    let chatTest = null;
-    let chatError = null;
-
-    if (hermesInstalled) {
-      try {
-        const chatResult = await execAsync('hermes chat -q "Hello, test message" --no-memory');
-        chatTest = chatResult.stdout.trim();
-        console.log(`✅ Chat test successful`);
-      } catch (error) {
-        chatError = error instanceof Error ? error.message : 'Chat test failed';
-        console.log(`⚠️  Chat test: ${chatError}`);
-      }
-    }
+    // Test 4: Run diagnostics
+    const diagnostics = await hermesIntegration.runDiagnostics(session.user.id!);
 
     return NextResponse.json({
       timestamp: new Date().toISOString(),
       environment: {
         platform: process.platform,
         nodeVersion: process.version,
-        hermesCliAvailable: envAvailable
+        hermesPath: "/root/.local/bin/hermes"
       },
       hermes: {
         installed: hermesInstalled,
         version: hermesVersion,
-        error: hermesError
+        framework: "NousResearch/hermes-agent"
       },
-      configuration: {
-        status: hermesConfig ? 'valid' : 'needs_setup',
-        details: hermesConfig,
-        error: configError
+      profile: {
+        exists: profile?.status === 'active',
+        name: profile?.profileName,
+        home: profile?.hermesHome,
+        status: profile?.status
       },
-      models: {
-        available: availableModels ? availableModels.split('\n').filter(l => l.trim()) : [],
-        error: modelsError
+      status,
+      gateway: {
+        status: gatewayStatus.status,
+        platforms: Object.keys(gatewayStatus.platforms).length,
+        details: gatewayStatus.platforms
       },
-      chatTest: {
-        success: chatTest !== null,
-        response: chatTest ? chatTest.substring(0, 200) + '...' : null,
-        error: chatError
+      memory: {
+        type: memoryStatus.type,
+        status: memoryStatus.status
+      },
+      skills: {
+        total: skills.length,
+        installed: skills.filter(s => s.installed).length,
+        enabled: skills.filter(s => s.enabled).length
+      },
+      sessions: {
+        total: sessions.length,
+        recent: sessions.slice(0, 3)
+      },
+      cronJobs: {
+        total: cronJobs.length,
+        enabled: cronJobs.filter(j => j.enabled).length
+      },
+      diagnostics: {
+        success: diagnostics.success,
+        hasReport: diagnostics.report.length > 0
+      },
+      capabilities: {
+        chat: true,
+        skills: true,
+        gateway: true,
+        cron: true,
+        memory: true,
+        config: true,
+        diagnostics: true,
+        userProfiles: true
       },
       recommendations: [
-        ...(hermesInstalled ? [] : ['Install Hermes CLI: curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash']),
-        ...(hermesConfig ? [] : ['Configure Hermes: hermes model']),
-        ...(availableModels ? [] : ['Setup API keys: hermes config set OPENROUTER_API_KEY your-key']),
-        ...(chatTest ? [] : ['Test chat functionality manually: hermes chat'])
+        ...(hermesInstalled ? [] : ['Install Hermes CLI on VPS']),
+        ...(profile?.status === 'active' ? [] : ['Create user profile']),
+        ...(skills.length > 0 ? [] : ['Install some skills']),
+        ...(gatewayStatus.status === 'running' ? [] : ['Setup gateway for platform connections'])
       ]
     });
 
@@ -139,10 +120,27 @@ export async function POST(request: NextRequest) {
         }
 
         try {
-          const result = await execAsync(`hermes chat -q "${message}" --no-memory`);
+          // Ensure profile exists
+          const profile = await hermesIntegration.getProfile(session.user.id!);
+          if (!profile || profile.status === 'inactive') {
+            await hermesIntegration.createProfile(session.user.id!);
+          }
+
+          // Send test message
+          const responseGenerator = await hermesIntegration.sendChatMessage(
+            session.user.id!,
+            message,
+            { quiet: true }
+          );
+
+          let response = '';
+          for await (const chunk of responseGenerator) {
+            response += chunk;
+          }
+
           return NextResponse.json({
             success: true,
-            response: result.stdout.trim(),
+            response: response.trim(),
             timestamp: new Date().toISOString()
           });
         } catch (error) {
@@ -154,15 +152,31 @@ export async function POST(request: NextRequest) {
 
       case 'check_config':
         try {
-          const result = await execAsync('hermes config check');
+          const config = await hermesIntegration.getConfig(session.user.id!);
           return NextResponse.json({
             success: true,
-            config: result.stdout.trim(),
+            config,
             timestamp: new Date().toISOString()
           });
         } catch (error) {
           return NextResponse.json({
             error: "Config check failed",
+            details: error instanceof Error ? error.message : "Unknown error"
+          }, { status: 500 });
+        }
+
+      case 'run_diagnostics':
+        try {
+          const diagnostics = await hermesIntegration.runDiagnostics(session.user.id!);
+          return NextResponse.json({
+            success: diagnostics.success,
+            report: diagnostics.report,
+            error: diagnostics.error,
+            timestamp: new Date().toISOString()
+          });
+        } catch (error) {
+          return NextResponse.json({
+            error: "Diagnostics failed",
             details: error instanceof Error ? error.message : "Unknown error"
           }, { status: 500 });
         }

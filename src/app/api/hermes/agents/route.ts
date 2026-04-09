@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { HermesAgentDB } from "@/lib/hermes-db";
+import { hermesIntegration } from "@/lib/hermes-integration";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,44 +10,70 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user's agents with stats
-    const agents = await HermesAgentDB.getUserAgents(session.user.id!);
-    
-    // Transform agents with additional stats
-    const agentsWithStats = await Promise.all(
-      agents.map(async (agent) => {
-        const stats = await HermesAgentDB.getAgentStats(agent.id);
-        
-        return {
-          id: agent.id,
-          name: agent.name,
-          description: agent.description,
-          model: agent.model,
-          provider: agent.provider,
-          systemPrompt: agent.systemPrompt,
-          temperature: agent.temperature,
-          maxTokens: agent.maxTokens,
-          learningEnabled: agent.learningEnabled,
-          memoryEnabled: agent.memoryEnabled,
-          status: agent.status,
-          createdAt: agent.createdAt,
-          updatedAt: agent.updatedAt,
-          skills: stats?.stats.totalSkills || 0,
-          memory: {
-            total: stats?.stats.totalMemories || 0,
-            byType: {} // Could be expanded to show memory by type
-          },
-          sessions: stats?.stats.totalSessions || 0,
-          totalTokens: stats?.stats.totalTokens || 0,
-          recentSessions: stats?.stats.recentSessions || 0
-        };
-      })
-    );
+    // Get user profile and status
+    const profile = await hermesIntegration.getProfile(session.user.id!);
+    const status = await hermesIntegration.getStatus(session.user.id!);
+    const skills = await hermesIntegration.getSkills(session.user.id!);
+    const sessions = await hermesIntegration.getSessions(session.user.id!);
+    const gatewayStatus = await hermesIntegration.getGatewayStatus(session.user.id!);
+    const memoryStatus = await hermesIntegration.getMemoryStatus(session.user.id!);
+    const cronJobs = await hermesIntegration.getCronJobs(session.user.id!);
+
+    // Create a unified agent representation for this user
+    const agent = {
+      id: `hermes-${session.user.id}`,
+      name: profile?.profileName || `user-${session.user.id}`,
+      description: "Your personal Hermes agent with full CLI integration",
+      model: status.model || "gpt-4o",
+      provider: status.provider || "openai",
+      systemPrompt: "You are a helpful AI assistant powered by the Hermes framework.",
+      temperature: 0.7,
+      maxTokens: 4000,
+      learningEnabled: true,
+      memoryEnabled: memoryStatus.status === 'active',
+      status: profile?.status || 'inactive',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      
+      // Hermes-specific stats
+      skills: {
+        total: skills.length,
+        installed: skills.filter(s => s.installed).length,
+        enabled: skills.filter(s => s.enabled).length,
+        list: skills
+      },
+      memory: {
+        type: memoryStatus.type,
+        status: memoryStatus.status,
+        config: memoryStatus.config
+      },
+      sessions: {
+        total: sessions.length,
+        recent: sessions.slice(0, 5)
+      },
+      gateway: {
+        status: gatewayStatus.status,
+        platforms: gatewayStatus.platforms
+      },
+      cronJobs: {
+        total: cronJobs.length,
+        enabled: cronJobs.filter(j => j.enabled).length,
+        list: cronJobs
+      },
+      
+      // Integration info
+      hermesIntegration: true,
+      userIsolation: true,
+      profilePath: profile?.hermesHome,
+      configPath: profile?.configPath
+    };
 
     return NextResponse.json({
       success: true,
-      agents: agentsWithStats,
-      count: agentsWithStats.length
+      agents: [agent], // Single agent per user with full Hermes integration
+      count: 1,
+      hermesIntegration: true,
+      userIsolation: true
     });
 
   } catch (error) {
@@ -67,59 +93,39 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      name,
-      description,
-      model = "gpt-4o",
-      provider = "openai",
-      systemPrompt = "",
-      temperature = 0.7,
-      maxTokens = 4000,
-      learningEnabled = true,
-      memoryEnabled = true
-    } = body;
+    const { action, ...params } = body;
 
-    if (!name) {
-      return NextResponse.json({ 
-        error: "Agent name is required" 
-      }, { status: 400 });
+    switch (action) {
+      case 'createProfile':
+        const createResult = await hermesIntegration.createProfile(session.user.id!, params);
+        return NextResponse.json(createResult);
+
+      case 'updateConfig':
+        const { key, value } = params;
+        if (!key || value === undefined) {
+          return NextResponse.json({ 
+            success: false,
+            error: "Config key and value are required" 
+          }, { status: 400 });
+        }
+        
+        const configResult = await hermesIntegration.setConfig(session.user.id!, key, value);
+        return NextResponse.json(configResult);
+
+      default:
+        return NextResponse.json({ 
+          success: false,
+          error: "Invalid action" 
+        }, { status: 400 });
     }
 
-    // Create new agent
-    const agent = await HermesAgentDB.createAgent(session.user.id!, {
-      name,
-      description,
-      model,
-      provider,
-      systemPrompt,
-      temperature,
-      maxTokens,
-      memory: memoryEnabled,
-      learningEnabled
-    });
-
-    return NextResponse.json({
-      success: true,
-      agent: {
-        id: agent.id,
-        name: agent.name,
-        description: agent.description,
-        model: agent.model,
-        provider: agent.provider,
-        systemPrompt: agent.systemPrompt,
-        temperature: agent.temperature,
-        maxTokens: agent.maxTokens,
-        learningEnabled: agent.learningEnabled,
-        memoryEnabled: agent.memoryEnabled,
-        status: agent.status,
-        createdAt: agent.createdAt
-      }
-    });
-
   } catch (error) {
-    console.error("Create agent error:", error);
+    console.error("Agent action error:", error);
     return NextResponse.json(
-      { error: "Failed to create agent" },
+      { 
+        success: false,
+        error: "Failed to execute action" 
+      },
       { status: 500 }
     );
   }
@@ -133,32 +139,43 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { agentId, ...updates } = body;
+    const { key, value } = body;
 
-    if (!agentId) {
+    if (!key || value === undefined) {
       return NextResponse.json({ 
-        error: "Agent ID is required" 
+        success: false,
+        error: "Config key and value are required" 
       }, { status: 400 });
     }
 
-    // Verify agent belongs to user
-    const agent = await HermesAgentDB.getAgent(agentId);
-    if (!agent || agent.userId !== session.user.id) {
-      return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+    // Update configuration for this user
+    const result = await hermesIntegration.setConfig(session.user.id!, key, value);
+    
+    if (result.success) {
+      // Get updated agent info
+      const profile = await hermesIntegration.getProfile(session.user.id!);
+      const status = await hermesIntegration.getStatus(session.user.id!);
+      
+      return NextResponse.json({
+        success: true,
+        message: `Configuration updated: ${key} = ${value}`,
+        agent: {
+          id: `hermes-${session.user.id}`,
+          profile: profile?.profileName,
+          status: status
+        }
+      });
+    } else {
+      return NextResponse.json(result, { status: 400 });
     }
-
-    // Update agent
-    const updatedAgent = await HermesAgentDB.updateAgent(agentId, updates);
-
-    return NextResponse.json({
-      success: true,
-      agent: updatedAgent
-    });
 
   } catch (error) {
     console.error("Update agent error:", error);
     return NextResponse.json(
-      { error: "Failed to update agent" },
+      { 
+        success: false,
+        error: "Failed to update agent configuration" 
+      },
       { status: 500 }
     );
   }
@@ -171,33 +188,25 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const agentId = searchParams.get('agentId');
+    // Delete user's Hermes profile (this removes all user data)
+    const result = await hermesIntegration.deleteProfile(session.user.id!);
 
-    if (!agentId) {
-      return NextResponse.json({ 
-        error: "Agent ID is required" 
-      }, { status: 400 });
+    if (result.success) {
+      return NextResponse.json({
+        success: true,
+        message: "User profile and all associated data deleted successfully"
+      });
+    } else {
+      return NextResponse.json(result, { status: 400 });
     }
-
-    // Verify agent belongs to user
-    const agent = await HermesAgentDB.getAgent(agentId);
-    if (!agent || agent.userId !== session.user.id) {
-      return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-    }
-
-    // Soft delete agent
-    await HermesAgentDB.deleteAgent(agentId);
-
-    return NextResponse.json({
-      success: true,
-      message: "Agent deleted successfully"
-    });
 
   } catch (error) {
     console.error("Delete agent error:", error);
     return NextResponse.json(
-      { error: "Failed to delete agent" },
+      { 
+        success: false,
+        error: "Failed to delete agent profile" 
+      },
       { status: 500 }
     );
   }

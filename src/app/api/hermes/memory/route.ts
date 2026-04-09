@@ -3,27 +3,23 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { hermesIntegration } from "@/lib/hermes-integration";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get Hermes sessions for this user
-    const sessions = await hermesIntegration.getSessions(session.user.id!);
-
+    const memoryStatus = await hermesIntegration.getMemoryStatus(session.user.id!);
+    
     return NextResponse.json({
       success: true,
-      sessions,
-      hermesIntegration: true,
-      userIsolation: true
+      memory: memoryStatus
     });
-
   } catch (error) {
-    console.error("Get sessions error:", error);
+    console.error("Get memory status error:", error);
     return NextResponse.json(
-      { error: "Failed to get sessions" },
+      { error: "Failed to get memory status" },
       { status: 500 }
     );
   }

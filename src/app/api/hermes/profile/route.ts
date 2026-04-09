@@ -10,16 +10,18 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const skills = await hermesIntegration.getSkills(session.user.id!);
+    const profile = await hermesIntegration.getProfile(session.user.id!);
+    const status = await hermesIntegration.getStatus(session.user.id!);
     
     return NextResponse.json({
       success: true,
-      skills
+      profile,
+      status
     });
   } catch (error) {
-    console.error("Get skills error:", error);
+    console.error("Get profile error:", error);
     return NextResponse.json(
-      { error: "Failed to get skills" },
+      { error: "Failed to get profile" },
       { status: 500 }
     );
   }
@@ -33,35 +35,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, skillName, source, force } = body;
+    const { action, ...options } = body;
 
     switch (action) {
-      case 'install':
-        if (!skillName) {
-          return NextResponse.json({ error: "Skill name is required" }, { status: 400 });
-        }
-        
-        const installResult = await hermesIntegration.installSkill(session.user.id!, skillName, {
-          source,
-          force
-        });
-        return NextResponse.json(installResult);
+      case 'create':
+        const result = await hermesIntegration.createProfile(session.user.id!, options);
+        return NextResponse.json(result);
 
-      case 'uninstall':
-        if (!skillName) {
-          return NextResponse.json({ error: "Skill name is required" }, { status: 400 });
-        }
-        
-        const uninstallResult = await hermesIntegration.uninstallSkill(session.user.id!, skillName);
-        return NextResponse.json(uninstallResult);
+      case 'delete':
+        const deleteResult = await hermesIntegration.deleteProfile(session.user.id!);
+        return NextResponse.json(deleteResult);
 
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
-    console.error("Skills action error:", error);
+    console.error("Profile action error:", error);
     return NextResponse.json(
-      { error: "Failed to perform skills action" },
+      { error: "Failed to perform profile action" },
       { status: 500 }
     );
   }

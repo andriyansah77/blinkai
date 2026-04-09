@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { HermesAgentDB } from "@/lib/hermes-db";
-import { prisma } from "@/lib/prisma";
+import { hermesIntegration } from "@/lib/hermes-integration";
 
 // Available Hermes slash commands
 const HERMES_COMMANDS = {
@@ -17,54 +16,44 @@ const HERMES_COMMANDS = {
     category: 'Skills'
   },
   '/memory': {
-    description: 'Show agent memory',
-    usage: '/memory [search]',
+    description: 'Show agent memory status',
+    usage: '/memory',
     category: 'Memory'
   },
   '/sessions': {
     description: 'List chat sessions',
-    usage: '/sessions [limit]',
+    usage: '/sessions',
     category: 'Sessions'
   },
-  '/session': {
-    description: 'Session management',
-    usage: '/session [new|save|load|delete] [id]',
-    category: 'Sessions'
+  '/gateway': {
+    description: 'Gateway status and management',
+    usage: '/gateway [start|stop|status]',
+    category: 'Gateway'
   },
-  '/clear': {
-    description: 'Clear chat history',
-    usage: '/clear',
-    category: 'Chat'
-  },
-  '/agent': {
-    description: 'Show agent information',
-    usage: '/agent [info|stats]',
-    category: 'Agent'
-  },
-  '/learn': {
-    description: 'Teach agent something new',
-    usage: '/learn <topic> <information>',
-    category: 'Learning'
-  },
-  '/forget': {
-    description: 'Remove from agent memory',
-    usage: '/forget <topic>',
-    category: 'Memory'
-  },
-  '/mode': {
-    description: 'Change agent mode',
-    usage: '/mode [creative|balanced|precise]',
+  '/config': {
+    description: 'Show configuration',
+    usage: '/config [key] [value]',
     category: 'Settings'
   },
-  '/export': {
-    description: 'Export chat history',
-    usage: '/export [json|txt]',
-    category: 'Data'
+  '/cron': {
+    description: 'List cron jobs',
+    usage: '/cron',
+    category: 'Automation'
   },
-  '/reset': {
-    description: 'Reset agent to default state',
-    usage: '/reset',
-    category: 'Agent'
+  '/status': {
+    description: 'Show agent status',
+    usage: '/status',
+    category: 'General'
+  },
+  '/diagnostics': {
+    description: 'Run system diagnostics',
+    usage: '/diagnostics',
+    category: 'System'
+  },
+  '/profile': {
+    description: 'Profile management',
+    usage: '/profile [create|delete|info]',
+    category: 'Profile'
   }
 };
 
@@ -82,14 +71,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid command format" }, { status: 400 });
     }
 
-    // Get user's agent
-    const userAgents = await HermesAgentDB.getUserAgents(session.user.id!);
-    const agent = userAgents[0];
-
-    if (!agent) {
-      return NextResponse.json({ error: "No agent found" }, { status: 404 });
-    }
-
     console.log(`🔧 Processing Hermes command: ${command} with args:`, args);
 
     // Process command
@@ -100,47 +81,39 @@ export async function POST(request: NextRequest) {
         break;
       
       case '/skills':
-        result = await handleSkillsCommand(agent.id, args[0]);
+        result = await handleSkillsCommand(session.user.id!, args[0]);
         break;
       
       case '/memory':
-        result = await handleMemoryCommand(agent.id, args[0]);
+        result = await handleMemoryCommand(session.user.id!);
         break;
       
       case '/sessions':
-        result = await handleSessionsCommand(agent.id, session.user.id!, args[0]);
+        result = await handleSessionsCommand(session.user.id!);
         break;
       
-      case '/session':
-        result = await handleSessionCommand(agent.id, session.user.id!, args[0], args[1]);
+      case '/gateway':
+        result = await handleGatewayCommand(session.user.id!, args[0]);
         break;
       
-      case '/clear':
-        result = await handleClearCommand();
+      case '/config':
+        result = await handleConfigCommand(session.user.id!, args[0], args[1]);
         break;
       
-      case '/agent':
-        result = await handleAgentCommand(agent, args[0]);
+      case '/cron':
+        result = await handleCronCommand(session.user.id!);
         break;
       
-      case '/learn':
-        result = await handleLearnCommand(agent.id, args.join(' '));
+      case '/status':
+        result = await handleStatusCommand(session.user.id!);
         break;
       
-      case '/forget':
-        result = await handleForgetCommand(agent.id, args.join(' '));
+      case '/diagnostics':
+        result = await handleDiagnosticsCommand(session.user.id!);
         break;
       
-      case '/mode':
-        result = await handleModeCommand(agent.id, args[0]);
-        break;
-      
-      case '/export':
-        result = await handleExportCommand(args[0]);
-        break;
-      
-      case '/reset':
-        result = await handleResetCommand(agent.id);
+      case '/profile':
+        result = await handleProfileCommand(session.user.id!, args[0]);
         break;
       
       default:
@@ -189,9 +162,9 @@ async function handleHelpCommand() {
   };
 }
 
-async function handleSkillsCommand(agentId: string, search?: string) {
+async function handleSkillsCommand(userId: string, search?: string) {
   try {
-    const skills = await HermesAgentDB.getAgentSkills(agentId);
+    const skills = await hermesIntegration.getSkills(userId);
     
     let filteredSkills = skills;
     if (search) {
@@ -206,7 +179,7 @@ async function handleSkillsCommand(agentId: string, search?: string) {
         type: 'info',
         message: search 
           ? `No skills found matching "${search}"`
-          : "No skills available. Skills will be learned automatically as you interact with the agent."
+          : "No skills installed yet. Use the skills API to install skills."
       };
     }
 
@@ -215,9 +188,9 @@ async function handleSkillsCommand(agentId: string, search?: string) {
     filteredSkills.forEach(skill => {
       skillsText += `## ${skill.name}\n`;
       skillsText += `${skill.description}\n`;
-      skillsText += `- **Category**: ${skill.category}\n`;
-      skillsText += `- **Usage**: ${skill.usage} times\n`;
-      skillsText += `- **Status**: ${skill.status}\n\n`;
+      skillsText += `- **Source**: ${skill.source}\n`;
+      skillsText += `- **Installed**: ${skill.installed ? 'Yes' : 'No'}\n`;
+      skillsText += `- **Enabled**: ${skill.enabled ? 'Yes' : 'No'}\n\n`;
     });
 
     return {
@@ -232,27 +205,19 @@ async function handleSkillsCommand(agentId: string, search?: string) {
   }
 }
 
-async function handleMemoryCommand(agentId: string, search?: string) {
+async function handleMemoryCommand(userId: string) {
   try {
-    const memories = await HermesAgentDB.getAgentMemories(agentId, search);
+    const memoryStatus = await hermesIntegration.getMemoryStatus(userId);
     
-    if (memories.length === 0) {
-      return {
-        type: 'info',
-        message: search 
-          ? `No memories found matching "${search}"`
-          : "No memories stored yet. The agent will learn and remember as you interact."
-      };
+    let memoryText = `# 🧠 Agent Memory\n\n`;
+    memoryText += `- **Type**: ${memoryStatus.type}\n`;
+    memoryText += `- **Status**: ${memoryStatus.status}\n`;
+    
+    if (memoryStatus.config) {
+      memoryText += `- **Configuration**: Available\n`;
     }
-
-    let memoryText = `# 🧠 Agent Memory ${search ? `(matching "${search}")` : ''}\n\n`;
     
-    memories.forEach(memory => {
-      memoryText += `## ${memory.type.charAt(0).toUpperCase() + memory.type.slice(1)}\n`;
-      memoryText += `${memory.content}\n`;
-      memoryText += `- **Importance**: ${(memory.importance * 100).toFixed(0)}%\n`;
-      memoryText += `- **Last accessed**: ${new Date(memory.lastAccessed).toLocaleDateString()}\n\n`;
-    });
+    memoryText += `\nMemory system is ${memoryStatus.status === 'active' ? 'active and learning from conversations' : 'inactive'}.`;
 
     return {
       type: 'info',
@@ -261,190 +226,14 @@ async function handleMemoryCommand(agentId: string, search?: string) {
   } catch (error) {
     return {
       type: 'error',
-      message: "Failed to retrieve memories"
+      message: "Failed to retrieve memory status"
     };
   }
 }
 
-async function handleClearCommand() {
-  return {
-    type: 'action',
-    action: 'clear_chat',
-    message: "Chat history cleared."
-  };
-}
-
-async function handleAgentCommand(agent: any, subcommand?: string) {
-  if (subcommand === 'stats') {
-    return {
-      type: 'info',
-      message: `# 📊 Agent Statistics\n\n` +
-        `- **Total Sessions**: ${agent.totalSessions}\n` +
-        `- **Total Messages**: ${agent.totalMessages}\n` +
-        `- **Skills Used**: ${agent.totalSkillsUsed}\n` +
-        `- **Created**: ${new Date(agent.createdAt).toLocaleDateString()}\n` +
-        `- **Last Updated**: ${new Date(agent.updatedAt).toLocaleDateString()}\n`
-    };
-  }
-
-  return {
-    type: 'info',
-    message: `# 🤖 Agent Information\n\n` +
-      `**Name**: ${agent.name}\n` +
-      `**Description**: ${agent.description}\n` +
-      `**Model**: ${agent.model}\n` +
-      `**Provider**: ${agent.provider}\n` +
-      `**Temperature**: ${agent.temperature}\n` +
-      `**Max Tokens**: ${agent.maxTokens}\n` +
-      `**Memory Enabled**: ${agent.memoryEnabled ? 'Yes' : 'No'}\n` +
-      `**Learning Enabled**: ${agent.learningEnabled ? 'Yes' : 'No'}\n` +
-      `**Status**: ${agent.status}\n\n` +
-      `Type \`/agent stats\` for usage statistics.`
-  };
-}
-
-async function handleLearnCommand(agentId: string, content: string) {
-  if (!content.trim()) {
-    return {
-      type: 'error',
-      message: "Please provide something to learn. Usage: `/learn <topic> <information>`"
-    };
-  }
-
+async function handleSessionsCommand(userId: string) {
   try {
-    // Get agent to get userId
-    const agent = await HermesAgentDB.getAgent(agentId);
-    if (!agent) {
-      return {
-        type: 'error',
-        message: "Agent not found"
-      };
-    }
-
-    // Store as memory
-    await prisma.hermesMemory.create({
-      data: {
-        agentId,
-        userId: agent.userId,
-        type: 'user_preference',
-        content: content.trim(),
-        importance: 0.8,
-        metadata: JSON.stringify({}),
-        lastAccessed: new Date()
-      }
-    });
-
-    return {
-      type: 'success',
-      message: `✅ Learned: "${content.trim()}"`
-    };
-  } catch (error) {
-    return {
-      type: 'error',
-      message: "Failed to store learning"
-    };
-  }
-}
-
-async function handleForgetCommand(agentId: string, topic: string) {
-  if (!topic.trim()) {
-    return {
-      type: 'error',
-      message: "Please specify what to forget. Usage: `/forget <topic>`"
-    };
-  }
-
-  try {
-    const deleted = await HermesAgentDB.deleteMemory(agentId, topic.trim());
-    
-    return {
-      type: 'success',
-      message: deleted 
-        ? `✅ Forgot about: "${topic.trim()}"` 
-        : `No memories found about: "${topic.trim()}"`
-    };
-  } catch (error) {
-    return {
-      type: 'error',
-      message: "Failed to forget"
-    };
-  }
-}
-
-async function handleModeCommand(agentId: string, mode?: string) {
-  const validModes = ['creative', 'balanced', 'precise'];
-  
-  if (!mode) {
-    return {
-      type: 'info',
-      message: `# 🎛️ Agent Modes\n\n` +
-        `Available modes: ${validModes.join(', ')}\n\n` +
-        `- **creative**: Higher temperature, more creative responses\n` +
-        `- **balanced**: Default temperature, balanced responses\n` +
-        `- **precise**: Lower temperature, more focused responses\n\n` +
-        `Usage: \`/mode <mode>\``
-    };
-  }
-
-  if (!validModes.includes(mode)) {
-    return {
-      type: 'error',
-      message: `Invalid mode. Available modes: ${validModes.join(', ')}`
-    };
-  }
-
-  try {
-    const temperature = mode === 'creative' ? 0.9 : mode === 'precise' ? 0.3 : 0.7;
-    await HermesAgentDB.updateAgent(agentId, { temperature });
-
-    return {
-      type: 'success',
-      message: `✅ Agent mode changed to: ${mode} (temperature: ${temperature})`
-    };
-  } catch (error) {
-    return {
-      type: 'error',
-      message: "Failed to change mode"
-    };
-  }
-}
-
-async function handleExportCommand(format?: string) {
-  return {
-    type: 'action',
-    action: 'export_chat',
-    format: format || 'json',
-    message: `Exporting chat history as ${format || 'json'}...`
-  };
-}
-
-async function handleResetCommand(agentId: string) {
-  try {
-    // Reset agent to default settings
-    await HermesAgentDB.updateAgent(agentId, {
-      temperature: 0.7,
-      maxTokens: 4000
-    });
-
-    // Clear memories (optional - could be dangerous)
-    // await HermesAgentDB.clearMemories(agentId);
-
-    return {
-      type: 'success',
-      message: "✅ Agent reset to default settings. Memories preserved."
-    };
-  } catch (error) {
-    return {
-      type: 'error',
-      message: "Failed to reset agent"
-    };
-  }
-}
-
-async function handleSessionsCommand(agentId: string, userId: string, limitStr?: string) {
-  try {
-    const limit = limitStr ? parseInt(limitStr) : 10;
-    const sessions = await HermesAgentDB.getAgentSessions(agentId, limit);
+    const sessions = await hermesIntegration.getSessions(userId);
     
     if (sessions.length === 0) {
       return {
@@ -456,25 +245,14 @@ async function handleSessionsCommand(agentId: string, userId: string, limitStr?:
     let sessionsText = `# 💬 Chat Sessions (${sessions.length})\n\n`;
     
     sessions.forEach((session, index) => {
-      const messages = JSON.parse(session.messages);
-      const messageCount = messages.length;
-      const lastMessage = messages[messages.length - 1];
-      
       sessionsText += `## Session ${index + 1}\n`;
       sessionsText += `- **ID**: \`${session.id}\`\n`;
-      sessionsText += `- **Title**: ${session.title}\n`;
-      sessionsText += `- **Messages**: ${messageCount}\n`;
-      sessionsText += `- **Tokens Used**: ${session.tokenUsed}\n`;
-      sessionsText += `- **Created**: ${new Date(session.createdAt).toLocaleDateString()}\n`;
-      sessionsText += `- **Last Updated**: ${new Date(session.updatedAt).toLocaleDateString()}\n`;
-      if (lastMessage) {
-        const preview = lastMessage.content.slice(0, 100);
-        sessionsText += `- **Last Message**: "${preview}${lastMessage.content.length > 100 ? '...' : ''}"\n`;
-      }
-      sessionsText += `\n`;
+      sessionsText += `- **Title**: ${session.title || 'Untitled'}\n`;
+      sessionsText += `- **Messages**: ${session.messageCount}\n`;
+      sessionsText += `- **Created**: ${new Date(session.created).toLocaleDateString()}\n`;
+      sessionsText += `- **Last Activity**: ${new Date(session.lastActivity).toLocaleDateString()}\n`;
+      sessionsText += `- **Source**: ${session.source}\n\n`;
     });
-
-    sessionsText += `\nUse \`/session load <id>\` to load a session or \`/session save <title>\` to save current chat.`;
 
     return {
       type: 'info',
@@ -488,99 +266,233 @@ async function handleSessionsCommand(agentId: string, userId: string, limitStr?:
   }
 }
 
-async function handleSessionCommand(agentId: string, userId: string, action?: string, param?: string) {
-  if (!action) {
+async function handleGatewayCommand(userId: string, action?: string) {
+  try {
+    if (!action || action === 'status') {
+      const gatewayStatus = await hermesIntegration.getGatewayStatus(userId);
+      
+      let gatewayText = `# 🌐 Gateway Status\n\n`;
+      gatewayText += `- **Status**: ${gatewayStatus.status}\n\n`;
+      
+      if (Object.keys(gatewayStatus.platforms).length > 0) {
+        gatewayText += `## Connected Platforms\n`;
+        Object.entries(gatewayStatus.platforms).forEach(([platform, config]) => {
+          gatewayText += `- **${platform.charAt(0).toUpperCase() + platform.slice(1)}**: ${config.status}\n`;
+        });
+      } else {
+        gatewayText += `No platforms connected. Use the channels API to connect platforms.`;
+      }
+
+      return {
+        type: 'info',
+        message: gatewayText
+      };
+    }
+
+    if (action === 'start') {
+      const result = await hermesIntegration.startGateway(userId);
+      return {
+        type: result.success ? 'success' : 'error',
+        message: result.success ? '✅ Gateway started' : `❌ Failed to start gateway: ${result.error}`
+      };
+    }
+
+    if (action === 'stop') {
+      const result = await hermesIntegration.stopGateway(userId);
+      return {
+        type: result.success ? 'success' : 'error',
+        message: result.success ? '✅ Gateway stopped' : `❌ Failed to stop gateway: ${result.error}`
+      };
+    }
+
     return {
-      type: 'info',
-      message: `# 💬 Session Management\n\n` +
-        `Available actions:\n` +
-        `- \`/session new\` - Start a new session\n` +
-        `- \`/session save <title>\` - Save current chat as session\n` +
-        `- \`/session load <id>\` - Load a saved session\n` +
-        `- \`/session delete <id>\` - Delete a session\n\n` +
-        `Use \`/sessions\` to list all sessions.`
+      type: 'error',
+      message: `Invalid gateway action: ${action}. Use start, stop, or status.`
+    };
+  } catch (error) {
+    return {
+      type: 'error',
+      message: "Failed to process gateway command"
     };
   }
+}
 
+async function handleConfigCommand(userId: string, key?: string, value?: string) {
   try {
-    switch (action) {
-      case 'new':
-        return {
-          type: 'action',
-          action: 'new_session',
-          message: "🆕 Starting new session..."
-        };
+    if (key && value) {
+      // Set config
+      const result = await hermesIntegration.setConfig(userId, key, value);
+      return {
+        type: result.success ? 'success' : 'error',
+        message: result.success ? `✅ Config set: ${key} = ${value}` : `❌ Failed to set config: ${result.error}`
+      };
+    } else {
+      // Show config
+      const config = await hermesIntegration.getConfig(userId);
+      
+      let configText = `# ⚙️ Configuration\n\n`;
+      
+      if (Object.keys(config).length === 0) {
+        configText += `No configuration found. Use \`/config <key> <value>\` to set values.`;
+      } else {
+        Object.entries(config).forEach(([key, value]) => {
+          configText += `- **${key}**: ${value}\n`;
+        });
+      }
 
-      case 'save':
-        if (!param) {
-          return {
-            type: 'error',
-            message: "Please provide a title. Usage: `/session save <title>`"
-          };
-        }
-        
-        return {
-          type: 'action',
-          action: 'save_session',
-          title: param,
-          message: `💾 Saving current session as "${param}"...`
-        };
-
-      case 'load':
-        if (!param) {
-          return {
-            type: 'error',
-            message: "Please provide session ID. Usage: `/session load <id>`"
-          };
-        }
-
-        const session = await HermesAgentDB.getSession(param);
-        if (!session || session.agentId !== agentId) {
-          return {
-            type: 'error',
-            message: `Session not found: ${param}`
-          };
-        }
-
-        return {
-          type: 'action',
-          action: 'load_session',
-          sessionId: param,
-          session: session,
-          message: `📂 Loading session "${session.title}"...`
-        };
-
-      case 'delete':
-        if (!param) {
-          return {
-            type: 'error',
-            message: "Please provide session ID. Usage: `/session delete <id>`"
-          };
-        }
-
-        const deleted = await HermesAgentDB.deleteSession(param, agentId);
-        if (!deleted) {
-          return {
-            type: 'error',
-            message: `Session not found: ${param}`
-          };
-        }
-
-        return {
-          type: 'success',
-          message: `🗑️ Session deleted: ${param}`
-        };
-
-      default:
-        return {
-          type: 'error',
-          message: `Unknown action: ${action}. Use /session for help.`
-        };
+      return {
+        type: 'info',
+        message: configText
+      };
     }
   } catch (error) {
     return {
       type: 'error',
-      message: "Failed to process session command"
+      message: "Failed to process config command"
+    };
+  }
+}
+
+async function handleCronCommand(userId: string) {
+  try {
+    const cronJobs = await hermesIntegration.getCronJobs(userId);
+    
+    if (cronJobs.length === 0) {
+      return {
+        type: 'info',
+        message: "No cron jobs configured. Use the cron API to create scheduled tasks."
+      };
+    }
+
+    let cronText = `# ⏰ Cron Jobs (${cronJobs.length})\n\n`;
+    
+    cronJobs.forEach((job, index) => {
+      cronText += `## Job ${index + 1}\n`;
+      cronText += `- **ID**: \`${job.id}\`\n`;
+      cronText += `- **Name**: ${job.name}\n`;
+      cronText += `- **Schedule**: ${job.schedule}\n`;
+      cronText += `- **Prompt**: ${job.prompt}\n`;
+      cronText += `- **Enabled**: ${job.enabled ? 'Yes' : 'No'}\n`;
+      if (job.nextRun) {
+        cronText += `- **Next Run**: ${job.nextRun}\n`;
+      }
+      cronText += `\n`;
+    });
+
+    return {
+      type: 'info',
+      message: cronText
+    };
+  } catch (error) {
+    return {
+      type: 'error',
+      message: "Failed to retrieve cron jobs"
+    };
+  }
+}
+
+async function handleStatusCommand(userId: string) {
+  try {
+    const status = await hermesIntegration.getStatus(userId);
+    const profile = await hermesIntegration.getProfile(userId);
+    
+    let statusText = `# 📊 Agent Status\n\n`;
+    statusText += `- **Profile**: ${profile?.profileName || 'Not created'}\n`;
+    statusText += `- **Status**: ${profile?.status || 'inactive'}\n`;
+    
+    if (status.model) {
+      statusText += `- **Model**: ${status.model}\n`;
+    }
+    if (status.provider) {
+      statusText += `- **Provider**: ${status.provider}\n`;
+    }
+    if (status.gateway) {
+      statusText += `- **Gateway**: ${status.gateway}\n`;
+    }
+
+    return {
+      type: 'info',
+      message: statusText
+    };
+  } catch (error) {
+    return {
+      type: 'error',
+      message: "Failed to retrieve status"
+    };
+  }
+}
+
+async function handleDiagnosticsCommand(userId: string) {
+  try {
+    const diagnostics = await hermesIntegration.runDiagnostics(userId);
+    
+    return {
+      type: diagnostics.success ? 'info' : 'error',
+      message: diagnostics.success 
+        ? `# 🔍 Diagnostics Report\n\n${diagnostics.report}`
+        : `❌ Diagnostics failed: ${diagnostics.error}`
+    };
+  } catch (error) {
+    return {
+      type: 'error',
+      message: "Failed to run diagnostics"
+    };
+  }
+}
+
+async function handleProfileCommand(userId: string, action?: string) {
+  try {
+    const profile = await hermesIntegration.getProfile(userId);
+    
+    if (!action || action === 'info') {
+      let profileText = `# 👤 Profile Information\n\n`;
+      
+      if (profile && profile.status === 'active') {
+        profileText += `- **Name**: ${profile.profileName}\n`;
+        profileText += `- **Home**: ${profile.hermesHome}\n`;
+        profileText += `- **Config**: ${profile.configPath}\n`;
+        profileText += `- **Status**: ${profile.status}\n`;
+      } else {
+        profileText += `Profile not created. Use \`/profile create\` to create one.`;
+      }
+
+      return {
+        type: 'info',
+        message: profileText
+      };
+    }
+
+    if (action === 'create') {
+      if (profile && profile.status === 'active') {
+        return {
+          type: 'info',
+          message: 'Profile already exists.'
+        };
+      }
+      
+      const result = await hermesIntegration.createProfile(userId);
+      return {
+        type: result.success ? 'success' : 'error',
+        message: result.success ? '✅ Profile created successfully' : `❌ Failed to create profile: ${result.error}`
+      };
+    }
+
+    if (action === 'delete') {
+      const result = await hermesIntegration.deleteProfile(userId);
+      return {
+        type: result.success ? 'success' : 'error',
+        message: result.success ? '✅ Profile deleted successfully' : `❌ Failed to delete profile: ${result.error}`
+      };
+    }
+
+    return {
+      type: 'error',
+      message: `Invalid profile action: ${action}. Use create, delete, or info.`
+    };
+  } catch (error) {
+    return {
+      type: 'error',
+      message: "Failed to process profile command"
     };
   }
 }

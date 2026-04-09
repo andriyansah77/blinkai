@@ -10,16 +10,16 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const skills = await hermesIntegration.getSkills(session.user.id!);
+    const cronJobs = await hermesIntegration.getCronJobs(session.user.id!);
     
     return NextResponse.json({
       success: true,
-      skills
+      jobs: cronJobs
     });
   } catch (error) {
-    console.error("Get skills error:", error);
+    console.error("Get cron jobs error:", error);
     return NextResponse.json(
-      { error: "Failed to get skills" },
+      { error: "Failed to get cron jobs" },
       { status: 500 }
     );
   }
@@ -33,35 +33,31 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, skillName, source, force } = body;
+    const { action, name, schedule, prompt, skills } = body;
 
     switch (action) {
-      case 'install':
-        if (!skillName) {
-          return NextResponse.json({ error: "Skill name is required" }, { status: 400 });
+      case 'create':
+        if (!name || !schedule || !prompt) {
+          return NextResponse.json({ 
+            error: "Name, schedule, and prompt are required" 
+          }, { status: 400 });
         }
-        
-        const installResult = await hermesIntegration.installSkill(session.user.id!, skillName, {
-          source,
-          force
-        });
-        return NextResponse.json(installResult);
 
-      case 'uninstall':
-        if (!skillName) {
-          return NextResponse.json({ error: "Skill name is required" }, { status: 400 });
-        }
-        
-        const uninstallResult = await hermesIntegration.uninstallSkill(session.user.id!, skillName);
-        return NextResponse.json(uninstallResult);
+        const createResult = await hermesIntegration.createCronJob(session.user.id!, {
+          name,
+          schedule,
+          prompt,
+          skills
+        });
+        return NextResponse.json(createResult);
 
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
-    console.error("Skills action error:", error);
+    console.error("Cron job action error:", error);
     return NextResponse.json(
-      { error: "Failed to perform skills action" },
+      { error: "Failed to perform cron job action" },
       { status: 500 }
     );
   }
