@@ -557,18 +557,14 @@ REAGENT_USER_ID=${userId}
 
       // Process and stream response
       if (buffer.trim()) {
-        const lines = buffer.split('\n').filter(line => line.trim());
-        let response = '';
+        // Clean the response to remove CLI metadata
+        const cleanedResponse = this.cleanHermesResponse(buffer);
         
-        for (const line of lines) {
-          // Skip CLI metadata
-          if (this.isMetadataLine(line)) continue;
-          response += line + ' ';
-        }
-        
-        if (response.trim()) {
+        if (cleanedResponse) {
           hasOutput = true;
-          const words = response.trim().split(' ');
+          
+          // Stream word by word for natural feel
+          const words = cleanedResponse.split(' ');
           for (let i = 0; i < words.length; i++) {
             yield words[i] + (i < words.length - 1 ? ' ' : '');
             await new Promise(resolve => setTimeout(resolve, 30)); // Faster streaming
@@ -587,19 +583,99 @@ REAGENT_USER_ID=${userId}
 
   private isMetadataLine(line: string): boolean {
     const metadataPatterns = [
-      /Hermes Agent/,
-      /Project:/,
-      /Python:/,
-      /OpenAI SDK:/,
-      /Up to date/,
-      /Loading/,
-      /Initializing/,
-      /^\[/,
+      /Hermes Agent/i,
+      /Project:/i,
+      /Python:/i,
+      /OpenAI SDK:/i,
+      /Up to date/i,
+      /Loading/i,
+      /Initializing/i,
+      /^\[.*\]/,  // [INFO], [DEBUG], etc
       />>>/,
-      /<<</
+      /<<</,
+      /^─+$/,  // Separator lines
+      /^═+$/,  // Separator lines
+      /^Model:/i,
+      /^Provider:/i,
+      /^Temperature:/i,
+      /^Max tokens:/i,
+      /^Streaming:/i,
+      /^Session:/i,
+      /^Profile:/i,
+      /^Using profile:/i,
+      /^Chat session/i,
+      /^Starting chat/i,
+      /^Connecting to/i,
+      /^Response:/i,
+      /^Assistant:/i,
+      /^User:/i,
+      /^\s*$/,  // Empty lines
+      /^✓/,  // Checkmarks
+      /^✗/,  // X marks
+      /^•/,  // Bullets
+      /^─/,  // Lines
+      /^═/,  // Lines
+      /^│/,  // Vertical lines
+      /^┌/,  // Box drawing
+      /^└/,  // Box drawing
+      /^├/,  // Box drawing
+      /^┤/,  // Box drawing
+      /^┬/,  // Box drawing
+      /^┴/,  // Box drawing
+      /^┼/,  // Box drawing
     ];
-    
-    return metadataPatterns.some(pattern => pattern.test(line));
+
+    return metadataPatterns.some(pattern => pattern.test(line.trim()));
+  }
+
+  /**
+   * Clean and extract actual AI response from Hermes CLI output
+   */
+  private cleanHermesResponse(rawOutput: string): string {
+    const lines = rawOutput.split('\n');
+    const cleanedLines: string[] = [];
+    let inResponseSection = false;
+    let responseStarted = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      // Skip empty lines
+      if (!trimmed) continue;
+      
+      // Skip metadata lines
+      if (this.isMetadataLine(trimmed)) continue;
+      
+      // Look for response markers
+      if (trimmed.toLowerCase().includes('response:') || 
+          trimmed.toLowerCase().includes('assistant:')) {
+        inResponseSection = true;
+        continue;
+      }
+      
+      // If we're in response section or found actual content
+      if (inResponseSection || (!this.isMetadataLine(trimmed) && trimmed.length > 10)) {
+        responseStarted = true;
+        cleanedLines.push(trimmed);
+      }
+    }
+
+    // If no response found, try to extract any meaningful text
+    if (cleanedLines.length === 0) {
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed && 
+            !this.isMetadataLine(trimmed) && 
+            trimmed.length > 20 &&
+            !trimmed.startsWith('[') &&
+            !trimmed.startsWith('─') &&
+            !trimmed.startsWith('═')) {
+          cleanedLines.push(trimmed);
+        }
+      }
+    }
+
+    return cleanedLines.join(' ').trim();
   }
 
   async getSessions(userId: string): Promise<HermesSession[]> {
