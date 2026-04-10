@@ -185,7 +185,7 @@ export default function TerminalPage() {
 
   if (status === "loading") {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -196,15 +196,15 @@ export default function TerminalPage() {
   }
 
   return (
-    <div className="h-screen bg-[#0A0A0A] text-white overflow-hidden flex flex-col">
-      <div className="p-6 border-b border-white/[0.06]">
+    <div className="h-screen bg-background text-foreground overflow-hidden flex flex-col">
+      <div className="p-6 border-b border-border/60">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <TerminalIcon className="h-8 w-8 text-green-500" />
             <div>
               <h1 className="text-2xl font-bold">Hermes Terminal</h1>
-              <p className="text-white/60 text-sm">Direct access to Hermes CLI commands</p>
+              <p className="text-muted-foreground text-sm">Direct access to Hermes CLI commands</p>
             </div>
           </div>
           
@@ -264,7 +264,7 @@ export default function TerminalPage() {
                       : line.type === "error"
                       ? "text-red-400"
                       : line.type === "system"
-                      ? "text-blue-400"
+                      ? "text-primary"
                       : "text-gray-300"
                   }
                 >
@@ -283,7 +283,7 @@ export default function TerminalPage() {
                 onChange={(e) => setCurrentCommand(e.target.value)}
                 onKeyDown={handleKeyDown}
                 disabled={isRunning}
-                className="flex-1 bg-transparent text-white outline-none font-mono"
+                className="flex-1 bg-transparent text-foreground outline-none font-mono"
                 placeholder={isRunning ? "Executing..." : "Enter Hermes command..."}
                 autoFocus
               />
@@ -302,7 +302,7 @@ export default function TerminalPage() {
             <button
               onClick={() => quickCommand("status")}
               disabled={isRunning}
-              className="flex items-center justify-center space-x-2 p-3 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center justify-center space-x-2 p-3 bg-primary/20 hover:bg-primary/30 border border-blue-500/30 text-primary rounded-lg transition-colors disabled:opacity-50"
             >
               <Play className="h-4 w-4" />
               <span>Status</span>
@@ -337,7 +337,7 @@ export default function TerminalPage() {
           </div>
           
           <div className="mt-3 text-center">
-            <p className="text-white/40 text-xs">
+            <p className="text-muted-foreground text-xs">
               Use arrow keys to navigate command history • Ctrl+C to interrupt • Tab for autocomplete
             </p>
           </div>
@@ -346,3 +346,7 @@ export default function TerminalPage() {
     </div>
   );
 }
+
+
+
+

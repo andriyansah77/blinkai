@@ -100,7 +100,7 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-white font-semibold text-sm">ReAgent</h1>
+            <h1 className="text-foreground font-semibold text-sm">ReAgent</h1>
             <div className="flex items-center gap-2 mt-0.5">
               <div className={`w-2 h-2 rounded-full ${hasAgent ? 'bg-green-400' : 'bg-gray-400'}`}></div>
               <span className={`text-xs font-medium ${hasAgent ? 'text-green-400' : 'text-gray-400'}`}>
@@ -108,7 +108,7 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
               </span>
             </div>
             {agent?.name && (
-              <div className="text-xs text-white/60 truncate mt-0.5">
+              <div className="text-xs text-muted-foreground truncate mt-0.5">
                 {agent.name}
               </div>
             )}
@@ -120,7 +120,7 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
       <div className="flex-1 overflow-y-auto">
         {/* Main Section */}
         <div className="p-3">
-          <div className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2 px-2">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-2">
             Main
           </div>
           <nav className="space-y-1">
@@ -133,14 +133,14 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-white/[0.08] text-white"
-                      : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                   )}
                 >
                   <item.icon className="w-4 h-4" />
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className="ml-auto text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded">
+                    <span className="ml-auto text-xs bg-blue-500 text-foreground px-1.5 py-0.5 rounded">
                       {item.badge}
                     </span>
                   )}
@@ -152,7 +152,7 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
 
         {/* Automation Section */}
         <div className="p-3">
-          <div className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2 px-2">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-2">
             Automation
           </div>
           <nav className="space-y-1">
@@ -165,8 +165,8 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-white/[0.08] text-white"
-                      : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                   )}
                 >
                   <item.icon className="w-4 h-4" />
@@ -183,12 +183,12 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
             onClick={() => setIsAccountExpanded(!isAccountExpanded)}
             className="flex items-center gap-3 px-2 py-1 w-full text-left"
           >
-            <div className="text-xs font-medium text-white/40 uppercase tracking-wider">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Account
             </div>
             <ChevronDown 
               className={cn(
-                "w-3 h-3 text-white/40 transition-transform ml-auto",
+                "w-3 h-3 text-muted-foreground transition-transform ml-auto",
                 isAccountExpanded && "rotate-180"
               )} 
             />
@@ -209,8 +209,8 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-white/[0.08] text-white"
-                        : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     )}
                   >
                     <item.icon className="w-4 h-4" />
@@ -224,27 +224,27 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
       </div>
 
       {/* Bottom Section */}
-      <div className="p-4 border-t border-white/[0.06] space-y-3">
+      <div className="p-4 border-t border-border space-y-3">
         {/* Plan Info */}
-        <div className="bg-white/[0.03] rounded-lg p-3 border border-white/[0.06]">
+        <div className="bg-card rounded-lg p-3 border border-border">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-white/60">{planType}</span>
-            <span className="text-xs text-white/40">$0/mo</span>
+            <span className="text-xs font-medium text-muted-foreground">{planType}</span>
+            <span className="text-xs text-muted-foreground">$0/mo</span>
           </div>
           <div className="flex items-center gap-2 mb-2">
-            <User className="w-3 h-3 text-white/40" />
-            <span className="text-xs text-white/60">
+            <User className="w-3 h-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">
               {agent?.model || 'No model'}
             </span>
           </div>
-          <div className="text-xs text-white/40 mb-3">
+          <div className="text-xs text-muted-foreground mb-3">
             Credits: {credits.toLocaleString()}
           </div>
           <div className="flex gap-2">
-            <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors">
+            <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-foreground text-xs font-medium py-1.5 px-3 rounded-md transition-colors">
               Upgrade
             </button>
-            <button className="text-xs text-white/60 hover:text-white py-1.5 px-3 transition-colors">
+            <button className="text-xs text-muted-foreground hover:text-foreground py-1.5 px-3 transition-colors">
               Top Up
             </button>
           </div>
@@ -253,18 +253,20 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
         {/* User Profile */}
         <Link 
           href="/settings"
-          className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.04] transition-colors"
+          className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors"
         >
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">U</span>
+            <span className="text-foreground text-xs font-bold">U</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-white truncate">User</div>
-            <div className="text-xs text-white/40">Free Plan</div>
+            <div className="text-sm font-medium text-foreground truncate">User</div>
+            <div className="text-xs text-muted-foreground">Free Plan</div>
           </div>
-          <Settings className="w-4 h-4 text-white/40" />
+          <Settings className="w-4 h-4 text-muted-foreground" />
         </Link>
       </div>
     </div>
   );
 }
+
+

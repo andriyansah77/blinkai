@@ -111,22 +111,22 @@ export default function AgentsPage() {
 
   if (loading) {
     return (
-      <div className="h-full bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-full bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-full bg-[#0A0A0A] overflow-auto">
+    <div className="h-full bg-background overflow-auto">
       {/* Header */}
-      <div className="border-b border-white/[0.06] p-6">
+      <div className="border-b border-border/60 p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-foreground mb-2">
               {viewMode === 'agents' ? 'AI Agents' : 'Skills Marketplace'}
             </h1>
-            <p className="text-white/60">
+            <p className="text-muted-foreground">
               {viewMode === 'agents' 
                 ? 'Manage your Hermes-powered AI agents with learning capabilities'
                 : 'Browse and install skills to enhance your agents'
@@ -135,14 +135,14 @@ export default function AgentsPage() {
           </div>
           <div className="flex items-center gap-3">
             {/* View Mode Toggle */}
-            <div className="flex bg-white/[0.06] rounded-lg p-1">
+            <div className="flex bg-accent rounded-lg p-1">
               <button
                 onClick={() => setViewMode('agents')}
                 className={cn(
                   "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   viewMode === 'agents'
-                    ? "bg-blue-600 text-white"
-                    : "text-white/60 hover:text-white"
+                    ? "bg-primary text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Bot className="w-4 h-4 inline mr-2" />
@@ -153,8 +153,8 @@ export default function AgentsPage() {
                 className={cn(
                   "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   viewMode === 'skills'
-                    ? "bg-blue-600 text-white"
-                    : "text-white/60 hover:text-white"
+                    ? "bg-primary text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Brain className="w-4 h-4 inline mr-2" />
@@ -164,7 +164,7 @@ export default function AgentsPage() {
 
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors"
             >
               <Plus className="w-4 h-4" />
               {viewMode === 'agents' ? 'Create Agent' : 'Create Skill'}
@@ -176,24 +176,24 @@ export default function AgentsPage() {
         {viewMode === 'skills' && (
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Search className="w-4 h-4 text-white/40" />
+              <Search className="w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search skills..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-white/40" />
+              <Filter className="w-4 h-4 text-muted-foreground" />
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               >
                 {categories.map(category => (
-                  <option key={category} value={category} className="bg-[#1a1a1a]">
+                  <option key={category} value={category} className="bg-card">
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </option>
                 ))}
@@ -209,16 +209,16 @@ export default function AgentsPage() {
           // Agents View
           agents.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-white/[0.06] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bot className="w-8 h-8 text-white/40" />
+              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bot className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">No agents yet</h3>
-              <p className="text-white/60 mb-6 max-w-md mx-auto">
+              <h3 className="text-foreground font-semibold text-lg mb-2">No agents yet</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                 Create your first AI agent to get started. Agents can learn from conversations and improve over time.
               </p>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
               >
                 Create Your First Agent
               </button>
@@ -235,54 +235,54 @@ export default function AgentsPage() {
           <div>
             {/* Skills Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6">
+              <div className="bg-card border border-border rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                    <Download className="w-5 h-5 text-blue-400" />
+                    <Download className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold">Available Skills</h3>
-                    <p className="text-white/40 text-sm">Ready to install</p>
+                    <h3 className="text-foreground font-semibold">Available Skills</h3>
+                    <p className="text-muted-foreground text-sm">Ready to install</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-white">{skillTemplates.length}</p>
+                <p className="text-2xl font-bold text-foreground">{skillTemplates.length}</p>
               </div>
 
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6">
+              <div className="bg-card border border-border rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
                     <Brain className="w-5 h-5 text-green-400" />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold">Installed Skills</h3>
-                    <p className="text-white/40 text-sm">Across all agents</p>
+                    <h3 className="text-foreground font-semibold">Installed Skills</h3>
+                    <p className="text-muted-foreground text-sm">Across all agents</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-white">{installedSkills.length}</p>
+                <p className="text-2xl font-bold text-foreground">{installedSkills.length}</p>
               </div>
 
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6">
+              <div className="bg-card border border-border rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                     <Zap className="w-5 h-5 text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold">Categories</h3>
-                    <p className="text-white/40 text-sm">Skill categories</p>
+                    <h3 className="text-foreground font-semibold">Categories</h3>
+                    <p className="text-muted-foreground text-sm">Skill categories</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-white">{categories.length - 1}</p>
+                <p className="text-2xl font-bold text-foreground">{categories.length - 1}</p>
               </div>
             </div>
 
             {/* Skills Grid */}
             {filteredSkills.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-white/[0.06] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Brain className="w-8 h-8 text-white/40" />
+                <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Brain className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-white font-semibold text-lg mb-2">No skills found</h3>
-                <p className="text-white/60 mb-6 max-w-md mx-auto">
+                <h3 className="text-foreground font-semibold text-lg mb-2">No skills found</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                   Try adjusting your search or category filter to find skills.
                 </p>
               </div>
@@ -366,29 +366,29 @@ function CreateAgentModal({ onClose, onSuccess }: CreateAgentModalProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#1A1A1A] border border-white/[0.08] rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+        className="bg-card border border-border rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
       >
-        <h2 className="text-white font-semibold text-lg mb-4">Create New Agent</h2>
+        <h2 className="text-foreground font-semibold text-lg mb-4">Create New Agent</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-white/60 text-sm mb-2">Name</label>
+            <label className="block text-muted-foreground text-sm mb-2">Name</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               placeholder="My AI Assistant"
               required
             />
           </div>
 
           <div>
-            <label className="block text-white/60 text-sm mb-2">Description</label>
+            <label className="block text-muted-foreground text-sm mb-2">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
               rows={3}
               placeholder="Describe what this agent does..."
             />
@@ -396,11 +396,11 @@ function CreateAgentModal({ onClose, onSuccess }: CreateAgentModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-white/60 text-sm mb-2">Model</label>
+              <label className="block text-muted-foreground text-sm mb-2">Model</label>
               <select
                 value={formData.model}
                 onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               >
                 <option value="gpt-4o">GPT-4o</option>
                 <option value="gpt-4o-mini">GPT-4o Mini</option>
@@ -409,11 +409,11 @@ function CreateAgentModal({ onClose, onSuccess }: CreateAgentModalProps) {
             </div>
 
             <div>
-              <label className="block text-white/60 text-sm mb-2">Provider</label>
+              <label className="block text-muted-foreground text-sm mb-2">Provider</label>
               <select
                 value={formData.provider}
                 onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
-                className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               >
                 <option value="openai">OpenAI</option>
                 <option value="groq">Groq</option>
@@ -423,11 +423,11 @@ function CreateAgentModal({ onClose, onSuccess }: CreateAgentModalProps) {
           </div>
 
           <div>
-            <label className="block text-white/60 text-sm mb-2">System Prompt</label>
+            <label className="block text-muted-foreground text-sm mb-2">System Prompt</label>
             <textarea
               value={formData.systemPrompt}
               onChange={(e) => setFormData({ ...formData, systemPrompt: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
               rows={4}
               placeholder="You are a helpful AI assistant..."
             />
@@ -439,9 +439,9 @@ function CreateAgentModal({ onClose, onSuccess }: CreateAgentModalProps) {
               id="learningEnabled"
               checked={formData.learningEnabled}
               onChange={(e) => setFormData({ ...formData, learningEnabled: e.target.checked })}
-              className="w-4 h-4 text-blue-600 bg-white/[0.06] border-white/[0.08] rounded focus:ring-blue-500"
+              className="w-4 h-4 text-blue-600 bg-accent border-border rounded focus:ring-blue-500"
             />
-            <label htmlFor="learningEnabled" className="text-white/60 text-sm">
+            <label htmlFor="learningEnabled" className="text-muted-foreground text-sm">
               Enable learning from conversations
             </label>
           </div>
@@ -450,14 +450,14 @@ function CreateAgentModal({ onClose, onSuccess }: CreateAgentModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-white py-2 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-accent hover:bg-accent/80 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !formData.name}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
             >
               {loading ? "Creating..." : "Create Agent"}
             </button>
@@ -475,31 +475,31 @@ function AgentCard({ agent, index }: { agent: Agent; index: number }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6 hover:bg-white/[0.06] transition-colors"
+      className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
     >
       {/* Agent Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
-            <Bot className="w-5 h-5 text-white" />
+            <Bot className="w-5 h-5 text-foreground" />
           </div>
           <div>
-            <h3 className="text-white font-semibold">{agent.name}</h3>
-            <p className="text-white/40 text-sm">{agent.model}</p>
+            <h3 className="text-foreground font-semibold">{agent.name}</h3>
+            <p className="text-muted-foreground text-sm">{agent.model}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {agent.learningEnabled && (
             <div className="w-2 h-2 bg-green-400 rounded-full" title="Learning Enabled" />
           )}
-          <button className="text-white/40 hover:text-white transition-colors">
+          <button className="text-muted-foreground hover:text-foreground transition-colors">
             <Settings className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Description */}
-      <p className="text-white/60 text-sm mb-4 line-clamp-2">
+      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
         {agent.description || "No description provided"}
       </p>
 
@@ -508,23 +508,23 @@ function AgentCard({ agent, index }: { agent: Agent; index: number }) {
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <Brain className="w-3 h-3 text-purple-400" />
-            <span className="text-white font-semibold text-sm">{agent.skills}</span>
+            <span className="text-foreground font-semibold text-sm">{agent.skills}</span>
           </div>
-          <p className="text-white/40 text-xs">Skills</p>
+          <p className="text-muted-foreground text-xs">Skills</p>
         </div>
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <Zap className="w-3 h-3 text-blue-400" />
-            <span className="text-white font-semibold text-sm">{agent.memory.total}</span>
+            <Zap className="w-3 h-3 text-primary" />
+            <span className="text-foreground font-semibold text-sm">{agent.memory.total}</span>
           </div>
-          <p className="text-white/40 text-xs">Memories</p>
+          <p className="text-muted-foreground text-xs">Memories</p>
         </div>
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <MessageSquare className="w-3 h-3 text-green-400" />
-            <span className="text-white font-semibold text-sm">{agent.sessions}</span>
+            <span className="text-foreground font-semibold text-sm">{agent.sessions}</span>
           </div>
-          <p className="text-white/40 text-xs">Sessions</p>
+          <p className="text-muted-foreground text-xs">Sessions</p>
         </div>
       </div>
 
@@ -532,17 +532,17 @@ function AgentCard({ agent, index }: { agent: Agent; index: number }) {
       <div className="flex gap-2">
         <button 
           onClick={() => window.location.href = `/dashboard/agents/${agent.id}`}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors"
         >
           Chat
         </button>
-        <button className="bg-white/[0.06] hover:bg-white/[0.1] text-white py-2 px-3 rounded-lg text-sm transition-colors">
+        <button className="bg-accent hover:bg-accent/80 text-foreground py-2 px-3 rounded-lg text-sm transition-colors">
           <Settings className="w-4 h-4" />
         </button>
       </div>
 
       {/* Created Date */}
-      <p className="text-white/30 text-xs mt-3">
+      <p className="text-muted-foreground/60 text-xs mt-3">
         Created {new Date(agent.createdAt).toLocaleDateString()}
       </p>
     </motion.div>
@@ -565,7 +565,7 @@ function SkillCard({
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      productivity: "bg-blue-500/20 text-blue-400",
+      productivity: "bg-blue-500/20 text-primary",
       data: "bg-green-500/20 text-green-400",
       marketing: "bg-purple-500/20 text-purple-400",
       analytics: "bg-orange-500/20 text-orange-400",
@@ -580,7 +580,7 @@ function SkillCard({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
-        className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6 hover:bg-white/[0.06] transition-colors"
+        className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
       >
         {/* Skill Header */}
         <div className="flex items-start justify-between mb-4">
@@ -589,18 +589,18 @@ function SkillCard({
               <Brain className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-white font-semibold">{skill.name}</h3>
-              <p className="text-white/40 text-sm capitalize">{skill.category}</p>
+              <h3 className="text-foreground font-semibold">{skill.name}</h3>
+              <p className="text-muted-foreground text-sm capitalize">{skill.category}</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
-            <span className="text-white/60 text-sm">{skill.rating}</span>
+            <span className="text-muted-foreground text-sm">{skill.rating}</span>
           </div>
         </div>
 
         {/* Description */}
-        <p className="text-white/60 text-sm mb-4 line-clamp-2">
+        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
           {skill.description}
         </p>
 
@@ -609,13 +609,13 @@ function SkillCard({
           {skill.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="px-2 py-1 bg-white/[0.06] text-white/60 text-xs rounded-md"
+              className="px-2 py-1 bg-accent text-muted-foreground text-xs rounded-md"
             >
               {tag}
             </span>
           ))}
           {skill.tags.length > 3 && (
-            <span className="px-2 py-1 bg-white/[0.06] text-white/60 text-xs rounded-md">
+            <span className="px-2 py-1 bg-accent text-muted-foreground text-xs rounded-md">
               +{skill.tags.length - 3}
             </span>
           )}
@@ -625,12 +625,12 @@ function SkillCard({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
-              <Download className="w-3 h-3 text-white/40" />
-              <span className="text-white/60 text-sm">{skill.usage}</span>
+              <Download className="w-3 h-3 text-muted-foreground" />
+              <span className="text-muted-foreground text-sm">{skill.usage}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Code className="w-3 h-3 text-white/40" />
-              <span className="text-white/60 text-sm">JS</span>
+              <Code className="w-3 h-3 text-muted-foreground" />
+              <span className="text-muted-foreground text-sm">JS</span>
             </div>
           </div>
         </div>
@@ -639,12 +639,12 @@ function SkillCard({
         <div className="flex gap-2">
           <button
             onClick={() => setShowInstallModal(true)}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
           >
             <Download className="w-4 h-4" />
             Install
           </button>
-          <button className="bg-white/[0.06] hover:bg-white/[0.1] text-white py-2 px-3 rounded-lg text-sm transition-colors">
+          <button className="bg-accent hover:bg-accent/80 text-foreground py-2 px-3 rounded-lg text-sm transition-colors">
             <Code className="w-4 h-4" />
           </button>
         </div>
@@ -664,13 +664,13 @@ function SkillCard({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#1A1A1A] border border-white/[0.08] rounded-xl p-6 w-full max-w-md"
+              className="bg-card border border-border rounded-xl p-6 w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-white font-semibold text-lg mb-4">
+              <h3 className="text-foreground font-semibold text-lg mb-4">
                 Install "{skill.name}"
               </h3>
-              <p className="text-white/60 text-sm mb-6">
+              <p className="text-muted-foreground text-sm mb-6">
                 Choose which agent to install this skill on:
               </p>
 
@@ -682,15 +682,15 @@ function SkillCard({
                       onInstall(skill.id, agent.id);
                       setShowInstallModal(false);
                     }}
-                    className="w-full p-3 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg text-left transition-colors"
+                    className="w-full p-3 bg-accent hover:bg-accent/90 border border-border rounded-lg text-left transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
-                        <Bot className="w-4 h-4 text-white" />
+                        <Bot className="w-4 h-4 text-foreground" />
                       </div>
                       <div>
-                        <p className="text-white font-medium">{agent.name}</p>
-                        <p className="text-white/40 text-sm">{agent.skills} skills installed</p>
+                        <p className="text-foreground font-medium">{agent.name}</p>
+                        <p className="text-muted-foreground text-sm">{agent.skills} skills installed</p>
                       </div>
                     </div>
                   </button>
@@ -700,7 +700,7 @@ function SkillCard({
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowInstallModal(false)}
-                  className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-accent hover:bg-accent/80 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -712,3 +712,8 @@ function SkillCard({
     </>
   );
 }
+
+
+
+
+

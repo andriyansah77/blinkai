@@ -68,7 +68,7 @@ export default function SkillsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -100,20 +100,20 @@ export default function SkillsPage() {
   };
 
   return (
-    <div className="h-screen bg-[#0A0A0A] text-white overflow-y-auto">
+    <div className="h-screen bg-background text-foreground overflow-y-auto">
       <div className="p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Sparkles className="w-6 h-6 text-purple-400" />
               Skills
             </h1>
-            <p className="text-white/60 mt-1">Create and manage AI agent capabilities</p>
+            <p className="text-muted-foreground mt-1">Create and manage AI agent capabilities</p>
           </div>
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-foreground font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Skill
@@ -132,16 +132,16 @@ export default function SkillsPage() {
                 <DollarSign className="w-6 h-6 text-green-400" />
               </div>
               <div>
-                <h3 className="text-white font-semibold text-lg mb-1">
+                <h3 className="text-foreground font-semibold text-lg mb-1">
                   Earn Money by Creating Skills!
                 </h3>
-                <p className="text-white/60 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Create and sell your own skills on Agent Place and earn money. No catch.
                 </p>
               </div>
             </div>
             <div className="flex gap-3">
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              <button className="bg-green-600 hover:bg-green-700 text-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Create
               </button>
               <button className="bg-green-600/20 hover:bg-green-600/30 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
@@ -154,22 +154,22 @@ export default function SkillsPage() {
         {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search skills..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg pl-10 pr-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+              className="w-full bg-white/[0.05] border border-border rounded-lg pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
             />
           </div>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-white/[0.05] border border-white/[0.08] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            className="bg-white/[0.05] border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
             {categories.map(category => (
-              <option key={category} value={category} className="bg-[#1A1A1A]">
+              <option key={category} value={category} className="bg-card">
                 {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
               </option>
             ))}
@@ -179,13 +179,13 @@ export default function SkillsPage() {
         {/* Skills Grid */}
         {filteredSkills.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-white/[0.06] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-8 h-8 text-white/40" />
+            <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-white font-semibold text-lg mb-2">
+            <h3 className="text-foreground font-semibold text-lg mb-2">
               {skills.length === 0 ? "No skills yet" : "No skills found"}
             </h3>
-            <p className="text-white/60 mb-6 max-w-md mx-auto">
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
               {skills.length === 0 
                 ? "Create your first skill to extend your AI agent's capabilities"
                 : "Try adjusting your search or create a new skill"
@@ -193,7 +193,7 @@ export default function SkillsPage() {
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-purple-600 hover:bg-purple-700 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Create Your First Skill
             </button>
@@ -206,28 +206,28 @@ export default function SkillsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6 hover:bg-white/[0.06] transition-colors"
+                className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
               >
                 {/* Skill Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center text-xl">
+                    <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-xl">
                       {getCategoryIcon(skill.category)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white">{skill.name}</h3>
-                      <span className="text-xs text-white/40 bg-white/[0.06] px-2 py-1 rounded">
+                      <h3 className="font-semibold text-foreground">{skill.name}</h3>
+                      <span className="text-xs text-muted-foreground bg-accent px-2 py-1 rounded">
                         {skill.category}
                       </span>
                     </div>
                   </div>
-                  <button className="text-white/40 hover:text-white transition-colors">
+                  <button className="text-muted-foreground hover:text-foreground transition-colors">
                     <Settings className="w-4 h-4" />
                   </button>
                 </div>
 
                 {/* Description */}
-                <p className="text-white/60 text-sm mb-4 line-clamp-2">{skill.description}</p>
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{skill.description}</p>
 
                 {/* Tags */}
                 {skill.tags.length > 0 && (
@@ -235,13 +235,13 @@ export default function SkillsPage() {
                     {skill.tags.slice(0, 3).map((tag, tagIndex) => (
                       <span
                         key={tagIndex}
-                        className="text-xs bg-white/[0.06] text-white/60 px-2 py-1 rounded"
+                        className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded"
                       >
                         {tag}
                       </span>
                     ))}
                     {skill.tags.length > 3 && (
-                      <span className="text-xs text-white/40">
+                      <span className="text-xs text-muted-foreground">
                         +{skill.tags.length - 3} more
                       </span>
                     )}
@@ -252,36 +252,36 @@ export default function SkillsPage() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3 text-blue-400" />
-                      <span className="text-xs text-white/60">{skill.usage} uses</span>
+                      <TrendingUp className="w-3 h-3 text-primary" />
+                      <span className="text-xs text-muted-foreground">{skill.usage} uses</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 text-yellow-400" />
-                      <span className="text-xs text-white/60">{skill.rating.toFixed(1)}</span>
+                      <span className="text-xs text-muted-foreground">{skill.rating.toFixed(1)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Agent Info */}
                 {skill.agentName && (
-                  <div className="text-xs text-white/40 mb-4">
+                  <div className="text-xs text-muted-foreground mb-4">
                     Agent: {skill.agentName}
                   </div>
                 )}
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
+                  <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
                     <Play className="w-3 h-3" />
                     Test
                   </button>
-                  <button className="bg-white/[0.06] hover:bg-white/[0.1] text-white py-2 px-3 rounded-lg text-sm transition-colors">
+                  <button className="bg-accent hover:bg-accent/80 text-foreground py-2 px-3 rounded-lg text-sm transition-colors">
                     <Code className="w-4 h-4" />
                   </button>
                 </div>
 
                 {/* Created Date */}
-                <p className="text-white/30 text-xs mt-3">
+                <p className="text-muted-foreground/60 text-xs mt-3">
                   Created {new Date(skill.createdAt).toLocaleDateString()}
                 </p>
               </motion.div>
@@ -367,17 +367,17 @@ return mySkill(params);`
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#1A1A1A] border border-white/[0.08] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-card border border-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
-        <h2 className="text-white font-semibold text-lg mb-4">Create New Skill</h2>
+        <h2 className="text-foreground font-semibold text-lg mb-4">Create New Skill</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-white/60 text-sm mb-2">Agent</label>
+            <label className="block text-muted-foreground text-sm mb-2">Agent</label>
             <select
               value={formData.agentId}
               onChange={(e) => setFormData({ ...formData, agentId: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               required
             >
               <option value="">Select an agent</option>
@@ -389,23 +389,23 @@ return mySkill(params);`
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-white/60 text-sm mb-2">Name</label>
+              <label className="block text-muted-foreground text-sm mb-2">Name</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                 placeholder="My Skill"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-white/60 text-sm mb-2">Category</label>
+              <label className="block text-muted-foreground text-sm mb-2">Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               >
                 <option value="general">General</option>
                 <option value="web">Web</option>
@@ -418,33 +418,33 @@ return mySkill(params);`
           </div>
 
           <div>
-            <label className="block text-white/60 text-sm mb-2">Description</label>
+            <label className="block text-muted-foreground text-sm mb-2">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
+              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
               rows={3}
               placeholder="Describe what this skill does..."
             />
           </div>
 
           <div>
-            <label className="block text-white/60 text-sm mb-2">Tags (comma-separated)</label>
+            <label className="block text-muted-foreground text-sm mb-2">Tags (comma-separated)</label>
             <input
               type="text"
               value={formData.tags}
               onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               placeholder="web, scraping, data"
             />
           </div>
 
           <div>
-            <label className="block text-white/60 text-sm mb-2">Code</label>
+            <label className="block text-muted-foreground text-sm mb-2">Code</label>
             <textarea
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none font-mono text-sm"
+              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none font-mono text-sm"
               rows={12}
               placeholder="Enter your skill code..."
               required
@@ -455,14 +455,14 @@ return mySkill(params);`
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-white py-2 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-accent hover:bg-accent/80 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !formData.name || !formData.agentId}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
             >
               {loading ? "Creating..." : "Create Skill"}
             </button>
@@ -472,3 +472,7 @@ return mySkill(params);`
     </div>
   );
 }
+
+
+
+

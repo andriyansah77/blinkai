@@ -40,14 +40,14 @@ export function Footer() {
                   unoptimized
                 />
               </div>
-              <span className="font-bold text-xl text-white">
+              <span className="font-bold text-xl text-foreground">
                 Re<span className="text-amber-400">Agent</span>
               </span>
             </Link>
-            <p className="text-sm text-white/40 mb-3 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
               Deploy Your AI Agents in Seconds.
             </p>
-            <p className="text-xs text-white/25">Built on Hermes Framework</p>
+            <p className="text-xs text-muted-foreground/60">Built on Hermes Framework</p>
           </div>
 
           {/* Link columns */}
@@ -85,3 +85,4 @@ export function Footer() {
     </footer>
   );
 }
+

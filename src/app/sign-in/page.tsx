@@ -93,7 +93,7 @@ function SignInContent() {
                 unoptimized
               />
             </div>
-            <span className="font-bold text-xl text-white">
+            <span className="font-bold text-xl text-foreground">
               Re<span className="text-amber-400">Agent</span>
             </span>
           </Link>
@@ -101,10 +101,10 @@ function SignInContent() {
           {/* Feature highlight */}
           <div className="space-y-8">
             <div>
-              <p className="text-white/40 text-sm font-medium uppercase tracking-wider mb-3">
+              <p className="text-foreground/40 text-sm font-medium uppercase tracking-wider mb-3">
                 Trusted by developers
               </p>
-              <blockquote className="text-2xl font-semibold text-white leading-relaxed">
+              <blockquote className="text-2xl font-semibold text-foreground leading-relaxed">
                 &ldquo;ReAgent cut our agent deployment time from days to
                 seconds.&rdquo;
               </blockquote>
@@ -113,10 +113,10 @@ function SignInContent() {
                   SK
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-white">
+                  <div className="text-sm font-medium text-foreground">
                     Sarah K.
                   </div>
-                  <div className="text-xs text-white/40">CTO, Streamline AI</div>
+                  <div className="text-xs text-foreground/40">CTO, Streamline AI</div>
                 </div>
               </div>
             </div>
@@ -131,17 +131,17 @@ function SignInContent() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4"
+                  className="bg-card border border-border rounded-xl p-4"
                 >
                   <div className="text-xl font-black text-amber-400">
                     {stat.value}
                   </div>
-                  <div className="text-xs text-white/40 mt-0.5">{stat.label}</div>
+                  <div className="text-xs text-foreground/40 mt-0.5">{stat.label}</div>
                 </div>
               ))}
             </div>
 
-            <p className="text-sm text-white/30">
+            <p className="text-sm text-foreground/30">
               Join 500+ developers deploying AI agents with ReAgent
             </p>
           </div>
@@ -159,7 +159,7 @@ function SignInContent() {
           <div className="mb-8">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 mb-8 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-foreground/40 hover:text-foreground/70 mb-8 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to home
@@ -178,18 +178,18 @@ function SignInContent() {
                   unoptimized
                 />
               </div>
-              <span className="font-bold text-xl text-white">
+              <span className="font-bold text-xl text-foreground">
                 Re<span className="text-amber-400">Agent</span>
               </span>
             </div>
 
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome back</h1>
-            <p className="text-white/40">Sign in to your ReAgent account</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back</h1>
+            <p className="text-foreground/40">Sign in to your ReAgent account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/70">
+              <Label htmlFor="email" className="text-foreground/70">
                 Email
               </Label>
               <Input
@@ -199,13 +199,13 @@ function SignInContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-11 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50 focus:ring-amber-500/20"
+                className="h-11 bg-accent border-border text-foreground placeholder:text-foreground/25 focus:border-amber-500/50 focus:ring-amber-500/20"
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-white/70">
+                <Label htmlFor="password" className="text-foreground/70">
                   Password
                 </Label>
                 <Link
@@ -223,12 +223,12 @@ function SignInContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-11 pr-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50 focus:ring-amber-500/20"
+                  className="h-11 pr-10 bg-accent border-border text-foreground placeholder:text-foreground/25 focus:border-amber-500/50 focus:ring-amber-500/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -256,7 +256,7 @@ function SignInContent() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-white/30 mt-6">
+          <p className="text-center text-sm text-foreground/30 mt-6">
             Don&apos;t have an account?{" "}
             <Link
               href="/sign-up"
@@ -270,3 +270,4 @@ function SignInContent() {
     </div>
   );
 }
+

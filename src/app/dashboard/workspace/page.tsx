@@ -237,7 +237,7 @@ export default function WorkspacePage() {
     if (item.type === "folder") {
       switch (item.category) {
         case "hermes": return <Folder className="w-5 h-5 text-purple-400" />;
-        case "config": return <Folder className="w-5 h-5 text-blue-400" />;
+        case "config": return <Folder className="w-5 h-5 text-primary" />;
         case "sessions": return <Folder className="w-5 h-5 text-green-400" />;
         case "skills": return <Folder className="w-5 h-5 text-orange-400" />;
         case "logs": return <Folder className="w-5 h-5 text-red-400" />;
@@ -246,7 +246,7 @@ export default function WorkspacePage() {
       }
     } else {
       if (item.name.endsWith('.yaml') || item.name.endsWith('.yml')) {
-        return <Settings className="w-5 h-5 text-blue-400" />;
+        return <Settings className="w-5 h-5 text-primary" />;
       } else if (item.name.endsWith('.md')) {
         return <FileText className="w-5 h-5 text-green-400" />;
       } else if (item.name.endsWith('.py') || item.name.endsWith('.js')) {
@@ -266,7 +266,7 @@ export default function WorkspacePage() {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "hermes": return "bg-purple-500/20 text-purple-400";
-      case "config": return "bg-blue-500/20 text-blue-400";
+      case "config": return "bg-blue-500/20 text-primary";
       case "sessions": return "bg-green-500/20 text-green-400";
       case "skills": return "bg-orange-500/20 text-orange-400";
       case "logs": return "bg-red-500/20 text-red-400";
@@ -277,7 +277,7 @@ export default function WorkspacePage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -305,23 +305,23 @@ export default function WorkspacePage() {
   ];
 
   return (
-    <div className="h-screen bg-[#0A0A0A] text-white overflow-y-auto">
+    <div className="h-screen bg-background text-foreground overflow-y-auto">
       <div className="p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Folder className="w-6 h-6 text-orange-400" />
               Hermes Workspace
             </h1>
-            <p className="text-white/60 mt-1">Manage your Hermes agent files and data</p>
+            <p className="text-muted-foreground mt-1">Manage your Hermes agent files and data</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-3 py-2 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-white/60 hover:text-white transition-colors">
+            <button className="flex items-center gap-2 px-3 py-2 bg-accent hover:bg-accent/80 border border-border rounded-lg text-muted-foreground hover:text-foreground transition-colors">
               <Upload className="w-4 h-4" />
               Upload
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg text-white font-medium transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg text-foreground font-medium transition-colors">
               <Plus className="w-4 h-4" />
               New File
             </button>
@@ -336,8 +336,8 @@ export default function WorkspacePage() {
               onClick={() => setSelectedCategory(category.id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 selectedCategory === category.id
-                  ? "bg-orange-600 text-white"
-                  : "bg-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.1]"
+                  ? "bg-orange-600 text-foreground"
+                  : "bg-accent text-muted-foreground hover:text-foreground hover:bg-accent/80"
               }`}
             >
               <span>{category.name}</span>
@@ -351,13 +351,13 @@ export default function WorkspacePage() {
         {/* Toolbar */}
         <div className="flex items-center justify-between mb-6">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search files and folders..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg pl-10 pr-4 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all"
+              className="w-full bg-white/[0.05] border border-border rounded-lg pl-10 pr-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all"
             />
           </div>
           
@@ -366,8 +366,8 @@ export default function WorkspacePage() {
               onClick={() => setViewMode("list")}
               className={`p-2 rounded-lg transition-colors ${
                 viewMode === "list" 
-                  ? "bg-white/[0.1] text-white" 
-                  : "text-white/40 hover:text-white hover:bg-white/[0.06]"
+                  ? "bg-white/[0.1] text-foreground" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
               <List className="w-4 h-4" />
@@ -376,8 +376,8 @@ export default function WorkspacePage() {
               onClick={() => setViewMode("grid")}
               className={`p-2 rounded-lg transition-colors ${
                 viewMode === "grid" 
-                  ? "bg-white/[0.1] text-white" 
-                  : "text-white/40 hover:text-white hover:bg-white/[0.06]"
+                  ? "bg-white/[0.1] text-foreground" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
               <Grid className="w-4 h-4" />
@@ -394,30 +394,30 @@ export default function WorkspacePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-4 p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-lg transition-colors cursor-pointer"
+                className="flex items-center gap-4 p-4 bg-card hover:bg-accent border border-border rounded-lg transition-colors cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   {getItemIcon(item)}
                 </div>
                 
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
-                    <h3 className="font-medium text-white">{item.name}</h3>
+                    <h3 className="font-medium text-foreground">{item.name}</h3>
                     <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(item.category)}`}>
                       {item.category}
                     </span>
                   </div>
-                  <p className="text-white/60 text-sm">{item.description || item.path}</p>
+                  <p className="text-muted-foreground text-sm">{item.description || item.path}</p>
                 </div>
                 
                 <div className="text-right">
                   {item.size && (
-                    <p className="text-sm text-white/60">{item.size}</p>
+                    <p className="text-sm text-muted-foreground">{item.size}</p>
                   )}
-                  <p className="text-xs text-white/40">{item.modified}</p>
+                  <p className="text-xs text-muted-foreground">{item.modified}</p>
                 </div>
                 
-                <button className="text-white/40 hover:text-white transition-colors">
+                <button className="text-muted-foreground hover:text-foreground transition-colors">
                   <Settings className="w-4 h-4" />
                 </button>
               </motion.div>
@@ -431,20 +431,20 @@ export default function WorkspacePage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
-                className="p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-lg transition-colors cursor-pointer text-center"
+                className="p-4 bg-card hover:bg-accent border border-border rounded-lg transition-colors cursor-pointer text-center"
               >
-                <div className="w-12 h-12 rounded-lg bg-white/[0.06] flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center mx-auto mb-3">
                   {getItemIcon(item)}
                 </div>
                 
-                <h3 className="font-medium text-white text-sm truncate mb-1">{item.name}</h3>
+                <h3 className="font-medium text-foreground text-sm truncate mb-1">{item.name}</h3>
                 <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(item.category)} mb-2 inline-block`}>
                   {item.category}
                 </span>
                 {item.size && (
-                  <p className="text-xs text-white/40">{item.size}</p>
+                  <p className="text-xs text-muted-foreground">{item.size}</p>
                 )}
-                <p className="text-xs text-white/40">{item.modified}</p>
+                <p className="text-xs text-muted-foreground">{item.modified}</p>
               </motion.div>
             ))}
           </div>
@@ -452,11 +452,11 @@ export default function WorkspacePage() {
 
         {filteredItems.length === 0 && (
           <div className="text-center py-12">
-            <Folder className="w-12 h-12 text-white/20 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white/60 mb-2">
+            <Folder className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">
               {searchQuery ? "No files found" : "Workspace is empty"}
             </h3>
-            <p className="text-white/40 text-sm mb-6">
+            <p className="text-muted-foreground text-sm mb-6">
               {searchQuery 
                 ? "Try adjusting your search terms or category filter" 
                 : "Your Hermes workspace will populate as you use the agent"
@@ -465,7 +465,7 @@ export default function WorkspacePage() {
             {!searchQuery && (
               <button
                 onClick={fetchWorkspaceData}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                className="bg-orange-600 hover:bg-orange-700 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
               >
                 Refresh Workspace
               </button>
@@ -476,3 +476,8 @@ export default function WorkspacePage() {
     </div>
   );
 }
+
+
+
+
+

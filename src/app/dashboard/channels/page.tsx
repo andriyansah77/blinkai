@@ -60,7 +60,7 @@ export default function ChannelsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -163,23 +163,23 @@ export default function ChannelsPage() {
   };
 
   return (
-    <div className="h-screen bg-[#0A0A0A] text-white overflow-y-auto">
+    <div className="h-screen bg-background text-foreground overflow-y-auto">
       <div className="p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-              <Database className="w-6 h-6 text-blue-400" />
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+              <Database className="w-6 h-6 text-primary" />
               Channels
             </h1>
-            <p className="text-white/60 mt-1">Connect your AI agent to Discord, Telegram, and other platforms using your isolated Hermes instance</p>
+            <p className="text-muted-foreground mt-1">Connect your AI agent to Discord, Telegram, and other platforms using your isolated Hermes instance</p>
           </div>
           <button 
             onClick={() => {
               setSelectedType("");
               setShowAddModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Channel
@@ -190,12 +190,12 @@ export default function ChannelsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
                 <MessageSquare className="w-5 h-5" />
                 Channels
-                <span className="text-sm text-white/40 font-normal">{CHANNEL_TYPES.length} channels</span>
+                <span className="text-sm text-muted-foreground font-normal">{CHANNEL_TYPES.length} channels</span>
               </h2>
-              <p className="text-white/60 text-sm mt-1">Each user gets their own isolated Hermes instance - your platforms won't interfere with others.</p>
+              <p className="text-muted-foreground text-sm mt-1">Each user gets their own isolated Hermes instance - your platforms won't interfere with others.</p>
             </div>
           </div>
           
@@ -207,9 +207,9 @@ export default function ChannelsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className={cn(
-                  "relative p-6 bg-white/[0.03] border border-white/[0.08] rounded-xl transition-all duration-300",
+                  "relative p-6 bg-card border border-border rounded-xl transition-all duration-300",
                   type.enabled 
-                    ? "hover:bg-white/[0.06] cursor-pointer hover:border-white/[0.12]" 
+                    ? "hover:bg-accent cursor-pointer hover:border-border" 
                     : "opacity-60"
                 )}
                 onClick={() => {
@@ -236,13 +236,13 @@ export default function ChannelsPage() {
                   <div className="flex items-start gap-4 mb-4">
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center text-2xl",
-                      type.enabled ? "bg-white/[0.08]" : "bg-white/[0.04]"
+                      type.enabled ? "bg-white/[0.08]" : "bg-accent/50"
                     )}>
                       {type.icon}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-white text-lg mb-1">{type.name}</h3>
-                      <p className="text-white/60 text-sm leading-relaxed">{type.description}</p>
+                      <h3 className="font-semibold text-foreground text-lg mb-1">{type.name}</h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{type.description}</p>
                     </div>
                   </div>
 
@@ -274,14 +274,14 @@ export default function ChannelsPage() {
                         setSelectedType(type.id);
                         setShowAddModal(true);
                       }}
-                      className="w-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg py-2.5 px-4 text-white/70 hover:text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      className="w-full bg-accent hover:bg-accent/90 border border-border rounded-lg py-2.5 px-4 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors flex items-center justify-center gap-2"
                     >
                       Click to configure →
                     </button>
                   ) : (
                     <button
                       disabled
-                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg py-2.5 px-4 text-white/40 text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full bg-card border border-border/60 rounded-lg py-2.5 px-4 text-muted-foreground text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       Ask your bot to configure →
                     </button>
@@ -294,15 +294,15 @@ export default function ChannelsPage() {
 
         {/* Connected Channels */}
         <div>
-          <h2 className="text-lg font-semibold text-white mb-4">Connected Channels</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Connected Channels</h2>
           
           {channels.length === 0 ? (
-            <div className="text-center py-12 bg-white/[0.03] border border-white/[0.08] rounded-xl">
-              <div className="w-16 h-16 bg-white/[0.06] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Database className="w-8 h-8 text-white/40" />
+            <div className="text-center py-12 bg-card border border-border rounded-xl">
+              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                <Database className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">No channels connected</h3>
-              <p className="text-white/60 mb-6 max-w-md mx-auto">
+              <h3 className="text-foreground font-semibold text-lg mb-2">No channels connected</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                 Connect your first channel using your own isolated Hermes instance - completely separate from other users
               </p>
               <button
@@ -310,7 +310,7 @@ export default function ChannelsPage() {
                   setSelectedType("");
                   setShowAddModal(true);
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
               >
                 Connect Your First Channel
               </button>
@@ -323,21 +323,21 @@ export default function ChannelsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6 hover:bg-white/[0.06] transition-colors"
+                  className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-white/[0.06] flex items-center justify-center text-2xl">
+                      <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center text-2xl">
                         {getChannelIcon(channel.type)}
                       </div>
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-semibold text-white">{channel.name}</h3>
-                          <span className="text-xs text-white/40 bg-white/[0.06] px-2 py-1 rounded capitalize">
+                          <h3 className="font-semibold text-foreground">{channel.name}</h3>
+                          <span className="text-xs text-muted-foreground bg-accent px-2 py-1 rounded capitalize">
                             {channel.type}
                           </span>
                           {channel.agentName && (
-                            <span className="text-xs text-blue-400 bg-blue-500/20 px-2 py-1 rounded">
+                            <span className="text-xs text-primary bg-blue-500/20 px-2 py-1 rounded">
                               → {channel.agentName}
                             </span>
                           )}
@@ -348,7 +348,7 @@ export default function ChannelsPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-white/40">
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <MessageSquare className="w-3 h-3" />
                             <span>{channel.messageCount.toLocaleString()} messages</span>
@@ -362,7 +362,7 @@ export default function ChannelsPage() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <button className="text-white/40 hover:text-white transition-colors">
+                      <button className="text-muted-foreground hover:text-foreground transition-colors">
                         <Settings className="w-4 h-4" />
                       </button>
                     </div>
@@ -549,13 +549,13 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#1A1A1A] border border-white/[0.08] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-card border border-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white font-semibold text-lg">Connect New Channel</h2>
+          <h2 className="text-foreground font-semibold text-lg">Connect New Channel</h2>
           <button
             onClick={onClose}
-            className="text-white/40 hover:text-white transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             ✕
           </button>
@@ -563,27 +563,27 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
         
         {!selectedType ? (
           <div>
-            <p className="text-white/60 text-sm mb-6">Choose a platform to connect:</p>
+            <p className="text-muted-foreground text-sm mb-6">Choose a platform to connect:</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {enabledChannels.map((type) => (
                 <button
                   key={type.id}
                   onClick={() => setSelectedType(type.id)}
-                  className="p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-lg text-left transition-colors group"
+                  className="p-4 bg-card hover:bg-accent border border-border rounded-lg text-left transition-colors group"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-2xl">{type.icon}</span>
                     <div>
-                      <h3 className="text-white font-medium">{type.name}</h3>
+                      <h3 className="text-foreground font-medium">{type.name}</h3>
                       <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
                         Available
                       </span>
                     </div>
                   </div>
-                  <p className="text-white/60 text-sm mb-3">{type.description}</p>
+                  <p className="text-muted-foreground text-sm mb-3">{type.description}</p>
                   <div className="space-y-1">
                     {type.features.slice(0, 2).map((feature: string, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1 text-xs text-white/40">
+                      <div key={idx} className="flex items-center gap-1 text-xs text-muted-foreground">
                         <div className="w-1 h-1 bg-white/40 rounded-full" />
                         <span>{feature}</span>
                       </div>
@@ -595,15 +595,15 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
             
             {/* Disabled platforms */}
             <div className="mt-8">
-              <h3 className="text-white/60 text-sm mb-4">Coming Soon</h3>
+              <h3 className="text-muted-foreground text-sm mb-4">Coming Soon</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {channelTypes.filter(t => !t.enabled).map((type) => (
                   <div
                     key={type.id}
-                    className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-lg text-center opacity-60"
+                    className="p-3 bg-accent/30 border border-border/60 rounded-lg text-center opacity-60"
                   >
                     <div className="text-lg mb-1">{type.icon}</div>
-                    <div className="text-white/40 text-xs">{type.name}</div>
+                    <div className="text-muted-foreground text-xs">{type.name}</div>
                     <div className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full mt-2">
                       Soon
                     </div>
@@ -619,7 +619,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Agent Selection */}
                 <div>
-                  <label className="block text-white/60 text-sm mb-2">
+                  <label className="block text-muted-foreground text-sm mb-2">
                     Select Agent to Connect
                     <span className="text-red-400 ml-1">*</span>
                   </label>
@@ -633,12 +633,12 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
                     <select
                       value={selectedAgent}
                       onChange={(e) => setSelectedAgent(e.target.value)}
-                      className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                       required
                     >
-                      <option value="" className="bg-[#1a1a1a]">Choose an agent...</option>
+                      <option value="" className="bg-card">Choose an agent...</option>
                       {agents.map((agent) => (
-                        <option key={agent.id} value={agent.id} className="bg-[#1a1a1a]">
+                        <option key={agent.id} value={agent.id} className="bg-card">
                           {agent.name} ({agent.model})
                         </option>
                       ))}
@@ -647,12 +647,12 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
                 </div>
 
                 <div>
-                  <label className="block text-white/60 text-sm mb-2">Channel Name</label>
+                  <label className="block text-muted-foreground text-sm mb-2">Channel Name</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     placeholder={`My ${selectedChannel?.name} Bot`}
                     required
                   />
@@ -660,15 +660,15 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
 
                 {selectedChannel?.setupFields?.map((field: string) => (
                   <div key={field}>
-                    <label className="block text-white/60 text-sm mb-2">
+                    <label className="block text-muted-foreground text-sm mb-2">
                       {getFieldLabel(field)}
-                      {field === 'serverId' && <span className="text-white/40"> (Optional)</span>}
+                      {field === 'serverId' && <span className="text-muted-foreground"> (Optional)</span>}
                     </label>
                     <input
                       type={field.includes('token') || field.includes('key') ? 'password' : 'text'}
                       value={formData[field as keyof typeof formData]}
                       onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-                      className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                       placeholder={getFieldPlaceholder(field, selectedType)}
                       required={field !== 'serverId'}
                     />
@@ -679,14 +679,14 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
                   <button
                     type="button"
                     onClick={() => setSelectedType("")}
-                    className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                    className="flex-1 bg-accent hover:bg-accent/80 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
                   >
                     Back
                   </button>
                   <button
                     type="submit"
                     disabled={loading || !formData.name || !selectedAgent || (selectedType !== 'whatsapp' && !formData.botToken)}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                    className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
                   >
                     {loading ? "Connecting..." : `Connect to ${selectedChannel?.name}`}
                   </button>
@@ -695,13 +695,13 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
             </div>
 
             {/* Setup Instructions */}
-            <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-4">
-              <h3 className="text-white font-medium mb-4">
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="text-foreground font-medium mb-4">
                 {getSetupInstructions(selectedType)?.title}
               </h3>
               <div className="space-y-2">
                 {getSetupInstructions(selectedType)?.steps.map((step, idx) => (
-                  <div key={idx} className="text-white/60 text-sm">
+                  <div key={idx} className="text-muted-foreground text-sm">
                     {step}
                   </div>
                 ))}
@@ -709,7 +709,7 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
               
               {selectedType === 'telegram' && (
                 <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <p className="text-blue-400 text-xs">
+                  <p className="text-primary text-xs">
                     💡 Tip: After creating your bot, send it a message to activate it, then add it to groups if needed.
                   </p>
                 </div>
@@ -737,3 +737,8 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
     </div>
   );
 }
+
+
+
+
+

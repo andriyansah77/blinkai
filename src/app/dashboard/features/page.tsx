@@ -294,7 +294,7 @@ export default function FeaturesPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -322,7 +322,7 @@ export default function FeaturesPage() {
       case "active":
         return "text-green-400 bg-green-400/10 border-green-400/20";
       case "loading":
-        return "text-blue-400 bg-blue-400/10 border-blue-400/20";
+        return "text-primary bg-blue-400/10 border-blue-400/20";
       case "error":
         return "text-red-400 bg-red-400/10 border-red-400/20";
       default:
@@ -348,28 +348,28 @@ export default function FeaturesPage() {
   }, {} as Record<string, HermesFeature[]>);
 
   return (
-    <div className="h-screen bg-[#0A0A0A] text-white overflow-y-auto">
+    <div className="h-screen bg-background text-foreground overflow-y-auto">
       <div className="p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Workflow className="w-6 h-6 text-green-400" />
               Hermes Features
             </h1>
-            <p className="text-white/60 mt-1">Manage your Hermes agent capabilities and integrations</p>
+            <p className="text-muted-foreground mt-1">Manage your Hermes agent capabilities and integrations</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
               onClick={fetchHermesFeatures}
-              className="flex items-center gap-2 px-4 py-2 bg-white/[0.06] hover:bg-white/[0.12] text-white rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 text-foreground rounded-lg font-medium transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
               Refresh
             </button>
             <button 
               onClick={() => router.push('/dashboard/agents')}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-foreground font-medium transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Feature
@@ -378,58 +378,58 @@ export default function FeaturesPage() {
         </div>
 
         {/* System Overview */}
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6 mb-8">
+        <div className="bg-card border border-border rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-semibold text-lg">System Overview</h2>
+            <h2 className="text-foreground font-semibold text-lg">System Overview</h2>
             <div className="flex items-center gap-2">
               <div className={cn(
                 "w-2 h-2 rounded-full",
                 systemStatus?.hermes?.installed ? "bg-green-400" : "bg-red-400"
               )} />
-              <span className="text-white/60 text-sm">
+              <span className="text-muted-foreground text-sm">
                 {systemStatus?.hermes?.installed ? "Hermes Active" : "Hermes Inactive"}
               </span>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3 p-4 bg-white/[0.03] rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
               <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                <Cpu className="w-5 h-5 text-blue-400" />
+                <Cpu className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-white font-medium">Core Features</p>
-                <p className="text-white/40 text-sm">{features.filter(f => f.type === 'core').length} active</p>
+                <p className="text-foreground font-medium">Core Features</p>
+                <p className="text-muted-foreground text-sm">{features.filter(f => f.type === 'core').length} active</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-4 bg-white/[0.03] rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
               <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
                 <Brain className="w-5 h-5 text-green-400" />
               </div>
               <div>
-                <p className="text-white font-medium">Skills</p>
-                <p className="text-white/40 text-sm">{features.filter(f => f.type === 'skill').length} installed</p>
+                <p className="text-foreground font-medium">Skills</p>
+                <p className="text-muted-foreground text-sm">{features.filter(f => f.type === 'skill').length} installed</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-4 bg-white/[0.03] rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
               <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                 <Globe className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <p className="text-white font-medium">Platforms</p>
-                <p className="text-white/40 text-sm">{features.filter(f => f.type === 'gateway').length} connected</p>
+                <p className="text-foreground font-medium">Platforms</p>
+                <p className="text-muted-foreground text-sm">{features.filter(f => f.type === 'gateway').length} connected</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-4 bg-white/[0.03] rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
               <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-orange-400" />
               </div>
               <div>
-                <p className="text-white font-medium">Automation</p>
-                <p className="text-white/40 text-sm">{features.filter(f => f.type === 'cron').length} jobs</p>
+                <p className="text-foreground font-medium">Automation</p>
+                <p className="text-muted-foreground text-sm">{features.filter(f => f.type === 'cron').length} jobs</p>
               </div>
             </div>
           </div>
@@ -438,10 +438,10 @@ export default function FeaturesPage() {
         {/* Features by Category */}
         {Object.entries(featuresByCategory).map(([category, categoryFeatures]) => (
           <div key={category} className="mb-8">
-            <h3 className="text-white font-semibold text-lg mb-4 flex items-center gap-2">
+            <h3 className="text-foreground font-semibold text-lg mb-4 flex items-center gap-2">
               {getTypeIcon(categoryFeatures[0]?.type)}
               {category}
-              <span className="text-sm text-white/40 font-normal">({categoryFeatures.length})</span>
+              <span className="text-sm text-muted-foreground font-normal">({categoryFeatures.length})</span>
             </h3>
             
             <div className="space-y-4">
@@ -451,16 +451,16 @@ export default function FeaturesPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6 hover:bg-white/[0.06] transition-colors"
+                  className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-white/[0.06] flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center">
                         {getTypeIcon(feature.type)}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1">
-                          <h4 className="font-semibold text-white">{feature.name}</h4>
+                          <h4 className="font-semibold text-foreground">{feature.name}</h4>
                           <div className={cn(
                             "flex items-center gap-2 px-2 py-1 rounded-full border text-xs",
                             getStatusColor(feature.status)
@@ -469,8 +469,8 @@ export default function FeaturesPage() {
                             <span className="capitalize">{feature.status}</span>
                           </div>
                         </div>
-                        <p className="text-white/60 text-sm mb-2">{feature.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-white/40">
+                        <p className="text-muted-foreground text-sm mb-2">{feature.description}</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           {feature.usageCount !== undefined && (
                             <div className="flex items-center gap-1">
                               <Activity className="w-3 h-3" />
@@ -498,12 +498,12 @@ export default function FeaturesPage() {
                         <button
                           key={action}
                           onClick={() => handleFeatureAction(feature.id, action)}
-                          className="px-3 py-1 bg-white/[0.06] hover:bg-white/[0.12] text-white/70 hover:text-white text-xs rounded-lg transition-colors capitalize"
+                          className="px-3 py-1 bg-accent hover:bg-accent/90 text-muted-foreground hover:text-foreground text-xs rounded-lg transition-colors capitalize"
                         >
                           {action}
                         </button>
                       ))}
-                      <button className="text-white/40 hover:text-white transition-colors">
+                      <button className="text-muted-foreground hover:text-foreground transition-colors">
                         <Settings className="w-4 h-4" />
                       </button>
                     </div>
@@ -516,14 +516,14 @@ export default function FeaturesPage() {
 
         {features.length === 0 && (
           <div className="text-center py-12">
-            <Workflow className="w-12 h-12 text-white/20 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white/60 mb-2">No Hermes features detected</h3>
-            <p className="text-white/40 text-sm mb-6">
+            <Workflow className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">No Hermes features detected</h3>
+            <p className="text-muted-foreground text-sm mb-6">
               Make sure Hermes CLI is installed and your profile is created
             </p>
             <button
               onClick={fetchHermesFeatures}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-green-600 hover:bg-green-700 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Refresh Features
             </button>
@@ -533,3 +533,8 @@ export default function FeaturesPage() {
     </div>
   );
 }
+
+
+
+
+

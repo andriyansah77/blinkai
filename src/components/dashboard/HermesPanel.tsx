@@ -132,7 +132,7 @@ export function HermesPanel() {
         <div className="flex items-center gap-3">
           {/* Hermes logo badge */}
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <Zap className="w-5 h-5 text-white" />
+            <Zap className="w-5 h-5 text-foreground" />
           </div>
           <div className="text-left">
             <div className="flex items-center gap-2">
@@ -383,7 +383,7 @@ export function HermesPanel() {
               className={`text-xs transition-all ${
                 saved
                   ? "bg-green-600 hover:bg-green-600"
-                  : "bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 text-white"
+                  : "bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 text-foreground"
               }`}
             >
               {saved ? (
@@ -412,3 +412,5 @@ export function HermesPanel() {
     </div>
   );
 }
+
+

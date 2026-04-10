@@ -147,7 +147,7 @@ export default function JobsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -184,20 +184,20 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="h-screen bg-[#0A0A0A] text-white overflow-y-auto">
+    <div className="h-screen bg-background text-foreground overflow-y-auto">
       <div className="p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Calendar className="w-6 h-6 text-purple-400" />
               Hermes Scheduled Jobs
             </h1>
-            <p className="text-white/60 mt-1">Manage automated Hermes tasks and cron jobs</p>
+            <p className="text-muted-foreground mt-1">Manage automated Hermes tasks and cron jobs</p>
           </div>
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-foreground font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Job
@@ -217,10 +217,10 @@ export default function JobsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-4"
+              className="bg-card border border-border rounded-xl p-4"
             >
-              <p className="text-white/60 text-sm">{stat.label}</p>
-              <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+              <p className="text-muted-foreground text-sm">{stat.label}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
             </motion.div>
           ))}
         </div>
@@ -233,28 +233,28 @@ export default function JobsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6 hover:bg-white/[0.06] transition-colors"
+              className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-white/[0.06] flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-white/60" />
+                  <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-semibold text-white">{job.name}</h3>
-                      <span className="text-xs text-white/40 bg-white/[0.06] px-2 py-1 rounded">
+                      <h3 className="font-semibold text-foreground">{job.name}</h3>
+                      <span className="text-xs text-muted-foreground bg-accent px-2 py-1 rounded">
                         Hermes Cron
                       </span>
                     </div>
-                    <p className="text-white/60 text-sm mb-2">{job.description}</p>
-                    <div className="text-xs text-white/40 mb-2">
-                      <span className="font-mono bg-white/[0.06] px-2 py-1 rounded mr-2">
+                    <p className="text-muted-foreground text-sm mb-2">{job.description}</p>
+                    <div className="text-xs text-muted-foreground mb-2">
+                      <span className="font-mono bg-accent px-2 py-1 rounded mr-2">
                         {job.schedule}
                       </span>
                       <span>Prompt: {job.prompt.substring(0, 60)}...</span>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-white/40">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-muted-foreground">
                       <span>Last run: {job.lastRun}</span>
                       <span>Next run: {job.nextRun}</span>
                       <span>Runs: {job.runCount || 0}</span>
@@ -275,17 +275,17 @@ export default function JobsPage() {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => toggleJob(job.id, !job.enabled)}
-                      className="text-white/40 hover:text-white transition-colors"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
                       title={job.enabled ? "Pause job" : "Resume job"}
                     >
                       {job.enabled ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                     </button>
-                    <button className="text-white/40 hover:text-white transition-colors">
+                    <button className="text-muted-foreground hover:text-foreground transition-colors">
                       <Edit className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => deleteJob(job.id)}
-                      className="text-white/40 hover:text-red-400 transition-colors"
+                      className="text-muted-foreground hover:text-red-400 transition-colors"
                       title="Delete job"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -299,12 +299,12 @@ export default function JobsPage() {
 
         {jobs.length === 0 && (
           <div className="text-center py-12">
-            <Calendar className="w-12 h-12 text-white/20 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white/60 mb-2">No Hermes cron jobs</h3>
-            <p className="text-white/40 text-sm mb-6">Create your first automated task to get started</p>
+            <Calendar className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">No Hermes cron jobs</h3>
+            <p className="text-muted-foreground text-sm mb-6">Create your first automated task to get started</p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-purple-600 hover:bg-purple-700 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Create First Job
             </button>
@@ -314,39 +314,39 @@ export default function JobsPage() {
         {/* Create Job Modal */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#1A1A1A] border border-white/[0.08] rounded-xl p-6 w-full max-w-md mx-4">
-              <h3 className="text-white font-semibold text-lg mb-4">Create Hermes Cron Job</h3>
+            <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4">
+              <h3 className="text-foreground font-semibold text-lg mb-4">Create Hermes Cron Job</h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-white/60 text-sm mb-2">Job Name</label>
+                  <label className="block text-muted-foreground text-sm mb-2">Job Name</label>
                   <input
                     type="text"
                     value={newJob.name}
                     onChange={(e) => setNewJob({ ...newJob, name: e.target.value })}
-                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg px-3 py-2 text-white"
+                    className="w-full bg-white/[0.05] border border-border rounded-lg px-3 py-2 text-foreground"
                     placeholder="Daily report generation"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-white/60 text-sm mb-2">Schedule (Cron)</label>
+                  <label className="block text-muted-foreground text-sm mb-2">Schedule (Cron)</label>
                   <input
                     type="text"
                     value={newJob.schedule}
                     onChange={(e) => setNewJob({ ...newJob, schedule: e.target.value })}
-                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono"
+                    className="w-full bg-white/[0.05] border border-border rounded-lg px-3 py-2 text-foreground font-mono"
                     placeholder="0 9 * * *"
                   />
-                  <p className="text-white/40 text-xs mt-1">Example: "0 9 * * *" = Daily at 9 AM</p>
+                  <p className="text-muted-foreground text-xs mt-1">Example: "0 9 * * *" = Daily at 9 AM</p>
                 </div>
                 
                 <div>
-                  <label className="block text-white/60 text-sm mb-2">Prompt</label>
+                  <label className="block text-muted-foreground text-sm mb-2">Prompt</label>
                   <textarea
                     value={newJob.prompt}
                     onChange={(e) => setNewJob({ ...newJob, prompt: e.target.value })}
-                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg px-3 py-2 text-white h-24 resize-none"
+                    className="w-full bg-white/[0.05] border border-border rounded-lg px-3 py-2 text-foreground h-24 resize-none"
                     placeholder="Generate a daily report of system status and send it to the admin channel"
                   />
                 </div>
@@ -356,13 +356,13 @@ export default function JobsPage() {
                 <button
                   onClick={createCronJob}
                   disabled={!newJob.name || !newJob.schedule || !newJob.prompt}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-white/[0.06] disabled:text-white/40 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-accent disabled:text-muted-foreground text-foreground px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   Create Job
                 </button>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-white/[0.06] hover:bg-white/[0.12] text-white rounded-lg transition-colors"
+                  className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
@@ -374,3 +374,8 @@ export default function JobsPage() {
     </div>
   );
 }
+
+
+
+
+

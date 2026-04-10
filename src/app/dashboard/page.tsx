@@ -308,8 +308,8 @@ export default function DashboardPage() {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-white/60 text-sm">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground text-sm">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -326,11 +326,11 @@ export default function DashboardPage() {
           <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <XCircle className="w-8 h-8 text-red-400" />
           </div>
-          <h3 className="text-white font-semibold text-lg mb-2">Failed to Load Dashboard</h3>
-          <p className="text-white/60 mb-6">{error}</p>
+          <h3 className="text-foreground font-semibold text-lg mb-2">Failed to Load Dashboard</h3>
+          <p className="text-muted-foreground mb-6">{error}</p>
           <button
             onClick={fetchDashboardData}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Retry
           </button>
@@ -384,58 +384,58 @@ export default function DashboardPage() {
 
       <div className="p-6 space-y-8">
         {/* System Status */}
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6">
+        <div className="bg-card border border-border rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-semibold text-lg">System Status</h2>
+            <h2 className="text-foreground font-semibold text-lg">System Status</h2>
             <div className="flex items-center gap-2">
               <div className={cn(
                 "w-2 h-2 rounded-full",
                 stats?.system.hermesInstalled ? "bg-green-400" : "bg-red-400"
               )} />
-              <span className="text-white/60 text-sm">
+              <span className="text-muted-foreground text-sm">
                 {stats?.system.hermesInstalled ? "Hermes Active" : "Hermes Inactive"}
               </span>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3 p-4 bg-white/[0.03] rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
               <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                <Cpu className="w-5 h-5 text-blue-400" />
+                <Cpu className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-white font-medium">Hermes CLI</p>
-                <p className="text-white/40 text-sm">{stats?.system.version}</p>
+                <p className="text-foreground font-medium">Hermes CLI</p>
+                <p className="text-muted-foreground text-sm">{stats?.system.version}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-4 bg-white/[0.03] rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
               <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
                 <Database className="w-5 h-5 text-green-400" />
               </div>
               <div>
-                <p className="text-white font-medium">Memory</p>
-                <p className="text-white/40 text-sm capitalize">{stats?.memory.type}</p>
+                <p className="text-foreground font-medium">Memory</p>
+                <p className="text-muted-foreground text-sm capitalize">{stats?.memory.type}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-4 bg-white/[0.03] rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
               <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                 <Globe className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <p className="text-white font-medium">Gateway</p>
-                <p className="text-white/40 text-sm capitalize">{stats?.gateway.status}</p>
+                <p className="text-foreground font-medium">Gateway</p>
+                <p className="text-muted-foreground text-sm capitalize">{stats?.gateway.status}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-4 bg-white/[0.03] rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
               <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
                 <Clock className="w-5 h-5 text-orange-400" />
               </div>
               <div>
-                <p className="text-white font-medium">Uptime</p>
-                <p className="text-white/40 text-sm">{stats?.system.uptime}</p>
+                <p className="text-foreground font-medium">Uptime</p>
+                <p className="text-muted-foreground text-sm">{stats?.system.uptime}</p>
               </div>
             </div>
           </div>
@@ -448,7 +448,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6"
+            className="bg-card border border-border rounded-xl p-6"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
@@ -456,16 +456,16 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => router.push('/dashboard/agents')}
-                className="text-white/40 hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-white font-semibold mb-1">AI Agents</h3>
-            <p className="text-2xl font-bold text-white mb-2">{stats?.agents.total || 0}</p>
+            <h3 className="text-foreground font-semibold mb-1">AI Agents</h3>
+            <p className="text-2xl font-bold text-foreground mb-2">{stats?.agents.total || 0}</p>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-green-400">{stats?.agents.active || 0} active</span>
-              <span className="text-blue-400">{stats?.agents.learning || 0} learning</span>
+              <span className="text-primary">{stats?.agents.learning || 0} learning</span>
             </div>
           </motion.div>
 
@@ -474,7 +474,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6"
+            className="bg-card border border-border rounded-xl p-6"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
@@ -482,16 +482,16 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => router.push('/dashboard/agents?view=skills')}
-                className="text-white/40 hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-white font-semibold mb-1">Skills</h3>
-            <p className="text-2xl font-bold text-white mb-2">{stats?.skills.total || 0}</p>
+            <h3 className="text-foreground font-semibold mb-1">Skills</h3>
+            <p className="text-2xl font-bold text-foreground mb-2">{stats?.skills.total || 0}</p>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-green-400">{stats?.skills.installed || 0} installed</span>
-              <span className="text-blue-400">{stats?.skills.categories || 0} categories</span>
+              <span className="text-primary">{stats?.skills.categories || 0} categories</span>
             </div>
           </motion.div>
 
@@ -500,7 +500,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6"
+            className="bg-card border border-border rounded-xl p-6"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
@@ -508,16 +508,16 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => router.push('/dashboard/chat')}
-                className="text-white/40 hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-white font-semibold mb-1">Chat Sessions</h3>
-            <p className="text-2xl font-bold text-white mb-2">{stats?.sessions.total || 0}</p>
+            <h3 className="text-foreground font-semibold mb-1">Chat Sessions</h3>
+            <p className="text-2xl font-bold text-foreground mb-2">{stats?.sessions.total || 0}</p>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-green-400">{stats?.sessions.today || 0} today</span>
-              <span className="text-blue-400">{stats?.sessions.thisWeek || 0} this week</span>
+              <span className="text-primary">{stats?.sessions.thisWeek || 0} this week</span>
             </div>
           </motion.div>
 
@@ -526,7 +526,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6"
+            className="bg-card border border-border rounded-xl p-6"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -534,13 +534,13 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => router.push('/dashboard/channels')}
-                className="text-white/40 hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-white font-semibold mb-1">Gateway</h3>
-            <p className="text-2xl font-bold text-white mb-2">{stats?.gateway.platforms || 0}</p>
+            <h3 className="text-foreground font-semibold mb-1">Gateway</h3>
+            <p className="text-2xl font-bold text-foreground mb-2">{stats?.gateway.platforms || 0}</p>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-green-400">{stats?.gateway.connections || 0} connected</span>
               <span className={cn(
@@ -560,24 +560,24 @@ export default function DashboardPage() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6"
+            className="bg-card border border-border rounded-xl p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-white font-semibold text-lg">Recent Activity</h3>
-              <Activity className="w-5 h-5 text-white/40" />
+              <h3 className="text-foreground font-semibold text-lg">Recent Activity</h3>
+              <Activity className="w-5 h-5 text-muted-foreground" />
             </div>
             
             <div className="space-y-4">
               {activities.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-white/40 text-sm">No recent activity</p>
-                  <p className="text-white/30 text-xs mt-1">
+                  <p className="text-muted-foreground text-sm">No recent activity</p>
+                  <p className="text-muted-foreground/60 text-xs mt-1">
                     Activities will appear here as you use Hermes
                   </p>
                 </div>
               ) : (
                 activities.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3 p-3 bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors">
+                  <div key={activity.id} className="flex items-start gap-3 p-3 bg-card rounded-lg hover:bg-accent transition-colors">
                     <div className={cn(
                       "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
                       activity.status === 'success' ? "bg-green-500/20" :
@@ -591,13 +591,13 @@ export default function DashboardPage() {
                       ) : activity.status === 'error' ? (
                         <XCircle className="w-4 h-4 text-red-400" />
                       ) : (
-                        <Activity className="w-4 h-4 text-blue-400" />
+                        <Activity className="w-4 h-4 text-primary" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium text-sm">{activity.title}</p>
-                      <p className="text-white/60 text-sm">{activity.description}</p>
-                      <p className="text-white/40 text-xs mt-1">
+                      <p className="text-foreground font-medium text-sm">{activity.title}</p>
+                      <p className="text-muted-foreground text-sm">{activity.description}</p>
+                      <p className="text-muted-foreground text-xs mt-1">
                         {new Date(activity.timestamp).toLocaleTimeString()}
                       </p>
                     </div>
@@ -612,21 +612,21 @@ export default function DashboardPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
-            className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6"
+            className="bg-card border border-border rounded-xl p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-white font-semibold text-lg">Quick Actions</h3>
-              <Zap className="w-5 h-5 text-white/40" />
+              <h3 className="text-foreground font-semibold text-lg">Quick Actions</h3>
+              <Zap className="w-5 h-5 text-muted-foreground" />
             </div>
             
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => router.push('/dashboard/chat')}
-                className="p-4 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 rounded-lg text-left transition-colors group"
+                className="p-4 bg-primary/20 hover:bg-primary/30 border border-blue-500/30 rounded-lg text-left transition-colors group"
               >
-                <MessageSquare className="w-6 h-6 text-blue-400 mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-white font-medium text-sm">Start Chat</p>
-                <p className="text-white/60 text-xs">Chat with Hermes</p>
+                <MessageSquare className="w-6 h-6 text-primary mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-foreground font-medium text-sm">Start Chat</p>
+                <p className="text-muted-foreground text-xs">Chat with Hermes</p>
               </button>
 
               <button
@@ -634,8 +634,8 @@ export default function DashboardPage() {
                 className="p-4 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-left transition-colors group"
               >
                 <Bot className="w-6 h-6 text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-white font-medium text-sm">Create Agent</p>
-                <p className="text-white/60 text-xs">New AI agent</p>
+                <p className="text-foreground font-medium text-sm">Create Agent</p>
+                <p className="text-muted-foreground text-xs">New AI agent</p>
               </button>
 
               <button
@@ -643,8 +643,8 @@ export default function DashboardPage() {
                 className="p-4 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded-lg text-left transition-colors group"
               >
                 <Globe className="w-6 h-6 text-green-400 mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-white font-medium text-sm">Connect Platform</p>
-                <p className="text-white/60 text-xs">Telegram, Discord</p>
+                <p className="text-foreground font-medium text-sm">Connect Platform</p>
+                <p className="text-muted-foreground text-xs">Telegram, Discord</p>
               </button>
 
               <button
@@ -652,8 +652,8 @@ export default function DashboardPage() {
                 className="p-4 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/30 rounded-lg text-left transition-colors group"
               >
                 <Brain className="w-6 h-6 text-orange-400 mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-white font-medium text-sm">Browse Skills</p>
-                <p className="text-white/60 text-xs">Enhance agents</p>
+                <p className="text-foreground font-medium text-sm">Browse Skills</p>
+                <p className="text-muted-foreground text-xs">Enhance agents</p>
               </button>
             </div>
           </motion.div>
@@ -664,11 +664,11 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6"
+          className="bg-card border border-border rounded-xl p-6"
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-white font-semibold text-lg">Performance Overview</h3>
-            <TrendingUp className="w-5 h-5 text-white/40" />
+            <h3 className="text-foreground font-semibold text-lg">Performance Overview</h3>
+            <TrendingUp className="w-5 h-5 text-muted-foreground" />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -676,8 +676,8 @@ export default function DashboardPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <MessageSquare className="w-8 h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-white mb-1">{stats?.sessions.total || 0}</p>
-              <p className="text-white/60 text-sm">Total Conversations</p>
+              <p className="text-2xl font-bold text-foreground mb-1">{stats?.sessions.total || 0}</p>
+              <p className="text-muted-foreground text-sm">Total Conversations</p>
               <p className="text-green-400 text-xs mt-1">+{stats?.sessions.thisWeek || 0} this week</p>
             </div>
 
@@ -685,17 +685,17 @@ export default function DashboardPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Brain className="w-8 h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-white mb-1">{stats?.memory.total || 0}</p>
-              <p className="text-white/60 text-sm">Memories Stored</p>
-              <p className="text-blue-400 text-xs mt-1 capitalize">{stats?.memory.type} system</p>
+              <p className="text-2xl font-bold text-foreground mb-1">{stats?.memory.total || 0}</p>
+              <p className="text-muted-foreground text-sm">Memories Stored</p>
+              <p className="text-primary text-xs mt-1 capitalize">{stats?.memory.type} system</p>
             </div>
 
             <div className="text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Zap className="w-8 h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-white mb-1">{stats?.skills.installed || 0}</p>
-              <p className="text-white/60 text-sm">Active Skills</p>
+              <p className="text-2xl font-bold text-foreground mb-1">{stats?.skills.installed || 0}</p>
+              <p className="text-muted-foreground text-sm">Active Skills</p>
               <p className="text-purple-400 text-xs mt-1">{stats?.skills.total || 0} available</p>
             </div>
           </div>
@@ -704,3 +704,9 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
+
+
+
+

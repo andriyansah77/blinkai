@@ -789,12 +789,12 @@ export default function HermesChat({ className }: ChatProps) {
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="absolute bottom-12 left-0 bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] rounded-xl p-2 min-w-[200px] z-50"
+          className="absolute bottom-12 left-0 bg-white/[0.08] backdrop-blur-sm border border-border rounded-xl p-2 min-w-[200px] z-50"
         >
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingFile}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload className="w-4 h-4" />
             {isUploadingFile ? "Uploading..." : "Upload File"}
@@ -804,7 +804,7 @@ export default function HermesChat({ className }: ChatProps) {
               setShowUploadMenu(false);
               // Add image upload functionality here
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors"
           >
             <FileText className="w-4 h-4" />
             Upload Image
@@ -822,9 +822,9 @@ export default function HermesChat({ className }: ChatProps) {
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="absolute bottom-12 left-0 bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] rounded-xl p-2 min-w-[250px] z-50"
+          className="absolute bottom-12 left-0 bg-white/[0.08] backdrop-blur-sm border border-border rounded-xl p-2 min-w-[250px] z-50"
         >
-          <div className="flex items-center gap-2 px-3 py-2 text-xs text-white/50 border-b border-white/[0.08] mb-1">
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-white/50 border-b border-border mb-1">
             <Terminal className="w-3 h-3" />
             Hermes Commands
           </div>
@@ -836,15 +836,15 @@ export default function HermesChat({ className }: ChatProps) {
                 setShowCommandMenu(false);
                 inputRef.current?.focus();
               }}
-              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors text-left"
+              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors text-left"
             >
               <span className="font-mono text-blue-400">{command}</span>
-              <span className="text-xs text-white/40">
+              <span className="text-xs text-muted-foreground">
                 {getCommandDescription(command)}
               </span>
             </button>
           ))}
-          <div className="px-3 py-2 text-xs text-white/40 border-t border-white/[0.08] mt-1">
+          <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border mt-1">
             Type <span className="font-mono text-blue-400">/help</span> for all commands
           </div>
         </motion.div>
@@ -886,18 +886,18 @@ export default function HermesChat({ className }: ChatProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-[#1a1a1a] border border-white/[0.12] rounded-xl p-6 max-w-md w-full mx-4"
+            className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-white font-semibold text-lg mb-4">Share Your Feedback</h3>
-            <p className="text-white/60 text-sm mb-6">How was your experience with the AI assistant?</p>
+            <h3 className="text-foreground font-semibold text-lg mb-4">Share Your Feedback</h3>
+            <p className="text-muted-foreground text-sm mb-6">How was your experience with the AI assistant?</p>
             
             <div className="flex gap-2 mb-6">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <button
                   key={rating}
                   onClick={() => submitFeedback(rating)}
-                  className="w-10 h-10 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-amber-400 transition-colors"
+                  className="w-10 h-10 rounded-lg bg-accent hover:bg-accent/90 border border-border flex items-center justify-center text-muted-foreground hover:text-amber-400 transition-colors"
                 >
                   <Star className="w-5 h-5" />
                 </button>
@@ -907,7 +907,7 @@ export default function HermesChat({ className }: ChatProps) {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowFeedback(false)}
-                className="flex-1 px-4 py-2 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg text-white/70 hover:text-white transition-colors"
+                className="flex-1 px-4 py-2 bg-accent hover:bg-accent/90 border border-border rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
@@ -916,7 +916,7 @@ export default function HermesChat({ className }: ChatProps) {
                   const message = prompt("Any additional feedback? (Optional)");
                   submitFeedback(5, message || undefined);
                 }}
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
+                className="flex-1 px-4 py-2 bg-primary hover:bg-blue-700 rounded-lg text-foreground transition-colors"
               >
                 Submit
               </button>
@@ -929,7 +929,7 @@ export default function HermesChat({ className }: ChatProps) {
 
   if (agentLoading) {
     return (
-      <div className={cn("flex items-center justify-center h-full bg-[#0A0A0A]", className)}>
+      <div className={cn("flex items-center justify-center h-full bg-background", className)}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -937,18 +937,18 @@ export default function HermesChat({ className }: ChatProps) {
 
   if (!hasAgent) {
     return (
-      <div className={cn("flex items-center justify-center h-full bg-[#0A0A0A]", className)}>
+      <div className={cn("flex items-center justify-center h-full bg-background", className)}>
         <div className="text-center">
-          <div className="w-16 h-16 bg-white/[0.06] rounded-full flex items-center justify-center mx-auto mb-4">
-            <Bot className="w-8 h-8 text-white/40" />
+          <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+            <Bot className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-white font-semibold text-lg mb-2">No agent found</h3>
-          <p className="text-white/60 mb-6">
+          <h3 className="text-foreground font-semibold text-lg mb-2">No agent found</h3>
+          <p className="text-muted-foreground mb-6">
             You need to complete the onboarding process to create your AI agent.
           </p>
           <button
             onClick={() => window.location.href = '/onboarding'}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Complete Setup
           </button>
@@ -958,7 +958,7 @@ export default function HermesChat({ className }: ChatProps) {
   }
 
   return (
-    <div className={cn("flex flex-col h-full bg-[#0A0A0A]", className)}>
+    <div className={cn("flex flex-col h-full bg-background", className)}>
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -983,10 +983,10 @@ export default function HermesChat({ className }: ChatProps) {
           <div className="h-full flex flex-col items-center justify-center p-8">
             {/* Welcome Message */}
             <div className="text-center mb-12 max-w-2xl">
-              <h1 className="text-4xl font-bold text-white mb-4">
+              <h1 className="text-4xl font-bold text-foreground mb-4">
                 What would you like to do?
               </h1>
-              <p className="text-white/60 text-lg">
+              <p className="text-muted-foreground text-lg">
                 {agent?.name} is ready
               </p>
             </div>
@@ -1001,8 +1001,8 @@ export default function HermesChat({ className }: ChatProps) {
                       type="button"
                       onClick={() => setShowUploadMenu(!showUploadMenu)}
                       className={cn(
-                        "w-10 h-10 rounded-full border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white transition-colors flex-shrink-0",
-                        showUploadMenu ? "bg-blue-600 text-white" : "bg-white/[0.06] hover:bg-white/[0.1]"
+                        "w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors flex-shrink-0",
+                        showUploadMenu ? "bg-primary text-foreground" : "bg-accent hover:bg-accent/80"
                       )}
                     >
                       <Plus className="w-4 h-4" />
@@ -1019,7 +1019,7 @@ export default function HermesChat({ className }: ChatProps) {
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
                       placeholder="Ask anything... (type / for commands)"
-                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 pr-20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
+                      className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-20 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
                       rows={1}
                       style={{
                         minHeight: "48px",
@@ -1035,8 +1035,8 @@ export default function HermesChat({ className }: ChatProps) {
                         className={cn(
                           "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
                           isRecording 
-                            ? "bg-red-600 hover:bg-red-700 text-white animate-pulse" 
-                            : "bg-white/[0.06] hover:bg-white/[0.1] text-white/60 hover:text-white"
+                            ? "bg-red-600 hover:bg-red-700 text-foreground animate-pulse" 
+                            : "bg-accent hover:bg-accent/80 text-muted-foreground hover:text-foreground"
                         )}
                       >
                         <Mic className="w-4 h-4" />
@@ -1044,7 +1044,7 @@ export default function HermesChat({ className }: ChatProps) {
                       <button
                         type="submit"
                         disabled={!input.trim() || isLoading}
-                        className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-white/[0.06] disabled:text-white/30 flex items-center justify-center text-white transition-colors"
+                        className="w-8 h-8 rounded-lg bg-primary hover:bg-blue-700 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-foreground transition-colors"
                       >
                         <Send className="w-4 h-4" />
                       </button>
@@ -1063,7 +1063,7 @@ export default function HermesChat({ className }: ChatProps) {
                         "flex items-center gap-2 text-xs transition-colors",
                         isPlanningMode 
                           ? "text-blue-400" 
-                          : "text-white/40 hover:text-white/60 disabled:text-white/20"
+                          : "text-muted-foreground hover:text-muted-foreground disabled:text-white/20"
                       )}
                     >
                       <Zap className="w-3 h-3" />
@@ -1071,10 +1071,10 @@ export default function HermesChat({ className }: ChatProps) {
                     </button>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-xs text-white/40">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <button 
                       onClick={() => setShowFeedback(true)}
-                      className="hover:text-white/60 transition-colors"
+                      className="hover:text-muted-foreground transition-colors"
                     >
                       Feedback
                     </button>
@@ -1092,13 +1092,13 @@ export default function HermesChat({ className }: ChatProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => handleSuggestionClick(suggestion.action)}
-                  className="p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-left transition-colors group"
+                  className="p-4 bg-card hover:bg-accent border border-border rounded-xl text-left transition-colors group"
                 >
-                  <suggestion.icon className="w-5 h-5 text-white/60 mb-3 group-hover:text-white transition-colors" />
-                  <h3 className="text-white font-medium text-sm mb-1">
+                  <suggestion.icon className="w-5 h-5 text-muted-foreground mb-3 group-hover:text-foreground transition-colors" />
+                  <h3 className="text-foreground font-medium text-sm mb-1">
                     {suggestion.title}
                   </h3>
-                  <p className="text-white/40 text-xs">
+                  <p className="text-muted-foreground text-xs">
                     {suggestion.description}
                   </p>
                 </motion.button>
@@ -1109,11 +1109,11 @@ export default function HermesChat({ className }: ChatProps) {
             {dynamicSuggestions.length > 0 && (
               <div className="w-full max-w-4xl mb-8">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-semibold text-lg">Try these suggestions</h3>
+                  <h3 className="text-foreground font-semibold text-lg">Try these suggestions</h3>
                   <button
                     onClick={regenerateSuggestions}
                     disabled={isLoadingSuggestions}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg text-white/60 hover:text-white text-sm transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-accent hover:bg-accent/90 border border-border rounded-lg text-muted-foreground hover:text-foreground text-sm transition-colors disabled:opacity-50"
                   >
                     <RefreshCw className={cn("w-3 h-3", isLoadingSuggestions && "animate-spin")} />
                     Regenerate
@@ -1127,7 +1127,7 @@ export default function HermesChat({ className }: ChatProps) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={() => handleDynamicSuggestionClick(suggestion)}
-                      className="p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-left transition-colors group"
+                      className="p-4 bg-card hover:bg-accent border border-border rounded-xl text-left transition-colors group"
                     >
                       <div className="flex items-start gap-3">
                         <div className={cn(
@@ -1145,7 +1145,7 @@ export default function HermesChat({ className }: ChatProps) {
                           {suggestion.category === 'learning' && <Lightbulb className="w-4 h-4" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white/90 text-sm leading-relaxed group-hover:text-white transition-colors">
+                          <p className="text-white/90 text-sm leading-relaxed group-hover:text-foreground transition-colors">
                             {suggestion.text}
                           </p>
                           <span className={cn(
@@ -1175,14 +1175,14 @@ export default function HermesChat({ className }: ChatProps) {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-white font-semibold text-lg mb-2">
+                  <h3 className="text-foreground font-semibold text-lg mb-2">
                     {FEATURED_CARD.title}
                   </h3>
-                  <p className="text-white/60 text-sm mb-4">
+                  <p className="text-muted-foreground text-sm mb-4">
                     {FEATURED_CARD.description}
                   </p>
                   <div className="flex gap-3">
-                    <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <button className="bg-green-600 hover:bg-green-700 text-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                       {FEATURED_CARD.action}
                     </button>
                     <button className="bg-green-600/20 hover:bg-green-600/30 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
@@ -1212,25 +1212,25 @@ export default function HermesChat({ className }: ChatProps) {
               >
                 {message.role === "assistant" && (
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-white" />
+                    <Bot className="w-4 h-4 text-foreground" />
                   </div>
                 )}
                 <div
                   className={cn(
                     "max-w-[70%] rounded-2xl px-4 py-3",
                     message.role === "user"
-                      ? "bg-blue-600 text-white ml-auto"
-                      : "bg-white/[0.06] text-white border border-white/[0.08]"
+                      ? "bg-primary text-foreground ml-auto"
+                      : "bg-accent text-foreground border border-border"
                   )}
                 >
                   {/* File message display */}
                   {message.type === "file" && message.fileInfo && (
-                    <div className="mb-2 p-3 bg-white/[0.06] rounded-lg border border-white/[0.08]">
+                    <div className="mb-2 p-3 bg-accent rounded-lg border border-border">
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="w-4 h-4 text-blue-400" />
                         <span className="text-sm font-medium">{message.fileInfo.name}</span>
                       </div>
-                      <div className="text-xs text-white/60">
+                      <div className="text-xs text-muted-foreground">
                         {(message.fileInfo.size / 1024).toFixed(1)} KB • {message.fileInfo.type}
                       </div>
                     </div>
@@ -1251,18 +1251,18 @@ export default function HermesChat({ className }: ChatProps) {
                           remarkPlugins={[remarkGfm]}
                           components={{
                             // Custom styling for markdown elements
-                            h1: ({children}) => <h1 className="text-lg font-bold mb-2 text-white">{children}</h1>,
-                            h2: ({children}) => <h2 className="text-base font-semibold mb-2 text-white">{children}</h2>,
-                            h3: ({children}) => <h3 className="text-sm font-medium mb-1 text-white">{children}</h3>,
+                            h1: ({children}) => <h1 className="text-lg font-bold mb-2 text-foreground">{children}</h1>,
+                            h2: ({children}) => <h2 className="text-base font-semibold mb-2 text-foreground">{children}</h2>,
+                            h3: ({children}) => <h3 className="text-sm font-medium mb-1 text-foreground">{children}</h3>,
                             p: ({children}) => <p className="mb-2 text-white/90 last:mb-0">{children}</p>,
                             ul: ({children}) => <ul className="list-disc list-inside mb-2 text-white/90">{children}</ul>,
                             ol: ({children}) => <ol className="list-decimal list-inside mb-2 text-white/90">{children}</ol>,
                             li: ({children}) => <li className="mb-1">{children}</li>,
-                            strong: ({children}) => <strong className="font-semibold text-white">{children}</strong>,
+                            strong: ({children}) => <strong className="font-semibold text-foreground">{children}</strong>,
                             em: ({children}) => <em className="italic text-white/80">{children}</em>,
                             code: ({children}) => <code className="bg-white/10 px-1 py-0.5 rounded text-xs font-mono text-blue-300">{children}</code>,
                             pre: ({children}) => <pre className="bg-white/5 p-3 rounded-lg overflow-x-auto text-xs font-mono mb-2">{children}</pre>,
-                            blockquote: ({children}) => <blockquote className="border-l-2 border-white/20 pl-3 italic text-white/70 mb-2">{children}</blockquote>,
+                            blockquote: ({children}) => <blockquote className="border-l-2 border-white/20 pl-3 italic text-muted-foreground mb-2">{children}</blockquote>,
                           }}
                         >
                           {message.content}
@@ -1294,9 +1294,9 @@ export default function HermesChat({ className }: ChatProps) {
                 className="flex gap-4"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
+                  <Bot className="w-4 h-4 text-foreground" />
                 </div>
-                <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl px-4 py-3">
+                <div className="bg-accent border border-border rounded-2xl px-4 py-3">
                   <div className="flex gap-1">
                     <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
                     <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
@@ -1312,7 +1312,7 @@ export default function HermesChat({ className }: ChatProps) {
 
       {/* Input Area for conversation state */}
       {!isEmpty && (
-        <div className="border-t border-white/[0.06] p-6">
+        <div className="border-t border-border/60 p-6">
           <form onSubmit={handleSubmit} className="relative">
             <div className="relative flex items-end gap-3">
               {/* Add Button with Upload Menu */}
@@ -1321,8 +1321,8 @@ export default function HermesChat({ className }: ChatProps) {
                   type="button"
                   onClick={() => setShowUploadMenu(!showUploadMenu)}
                   className={cn(
-                    "w-10 h-10 rounded-full border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white transition-colors flex-shrink-0",
-                    showUploadMenu ? "bg-blue-600 text-white" : "bg-white/[0.06] hover:bg-white/[0.1]"
+                    "w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors flex-shrink-0",
+                    showUploadMenu ? "bg-primary text-foreground" : "bg-accent hover:bg-accent/80"
                   )}
                 >
                   <Plus className="w-4 h-4" />
@@ -1339,7 +1339,7 @@ export default function HermesChat({ className }: ChatProps) {
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask anything... (type / for commands)"
-                  className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 pr-20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
+                  className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-20 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
                   rows={1}
                   style={{
                     minHeight: "48px",
@@ -1355,8 +1355,8 @@ export default function HermesChat({ className }: ChatProps) {
                     className={cn(
                       "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
                       isRecording 
-                        ? "bg-red-600 hover:bg-red-700 text-white animate-pulse" 
-                        : "bg-white/[0.06] hover:bg-white/[0.1] text-white/60 hover:text-white"
+                        ? "bg-red-600 hover:bg-red-700 text-foreground animate-pulse" 
+                        : "bg-accent hover:bg-accent/80 text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <Mic className="w-4 h-4" />
@@ -1364,7 +1364,7 @@ export default function HermesChat({ className }: ChatProps) {
                   <button
                     type="submit"
                     disabled={!input.trim() || isLoading}
-                    className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-white/[0.06] disabled:text-white/30 flex items-center justify-center text-white transition-colors"
+                    className="w-8 h-8 rounded-lg bg-primary hover:bg-blue-700 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-foreground transition-colors"
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -1383,7 +1383,7 @@ export default function HermesChat({ className }: ChatProps) {
                     "flex items-center gap-2 text-xs transition-colors",
                     isPlanningMode 
                       ? "text-blue-400" 
-                      : "text-white/40 hover:text-white/60 disabled:text-white/20"
+                      : "text-muted-foreground hover:text-muted-foreground disabled:text-white/20"
                   )}
                 >
                   <Zap className="w-3 h-3" />
@@ -1391,10 +1391,10 @@ export default function HermesChat({ className }: ChatProps) {
                 </button>
               </div>
               
-              <div className="flex items-center gap-4 text-xs text-white/40">
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <button 
                   onClick={() => setShowFeedback(true)}
-                  className="hover:text-white/60 transition-colors"
+                  className="hover:text-muted-foreground transition-colors"
                 >
                   Feedback
                 </button>
@@ -1406,3 +1406,5 @@ export default function HermesChat({ className }: ChatProps) {
     </div>
   );
 }
+
+

@@ -80,15 +80,15 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-[#1a1a1a] border border-white/[0.12] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            className="bg-card border border-border rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/[0.08]">
-              <h2 className="text-2xl font-bold text-white">PRO TIPS</h2>
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h2 className="text-2xl font-bold text-foreground">PRO TIPS</h2>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-lg bg-accent hover:bg-accent/90 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -98,12 +98,12 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
             <div className="p-6">
               {/* Screenshot/Image Area */}
               <div className="relative mb-8 rounded-xl overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30">
-                <div className="aspect-video bg-[#0a0a0a] rounded-xl p-6 flex items-center justify-center">
+                <div className="aspect-video bg-background rounded-xl p-6 flex items-center justify-center">
                   {/* Dynamic content based on tip */}
                   {currentTipData.image === "skills-marketplace" && (
-                    <div className="w-full h-full bg-[#1a1a1a] rounded-lg p-4 border border-white/[0.08]">
+                    <div className="w-full h-full bg-card rounded-lg p-4 border border-border">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-white font-semibold">Skills Marketplace</h3>
+                        <h3 className="text-foreground font-semibold">Skills Marketplace</h3>
                         <div className="flex gap-2">
                           <div className="w-6 h-6 bg-blue-500/20 rounded flex items-center justify-center">
                             <Lightbulb className="w-3 h-3 text-blue-400" />
@@ -115,7 +115,7 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         {["Email Assistant", "Web Scraper", "Social Media", "Data Analyzer"].map((skill, idx) => (
-                          <div key={idx} className="bg-white/[0.06] p-3 rounded-lg border border-white/[0.08]">
+                          <div key={idx} className="bg-accent p-3 rounded-lg border border-border">
                             <div className="flex items-center gap-2 mb-2">
                               <div className="w-4 h-4 bg-purple-500/20 rounded flex items-center justify-center">
                                 <span className="text-purple-400 text-xs">⚡</span>
@@ -123,8 +123,8 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                               <span className="text-white text-xs font-medium">{skill}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-white/40 text-xs">★ 4.8</span>
-                              <button className="bg-blue-600 text-white text-xs px-2 py-1 rounded">Install</button>
+                              <span className="text-muted-foreground text-xs">★ 4.8</span>
+                              <button className="bg-primary text-foreground text-xs px-2 py-1 rounded">Install</button>
                             </div>
                           </div>
                         ))}
@@ -133,10 +133,10 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                   )}
 
                   {currentTipData.image === "connections-grid" && (
-                    <div className="w-full h-full bg-[#1a1a1a] rounded-lg p-4 border border-white/[0.08]">
+                    <div className="w-full h-full bg-card rounded-lg p-4 border border-border">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-white font-semibold">Connect Platforms</h3>
-                        <span className="text-white/40 text-xs">12 platforms available</span>
+                        <h3 className="text-foreground font-semibold">Connect Platforms</h3>
+                        <span className="text-muted-foreground text-xs">12 platforms available</span>
                       </div>
                       <div className="grid grid-cols-4 gap-3">
                         {[
@@ -149,7 +149,7 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                           { name: "Instagram", icon: "📷", status: "soon" },
                           { name: "Email", icon: "📧", status: "soon" }
                         ].map((platform, idx) => (
-                          <div key={idx} className="bg-white/[0.06] p-2 rounded-lg border border-white/[0.08] text-center">
+                          <div key={idx} className="bg-accent p-2 rounded-lg border border-border text-center">
                             <div className="text-lg mb-1">{platform.icon}</div>
                             <div className="text-white text-xs font-medium mb-1">{platform.name}</div>
                             <div className={`text-xs px-1 py-0.5 rounded ${
@@ -166,10 +166,10 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                   )}
 
                   {currentTipData.image === "cron-scheduler" && (
-                    <div className="w-full h-full bg-[#1a1a1a] rounded-lg p-4 border border-white/[0.08]">
+                    <div className="w-full h-full bg-card rounded-lg p-4 border border-border">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-white font-semibold">Scheduled Jobs</h3>
-                        <button className="bg-blue-600 text-white text-xs px-2 py-1 rounded">+ New Job</button>
+                        <h3 className="text-foreground font-semibold">Scheduled Jobs</h3>
+                        <button className="bg-primary text-foreground text-xs px-2 py-1 rounded">+ New Job</button>
                       </div>
                       <div className="space-y-3">
                         {[
@@ -178,11 +178,11 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                           { name: "Price Monitor", schedule: "Every 30 minutes", status: "paused" },
                           { name: "Backup Reports", schedule: "Weekly on Sunday", status: "active" }
                         ].map((job, idx) => (
-                          <div key={idx} className="bg-white/[0.06] p-3 rounded-lg border border-white/[0.08]">
+                          <div key={idx} className="bg-accent p-3 rounded-lg border border-border">
                             <div className="flex items-center justify-between">
                               <div>
                                 <div className="text-white text-xs font-medium">{job.name}</div>
-                                <div className="text-white/40 text-xs">{job.schedule}</div>
+                                <div className="text-muted-foreground text-xs">{job.schedule}</div>
                               </div>
                               <div className={`w-2 h-2 rounded-full ${
                                 job.status === 'active' ? 'bg-green-400' : 'bg-orange-400'
@@ -195,10 +195,10 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                   )}
 
                   {currentTipData.image === "model-settings" && (
-                    <div className="w-full h-full bg-[#1a1a1a] rounded-lg p-4 border border-white/[0.08]">
+                    <div className="w-full h-full bg-card rounded-lg p-4 border border-border">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-white font-semibold">AI Model Settings</h3>
-                        <div className="text-white/40 text-xs">Current: GPT-4o</div>
+                        <h3 className="text-foreground font-semibold">AI Model Settings</h3>
+                        <div className="text-muted-foreground text-xs">Current: GPT-4o</div>
                       </div>
                       <div className="space-y-3">
                         {[
@@ -210,7 +210,7 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                           <div key={idx} className={`p-3 rounded-lg border ${
                             model.selected 
                               ? 'bg-blue-500/20 border-blue-500/30' 
-                              : 'bg-white/[0.06] border-white/[0.08]'
+                              : 'bg-accent border-border'
                           }`}>
                             <div className="flex items-center justify-between">
                               <div>
@@ -218,11 +218,11 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
                                   <span className="text-white text-xs font-medium">{model.name}</span>
                                   {model.selected && <span className="text-blue-400 text-xs">✓</span>}
                                 </div>
-                                <div className="text-white/40 text-xs">{model.provider}</div>
+                                <div className="text-muted-foreground text-xs">{model.provider}</div>
                               </div>
                               <div className="text-right">
-                                <div className="text-white/60 text-xs">{model.speed}</div>
-                                <div className="text-white/40 text-xs">{model.cost}</div>
+                                <div className="text-muted-foreground text-xs">{model.speed}</div>
+                                <div className="text-muted-foreground text-xs">{model.cost}</div>
                               </div>
                             </div>
                           </div>
@@ -235,10 +235,10 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
 
               {/* Tip Content */}
               <div className="mb-8">
-                <h3 className="text-3xl font-bold text-white mb-4">
+                <h3 className="text-3xl font-bold text-foreground mb-4">
                   {currentTipData.title}
                 </h3>
-                <p className="text-white/70 text-lg leading-relaxed">
+                <p className="text-muted-foreground text-lg leading-relaxed">
                   {currentTipData.description}
                 </p>
               </div>
@@ -247,7 +247,7 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
               <div className="flex items-center justify-between">
                 <button
                   onClick={prevTip}
-                  className="w-12 h-12 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                  className="w-12 h-12 rounded-xl bg-accent hover:bg-accent/90 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -270,7 +270,7 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
 
                 <button
                   onClick={nextTip}
-                  className="w-12 h-12 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                  className="w-12 h-12 rounded-xl bg-accent hover:bg-accent/90 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -282,3 +282,4 @@ export default function ProTipsModal({ isOpen, onClose }: ProTipsModalProps) {
     </AnimatePresence>
   );
 }
+

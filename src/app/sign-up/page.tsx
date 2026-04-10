@@ -120,7 +120,7 @@ export default function SignUpPage() {
                 unoptimized
               />
             </div>
-            <span className="font-bold text-xl text-white">
+            <span className="font-bold text-xl text-foreground">
               Re<span className="text-amber-400">Agent</span>
             </span>
           </Link>
@@ -128,7 +128,7 @@ export default function SignUpPage() {
           {/* Feature highlight */}
           <div className="space-y-8">
             <div>
-              <h2 className="text-3xl font-bold text-white leading-tight mb-4">
+              <h2 className="text-3xl font-bold text-foreground leading-tight mb-4">
                 Deploy AI agents{" "}
                 <span className="gradient-text-amber">10× faster</span>
               </h2>
@@ -143,7 +143,7 @@ export default function SignUpPage() {
                     <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
                       <Check className="w-3 h-3 text-amber-400" />
                     </div>
-                    <span className="text-sm text-white/60">{item}</span>
+                    <span className="text-sm text-foreground/60">{item}</span>
                   </div>
                 ))}
               </div>
@@ -159,17 +159,17 @@ export default function SignUpPage() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4"
+                  className="bg-card border border-border rounded-xl p-4"
                 >
                   <div className="text-xl font-black text-amber-400">
                     {stat.value}
                   </div>
-                  <div className="text-xs text-white/40 mt-0.5">{stat.label}</div>
+                  <div className="text-xs text-foreground/40 mt-0.5">{stat.label}</div>
                 </div>
               ))}
             </div>
 
-            <p className="text-sm text-white/30">
+            <p className="text-sm text-foreground/30">
               Join 500+ developers deploying AI agents with ReAgent
             </p>
           </div>
@@ -187,7 +187,7 @@ export default function SignUpPage() {
           <div className="mb-8">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 mb-8 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-foreground/40 hover:text-foreground/70 mb-8 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to home
@@ -206,15 +206,15 @@ export default function SignUpPage() {
                   unoptimized
                 />
               </div>
-              <span className="font-bold text-xl text-white">
+              <span className="font-bold text-xl text-foreground">
                 Re<span className="text-amber-400">Agent</span>
               </span>
             </div>
 
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Start deploying agents
             </h1>
-            <p className="text-white/40">
+            <p className="text-foreground/40">
               Create your account — no credit card required
             </p>
           </div>
@@ -229,7 +229,7 @@ export default function SignUpPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-white/70">
+              <Label htmlFor="name" className="text-foreground/70">
                 Full Name
               </Label>
               <Input
@@ -239,12 +239,12 @@ export default function SignUpPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="h-11 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50 focus:ring-amber-500/20"
+                className="h-11 bg-accent border-border text-foreground placeholder:text-foreground/25 focus:border-amber-500/50 focus:ring-amber-500/20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/70">
+              <Label htmlFor="email" className="text-foreground/70">
                 Email
               </Label>
               <Input
@@ -254,12 +254,12 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-11 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50 focus:ring-amber-500/20"
+                className="h-11 bg-accent border-border text-foreground placeholder:text-foreground/25 focus:border-amber-500/50 focus:ring-amber-500/20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white/70">
+              <Label htmlFor="password" className="text-foreground/70">
                 Password
               </Label>
               <div className="relative">
@@ -270,12 +270,12 @@ export default function SignUpPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-11 pr-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50 focus:ring-amber-500/20"
+                  className="h-11 pr-10 bg-accent border-border text-foreground placeholder:text-foreground/25 focus:border-amber-500/50 focus:ring-amber-500/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -300,7 +300,7 @@ export default function SignUpPage() {
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-white/30">
+                  <p className="text-xs text-foreground/30">
                     Password strength:{" "}
                     <span
                       className={`font-medium ${
@@ -335,7 +335,7 @@ export default function SignUpPage() {
             </Button>
           </form>
 
-          <p className="text-center text-xs text-white/25 mt-6">
+          <p className="text-center text-xs text-foreground/25 mt-6">
             By creating an account, you agree to our{" "}
             <Link href="/terms" className="text-amber-400/70 hover:text-amber-400">
               Terms of Service
@@ -346,7 +346,7 @@ export default function SignUpPage() {
             </Link>
           </p>
 
-          <p className="text-center text-sm text-white/30 mt-4">
+          <p className="text-center text-sm text-foreground/30 mt-4">
             Already have an account?{" "}
             <Link
               href="/sign-in"
@@ -360,3 +360,4 @@ export default function SignUpPage() {
     </div>
   );
 }
+

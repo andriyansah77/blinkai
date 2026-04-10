@@ -17,7 +17,7 @@ export default function ChatPage() {
 
   if (status === "loading") {
     return (
-      <div className="h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -29,3 +29,8 @@ export default function ChatPage() {
 
   return <HermesChat className="h-screen" />;
 }
+
+
+
+
+

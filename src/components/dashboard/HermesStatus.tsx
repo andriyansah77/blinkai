@@ -58,7 +58,7 @@ export default function HermesStatus({ className }: HermesStatusProps) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
-        <span className="text-white/40 text-xs">Loading...</span>
+        <span className="text-muted-foreground text-xs">Loading...</span>
       </div>
     );
   }
@@ -80,13 +80,13 @@ export default function HermesStatus({ className }: HermesStatusProps) {
             activeAgents > 0 ? 'bg-green-400' : 'bg-gray-400'
           }`}
         />
-        <span className="text-white/60 text-xs font-medium">
+        <span className="text-muted-foreground text-xs font-medium">
           {activeAgents > 0 ? 'Running' : 'Ready'}
         </span>
       </div>
 
       {/* Quick Stats */}
-      <div className="flex items-center gap-3 text-xs text-white/40">
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           <Bot className="w-3 h-3" />
           <span>{totalAgents}</span>
@@ -115,3 +115,4 @@ export default function HermesStatus({ className }: HermesStatusProps) {
     </div>
   );
 }
+
