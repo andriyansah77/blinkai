@@ -400,7 +400,7 @@ export default function DashboardPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
                 <Cpu className="w-5 h-5 text-primary" />
               </div>
               <div>
@@ -420,7 +420,7 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
                 <Globe className="w-5 h-5 text-purple-400" />
               </div>
               <div>
@@ -430,7 +430,7 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
-              <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
                 <Clock className="w-5 h-5 text-orange-400" />
               </div>
               <div>
@@ -622,7 +622,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => router.push('/dashboard/chat')}
-                className="p-4 bg-primary/20 hover:bg-primary/30 border border-blue-500/30 rounded-lg text-left transition-colors group"
+                className="p-4 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-lg text-left transition-colors group"
               >
                 <MessageSquare className="w-6 h-6 text-primary mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-foreground font-medium text-sm">Start Chat</p>
@@ -631,27 +631,27 @@ export default function DashboardPage() {
 
               <button
                 onClick={() => router.push('/dashboard/agents')}
-                className="p-4 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-left transition-colors group"
+                className="p-4 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-lg text-left transition-colors group"
               >
-                <Bot className="w-6 h-6 text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
+                <Bot className="w-6 h-6 text-primary mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-foreground font-medium text-sm">Create Agent</p>
                 <p className="text-muted-foreground text-xs">New AI agent</p>
               </button>
 
               <button
                 onClick={() => router.push('/dashboard/channels')}
-                className="p-4 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded-lg text-left transition-colors group"
+                className="p-4 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-lg text-left transition-colors group"
               >
-                <Globe className="w-6 h-6 text-green-400 mb-2 group-hover:scale-110 transition-transform" />
+                <Globe className="w-6 h-6 text-primary mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-foreground font-medium text-sm">Connect Platform</p>
                 <p className="text-muted-foreground text-xs">Telegram, Discord</p>
               </button>
 
               <button
                 onClick={() => router.push('/dashboard/skills')}
-                className="p-4 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/30 rounded-lg text-left transition-colors group"
+                className="p-4 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-lg text-left transition-colors group"
               >
-                <Brain className="w-6 h-6 text-orange-400 mb-2 group-hover:scale-110 transition-transform" />
+                <Brain className="w-6 h-6 text-primary mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-foreground font-medium text-sm">Browse Skills</p>
                 <p className="text-muted-foreground text-xs">Enhance agents</p>
               </button>
@@ -704,6 +704,8 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
 
 
 

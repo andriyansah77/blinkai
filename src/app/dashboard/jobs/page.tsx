@@ -197,7 +197,7 @@ export default function JobsPage() {
           </div>
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-foreground font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Job
@@ -304,7 +304,7 @@ export default function JobsPage() {
             <p className="text-muted-foreground text-sm mb-6">Create your first automated task to get started</p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-primary hover:bg-primary/90 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Create First Job
             </button>
@@ -356,7 +356,7 @@ export default function JobsPage() {
                 <button
                   onClick={createCronJob}
                   disabled={!newJob.name || !newJob.schedule || !newJob.prompt}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-accent disabled:text-muted-foreground text-foreground px-4 py-2 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-accent disabled:text-muted-foreground text-foreground px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   Create Job
                 </button>
@@ -374,6 +374,8 @@ export default function JobsPage() {
     </div>
   );
 }
+
+
 
 
 

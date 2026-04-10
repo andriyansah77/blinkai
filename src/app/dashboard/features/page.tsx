@@ -369,7 +369,7 @@ export default function FeaturesPage() {
             </button>
             <button 
               onClick={() => router.push('/dashboard/agents')}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-foreground font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Feature
@@ -394,7 +394,7 @@ export default function FeaturesPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
                 <Cpu className="w-5 h-5 text-primary" />
               </div>
               <div>
@@ -414,7 +414,7 @@ export default function FeaturesPage() {
             </div>
             
             <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
                 <Globe className="w-5 h-5 text-purple-400" />
               </div>
               <div>
@@ -424,7 +424,7 @@ export default function FeaturesPage() {
             </div>
             
             <div className="flex items-center gap-3 p-4 bg-card rounded-lg">
-              <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-orange-400" />
               </div>
               <div>
@@ -523,7 +523,7 @@ export default function FeaturesPage() {
             </p>
             <button
               onClick={fetchHermesFeatures}
-              className="bg-green-600 hover:bg-green-700 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-primary hover:bg-primary/90 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Refresh Features
             </button>
@@ -533,6 +533,8 @@ export default function FeaturesPage() {
     </div>
   );
 }
+
+
 
 
 

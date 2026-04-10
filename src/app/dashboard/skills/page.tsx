@@ -113,7 +113,7 @@ export default function SkillsPage() {
           </div>
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-foreground font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Skill
@@ -141,10 +141,10 @@ export default function SkillsPage() {
               </div>
             </div>
             <div className="flex gap-3">
-              <button className="bg-green-600 hover:bg-green-700 text-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              <button className="bg-primary hover:bg-primary/90 text-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Create
               </button>
-              <button className="bg-green-600/20 hover:bg-green-600/30 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              <button className="bg-primary/10 hover:bg-primary/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Earn Money
               </button>
             </div>
@@ -193,7 +193,7 @@ export default function SkillsPage() {
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-primary hover:bg-primary/90 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Create Your First Skill
             </button>
@@ -271,7 +271,7 @@ export default function SkillsPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
+                  <button className="flex-1 bg-primary hover:bg-primary/90 text-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
                     <Play className="w-3 h-3" />
                     Test
                   </button>
@@ -462,7 +462,7 @@ return mySkill(params);`
             <button
               type="submit"
               disabled={loading || !formData.name || !formData.agentId}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
             >
               {loading ? "Creating..." : "Create Skill"}
             </button>
@@ -472,6 +472,8 @@ return mySkill(params);`
     </div>
   );
 }
+
+
 
 
 

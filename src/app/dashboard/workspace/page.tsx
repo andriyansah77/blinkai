@@ -321,7 +321,7 @@ export default function WorkspacePage() {
               <Upload className="w-4 h-4" />
               Upload
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg text-foreground font-medium transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-primary-foreground font-medium transition-colors">
               <Plus className="w-4 h-4" />
               New File
             </button>
@@ -465,7 +465,7 @@ export default function WorkspacePage() {
             {!searchQuery && (
               <button
                 onClick={fetchWorkspaceData}
-                className="bg-orange-600 hover:bg-orange-700 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
               >
                 Refresh Workspace
               </button>
@@ -476,6 +476,8 @@ export default function WorkspacePage() {
     </div>
   );
 }
+
+
 
 
 

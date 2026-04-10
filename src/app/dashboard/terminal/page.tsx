@@ -311,7 +311,7 @@ export default function TerminalPage() {
             <button
               onClick={() => quickCommand("skills list")}
               disabled={isRunning}
-              className="flex items-center justify-center space-x-2 p-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-400 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center justify-center space-x-2 p-3 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-purple-400 rounded-lg transition-colors disabled:opacity-50"
             >
               <TerminalIcon className="h-4 w-4" />
               <span>Skills</span>
@@ -320,7 +320,7 @@ export default function TerminalPage() {
             <button
               onClick={() => quickCommand("gateway status")}
               disabled={isRunning}
-              className="flex items-center justify-center space-x-2 p-3 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-400 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center justify-center space-x-2 p-3 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-green-400 rounded-lg transition-colors disabled:opacity-50"
             >
               <Square className="h-4 w-4" />
               <span>Gateway</span>
@@ -346,6 +346,8 @@ export default function TerminalPage() {
     </div>
   );
 }
+
+
 
 
 
