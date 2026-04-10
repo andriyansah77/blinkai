@@ -17,6 +17,19 @@ const fadeUp = {
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-background">
+      {/* DEBUG INFO - VERY VISIBLE */}
+      <div className="fixed top-4 right-4 z-[9999] space-y-2">
+        <div className="px-4 py-2 bg-green-500 text-white text-xs font-bold rounded shadow-lg">
+          ✅ LIGHT THEME ACTIVE
+        </div>
+        <div className="px-4 py-2 bg-blue-500 text-white text-xs font-bold rounded shadow-lg">
+          Background: bg-background (white)
+        </div>
+        <div className="px-4 py-2 bg-purple-500 text-white text-xs font-bold rounded shadow-lg">
+          Primary: Gold (#F59E0B)
+        </div>
+      </div>
+      
       {/* NEW THEME BANNER */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-black text-sm font-bold rounded-full shadow-lg animate-pulse">
         🎨 New UI/UX Design - Gold Theme Active!

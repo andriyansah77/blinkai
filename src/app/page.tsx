@@ -6,10 +6,12 @@ import { Templates } from "@/components/landing/Templates";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Pricing } from "@/components/landing/Pricing";
 import { Footer } from "@/components/landing/Footer";
+import { ForceLightTheme } from "./force-light-theme";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
+      <ForceLightTheme />
       <Navbar />
       <Hero />
       <Features />
