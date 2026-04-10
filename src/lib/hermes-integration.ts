@@ -199,10 +199,19 @@ export class HermesIntegration {
           const envPath = `/root/.hermes/profiles/${profileName}/.env`;
           
           try {
-            // Don't write model config to config.yaml - Hermes will use .env instead
-            // Just ensure config.yaml exists (empty or with minimal config)
+            // 1. Create config.yaml with custom provider
+            const configContent = `# Hermes Profile Configuration
+# Auto-configured by ReAgent Platform
+
+model:
+  provider: custom
+  model: ${AI_MODEL}
+  base_url: ${AI_API_BASE_URL}
+  api_key_env: OPENAI_API_KEY
+`;
             
-            console.log(`[Profile] Skipping config.yaml model setup - will use .env instead`);
+            await execAsync(`cat > ${configPath} << 'EOF'\n${configContent}\nEOF`);
+            console.log(`[Profile] Config.yaml created with custom provider for user ${userId}`);
             
             // 2. Update .env file (Hermes reads API keys and model config from here)
             // IMPORTANT: Use exact environment variable names that Hermes expects
