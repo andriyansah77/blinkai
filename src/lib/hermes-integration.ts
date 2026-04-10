@@ -211,11 +211,10 @@ export class HermesIntegration {
 
 # OpenAI-compatible API (Platform-provided)
 OPENAI_API_KEY=${AI_API_KEY}
-OPENAI_API_BASE=${AI_API_BASE_URL}
+OPENAI_BASE_URL=${AI_API_BASE_URL}
 
 # Model Configuration  
-LLM_MODEL=${AI_MODEL}
-LLM_PROVIDER=openai
+MODEL=${AI_MODEL}
 
 # Platform Mode - Credits will be deducted from user account
 REAGENT_PLATFORM_MODE=true
