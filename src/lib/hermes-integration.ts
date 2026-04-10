@@ -981,6 +981,33 @@ REAGENT_USER_ID=${userId}
     }
   }
 
+  async restartGateway(userId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log(`[Gateway] Restarting gateway for user ${userId}`);
+      
+      // Stop gateway first
+      const stopResult = await this.stopGateway(userId);
+      if (!stopResult.success) {
+        console.warn(`[Gateway] Stop warning (may not be running): ${stopResult.error}`);
+      }
+      
+      // Wait for clean shutdown
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Start gateway
+      const startResult = await this.startGateway(userId);
+      
+      if (startResult.success) {
+        console.log(`[Gateway] ✅ Gateway restarted successfully for user ${userId}`);
+      }
+      
+      return startResult;
+    } catch (error) {
+      console.error(`[Gateway] Exception restarting gateway for user ${userId}:`, error);
+      return { success: false, error: `Gateway restart failed: ${error}` };
+    }
+  }
+
   async setupGateway(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
       console.log(`[Gateway] Setting up gateway for user ${userId}`);
@@ -1035,14 +1062,18 @@ REAGENT_USER_ID=${userId}
         return { success: false, error: `Failed to set Telegram token: ${fileError}` };
       }
 
-      // Setup gateway
-      const setupResult = await this.setupGateway(userId);
+      // Restart gateway to apply new config
+      console.log(`[Platform] Restarting gateway to apply Telegram config for user ${userId}`);
       
-      if (setupResult.success) {
-        console.log(`[Platform] Telegram setup completed for user ${userId}`);
+      const restartResult = await this.restartGateway(userId);
+      
+      if (restartResult.success) {
+        console.log(`[Platform] ✅ Telegram setup completed and gateway restarted for user ${userId}`);
+        return { success: true };
+      } else {
+        console.error(`[Platform] Failed to restart gateway after Telegram setup:`, restartResult.error);
+        return { success: false, error: `Gateway restart failed: ${restartResult.error}` };
       }
-      
-      return setupResult;
     } catch (error) {
       console.error(`[Platform] Exception during Telegram setup for user ${userId}:`, error);
       return { success: false, error: `Telegram setup failed: ${error}` };
@@ -1085,14 +1116,18 @@ REAGENT_USER_ID=${userId}
         return { success: false, error: `Failed to set Discord token: ${fileError}` };
       }
 
-      // Setup gateway
-      const setupResult = await this.setupGateway(userId);
+      // Restart gateway to apply new config
+      console.log(`[Platform] Restarting gateway to apply Discord config for user ${userId}`);
       
-      if (setupResult.success) {
-        console.log(`[Platform] Discord setup completed for user ${userId}`);
+      const restartResult = await this.restartGateway(userId);
+      
+      if (restartResult.success) {
+        console.log(`[Platform] ✅ Discord setup completed and gateway restarted for user ${userId}`);
+        return { success: true };
+      } else {
+        console.error(`[Platform] Failed to restart gateway after Discord setup:`, restartResult.error);
+        return { success: false, error: `Gateway restart failed: ${restartResult.error}` };
       }
-      
-      return setupResult;
     } catch (error) {
       console.error(`[Platform] Exception during Discord setup for user ${userId}:`, error);
       return { success: false, error: `Discord setup failed: ${error}` };

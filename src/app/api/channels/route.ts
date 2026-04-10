@@ -138,11 +138,7 @@ export async function POST(request: NextRequest) {
         }, { status: 400 });
       }
 
-      // Start gateway if not already running
-      const gatewayResult = await hermesIntegration.startGateway(session.user.id!);
-      if (!gatewayResult.success) {
-        console.warn(`Gateway start warning for user ${session.user.id}: ${gatewayResult.error}`);
-      }
+      console.log(`✅ ${type.charAt(0).toUpperCase() + type.slice(1)} platform configured and gateway restarted`);
 
       // Create channel record
       const channel = {
