@@ -17,6 +17,11 @@ const fadeUp = {
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-background">
+      {/* NEW THEME BANNER */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-black text-sm font-bold rounded-full shadow-lg animate-pulse">
+        🎨 New UI/UX Design - Gold Theme Active!
+      </div>
+      
       {/* Radial gradient glow at center */}
       <div className="absolute inset-0 pointer-events-none">
         <div
