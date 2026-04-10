@@ -104,7 +104,7 @@ export function Features() {
                 variants={cardVariants}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
-                className="group relative rounded-2xl bg-white/[0.03] backdrop-blur border border-white/[0.07] p-8 hover:bg-amber-500/[0.04] hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/[0.08] transition-all duration-300 cursor-default"
+                className="group relative rounded-2xl bg-card backdrop-blur border border-border p-8 hover:bg-accent hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/[0.08] transition-all duration-300 cursor-default"
               >
                 {/* Icon */}
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mb-5 shadow-lg shadow-amber-500/20">

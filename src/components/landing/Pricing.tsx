@@ -109,8 +109,8 @@ export function Pricing() {
                 }}
                 className={`relative rounded-2xl border p-8 flex flex-col transition-all duration-300 ${
                   plan.highlighted
-                    ? "bg-white/[0.04] border-amber-500/50 shadow-2xl shadow-amber-500/[0.15]"
-                    : "bg-white/[0.02] border-white/[0.07] hover:border-white/[0.12]"
+                    ? "bg-card border-amber-500/50 shadow-2xl shadow-amber-500/[0.15]"
+                    : "bg-card border-border hover:border-amber-500/30"
                 }`}
               >
                 {/* Most Popular badge */}
@@ -128,12 +128,12 @@ export function Pricing() {
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       plan.highlighted
                         ? "bg-gradient-to-br from-amber-500 to-orange-500"
-                        : "bg-white/[0.07]"
+                        : "bg-accent"
                     }`}
                   >
                     <Icon
                       className={`w-5 h-5 ${
-                        plan.highlighted ? "text-black" : "text-white/60"
+                        plan.highlighted ? "text-black" : "text-muted-foreground"
                       }`}
                     />
                   </div>
@@ -161,11 +161,7 @@ export function Pricing() {
 
                 <Button
                   variant={plan.highlighted ? "gradient" : "outline"}
-                  className={`w-full mb-8 rounded-xl ${
-                    !plan.highlighted
-                      ? "border-white/20 text-white/70 hover:text-white hover:border-amber-500/40 bg-transparent"
-                      : ""
-                  }`}
+                  className="w-full mb-8 rounded-xl"
                   asChild
                 >
                   <Link href={plan.href}>{plan.cta}</Link>
@@ -179,18 +175,18 @@ export function Pricing() {
                         className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                           plan.highlighted
                             ? "bg-amber-500/20"
-                            : "bg-white/[0.06]"
+                            : "bg-accent"
                         }`}
                       >
                         <Check
                           className={`w-3 h-3 ${
                             plan.highlighted
                               ? "text-amber-400"
-                              : "text-white/40"
+                              : "text-muted-foreground"
                           }`}
                         />
                       </div>
-                      <span className="text-sm text-white/70">{feature}</span>
+                      <span className="text-sm text-foreground">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -200,7 +196,7 @@ export function Pricing() {
         </div>
 
         {/* Footer note */}
-        <div className="text-center mt-12 text-white/30 text-sm">
+        <div className="text-center mt-12 text-muted-foreground text-sm">
           🔒 No credit card required for Starter · 14-day money-back on Pro
         </div>
       </div>

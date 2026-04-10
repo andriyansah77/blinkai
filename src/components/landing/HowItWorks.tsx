@@ -106,7 +106,7 @@ export function HowItWorks() {
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25">
                     <Icon className="w-6 h-6 text-black" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0a0a0a] border-2 border-amber-500 flex items-center justify-center">
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-background border-2 border-amber-500 flex items-center justify-center">
                     <span className="text-[9px] font-black text-amber-400">
                       {i + 1}
                     </span>
@@ -114,7 +114,7 @@ export function HowItWorks() {
                 </div>
 
                 {/* Step number (decorative) */}
-                <div className="text-5xl font-black text-white/[0.04] mb-2 leading-none select-none">
+                <div className="text-5xl font-black text-muted-foreground/10 mb-2 leading-none select-none">
                   {step.number}
                 </div>
 
