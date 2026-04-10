@@ -53,7 +53,7 @@ export function Footer() {
           {/* Link columns */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h4 className="font-semibold text-sm text-white/70 mb-4">
+              <h4 className="font-semibold text-sm text-foreground mb-4">
                 {category}
               </h4>
               <ul className="space-y-3">
@@ -61,7 +61,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-white/35 hover:text-white/70 transition-colors"
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -73,11 +73,11 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/[0.05] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-white/25">
+        <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
             © 2025 ReAgent · Deploy your Agent in Minutes
           </p>
-          <p className="text-xs text-white/20">
+          <p className="text-xs text-muted-foreground">
             Built with Next.js · Tailwind CSS · Framer Motion
           </p>
         </div>

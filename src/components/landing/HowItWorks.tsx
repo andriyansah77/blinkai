@@ -64,11 +64,11 @@ export function HowItWorks() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium mb-6">
             How It Works
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-6">
             Deploy in{" "}
             <span className="gradient-text-amber">three simple steps</span>
           </h2>
-          <p className="text-xl text-white/50 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             No complex setup, no DevOps. Just build your agent and let ReAgent
             handle the rest.
           </p>
@@ -118,8 +118,8 @@ export function HowItWorks() {
                   {step.number}
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed mb-4">
+                <h3 className="text-xl font-bold text-foreground mb-3">{step.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                   {step.description}
                 </p>
 

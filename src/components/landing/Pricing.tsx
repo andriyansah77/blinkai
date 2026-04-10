@@ -81,11 +81,11 @@ export function Pricing() {
             <Crown className="w-4 h-4" />
             Pricing
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-6">
             Simple,{" "}
             <span className="gradient-text-amber">transparent pricing</span>
           </h2>
-          <p className="text-xl text-white/50 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Start free. Upgrade when you need more power. Cancel anytime.
           </p>
         </div>
@@ -137,25 +137,25 @@ export function Pricing() {
                       }`}
                     />
                   </div>
-                  <h3 className="text-xl font-bold text-white">{plan.name}</h3>
+                  <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
                 </div>
 
                 {/* Price */}
                 <div className="mb-3">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-white">
+                    <span className="text-4xl font-black text-foreground">
                       {plan.price === 0 ? "Free" : `$${plan.price}`}
                     </span>
                     {plan.price > 0 && (
-                      <span className="text-white/40 text-sm">/{plan.period}</span>
+                      <span className="text-muted-foreground text-sm">/{plan.period}</span>
                     )}
                   </div>
                   {plan.price === 0 && (
-                    <div className="text-xs text-white/40">{plan.period}</div>
+                    <div className="text-xs text-muted-foreground">{plan.period}</div>
                   )}
                 </div>
 
-                <p className="text-sm text-white/50 mb-6 leading-relaxed">
+                <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
                   {plan.description}
                 </p>
 

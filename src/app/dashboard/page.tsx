@@ -345,13 +345,13 @@ export default function DashboardPage() {
       <div className="border-b border-border p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-foreground mb-2">
               Welcome back, {session?.user?.name || 'User'}
             </h1>
-            <p className="text-white/60">
+            <p className="text-muted-foreground">
               Your ReAgent dashboard with Hermes integration
             </p>
-            <p className="text-white/40 text-xs mt-1">
+            <p className="text-muted-foreground text-xs mt-1">
               Last updated: {lastUpdated.toLocaleTimeString()}
             </p>
           </div>
@@ -359,21 +359,21 @@ export default function DashboardPage() {
             <button
               onClick={fetchDashboardData}
               disabled={loading}
-              className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.12] disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 bg-accent hover:bg-accent/80 disabled:opacity-50 text-foreground px-4 py-2 rounded-lg font-medium transition-colors"
             >
               <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
               Refresh
             </button>
             <button
               onClick={() => router.push('/dashboard/chat')}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
               Start Chat
             </button>
             <button
               onClick={() => router.push('/dashboard/agents')}
-              className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.12] text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 bg-accent hover:bg-accent/80 text-foreground px-4 py-2 rounded-lg font-medium transition-colors"
             >
               <Plus className="w-4 h-4" />
               Create Agent

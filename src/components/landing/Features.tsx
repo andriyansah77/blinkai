@@ -80,11 +80,11 @@ export function Features() {
             <Zap className="w-4 h-4" />
             Features
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-6">
             Everything you need to{" "}
             <span className="gradient-text-amber">ship AI agents</span>
           </h2>
-          <p className="text-xl text-white/50 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             ReAgent gives you the full stack to host, scale, and monetize AI
             agents — without managing any infrastructure.
           </p>
@@ -111,10 +111,10 @@ export function Features() {
                   <Icon className="w-6 h-6 text-black" />
                 </div>
 
-                <h3 className="text-lg font-semibold text-white mb-2.5">
+                <h3 className="text-lg font-semibold text-foreground mb-2.5">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-white/50 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>

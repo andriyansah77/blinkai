@@ -84,7 +84,7 @@ export function Hero() {
           animate="visible"
           className="text-5xl sm:text-6xl md:text-7xl lg:text-[96px] font-black tracking-tight mb-6 leading-[1.0]"
         >
-          <span className="text-white">Deploy AI Agents</span>
+          <span className="text-foreground">Deploy AI Agents</span>
           <br />
           <span className="gradient-text-amber">in Seconds.</span>
         </motion.h1>
@@ -95,7 +95,7 @@ export function Hero() {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="text-lg sm:text-xl md:text-2xl text-white/50 mb-10 max-w-2xl mx-auto leading-relaxed"
+          className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed"
         >
           Build, deploy, and scale AI agents with ReAgent. Deploy your Agent in Minutes — with your branding, your rules.
         </motion.p>
@@ -122,7 +122,7 @@ export function Hero() {
           <Button
             variant="outline"
             size="xl"
-            className="rounded-xl border-white/20 text-white/80 hover:text-white hover:border-amber-500/40 hover:bg-amber-500/[0.06] bg-transparent"
+            className="rounded-xl"
             asChild
           >
             <Link href="#how-it-works">
@@ -152,7 +152,7 @@ export function Hero() {
                 <div className="text-2xl sm:text-3xl font-black text-amber-400">
                   {stat.value}
                 </div>
-                <div className="text-xs text-white/40 mt-0.5 tracking-wide uppercase">
+                <div className="text-xs text-muted-foreground mt-0.5 tracking-wide uppercase">
                   {stat.label}
                 </div>
               </div>
@@ -180,10 +180,10 @@ export function Hero() {
                   🤖
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">Customer Support Bot</div>
+                  <div className="text-sm font-semibold text-foreground">Customer Support Bot</div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>
-                    <span className="text-xs text-white/40">Active</span>
+                    <span className="text-xs text-muted-foreground">Active</span>
                   </div>
                 </div>
               </div>
@@ -197,7 +197,7 @@ export function Hero() {
                 </div>
               </div>
               <div className="flex justify-start">
-                <div className="chat-bubble-ai text-white/80 text-xs px-3 py-2 max-w-[85%]">
+                <div className="chat-bubble-ai text-foreground text-xs px-3 py-2 max-w-[85%]">
                   Sure! Let me look that up for you. Order #12093 — your refund of $49 was processed 2 days ago 🎉
                 </div>
               </div>
@@ -209,8 +209,8 @@ export function Hero() {
             </div>
 
             {/* Input bar */}
-            <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2">
-              <span className="text-xs text-white/30 flex-1">Type a message…</span>
+            <div className="flex items-center gap-2 bg-accent border border-border rounded-xl px-3 py-2">
+              <span className="text-xs text-muted-foreground flex-1">Type a message…</span>
               <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
                 <ArrowRight className="w-3 h-3 text-black" />
               </div>
