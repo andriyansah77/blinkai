@@ -1028,6 +1028,17 @@ REAGENT_USER_ID=${userId}
         
         // Parse YAML and add telegram config
         const config = configContent ? yaml.parse(configContent) : {};
+        
+        // Set model config for custom provider
+        if (!config.model) {
+          config.model = {};
+        }
+        config.model.provider = 'custom';
+        config.model.model = AI_MODEL;
+        config.model.base_url = AI_API_BASE_URL;
+        config.model.api_key_env = 'OPENAI_API_KEY';
+        
+        // Set telegram config
         if (!config.telegram) {
           config.telegram = {};
         }
@@ -1101,6 +1112,17 @@ REAGENT_USER_ID=${userId}
         
         // Parse YAML and add discord config
         const config = configContent ? yaml.parse(configContent) : {};
+        
+        // Set model config for custom provider
+        if (!config.model) {
+          config.model = {};
+        }
+        config.model.provider = 'custom';
+        config.model.model = AI_MODEL;
+        config.model.base_url = AI_API_BASE_URL;
+        config.model.api_key_env = 'OPENAI_API_KEY';
+        
+        // Set discord config
         if (!config.discord) {
           config.discord = {};
         }
