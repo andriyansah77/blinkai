@@ -208,6 +208,8 @@ model:
   model: ${AI_MODEL}
   base_url: ${AI_API_BASE_URL}
   api_key_env: OPENAI_API_KEY
+  timeout: 60
+  max_retries: 3
 `;
             
             await execAsync(`cat > ${configPath} << 'EOF'\n${configContent}\nEOF`);
@@ -1046,6 +1048,8 @@ REAGENT_USER_ID=${userId}
         config.model.model = AI_MODEL;
         config.model.base_url = AI_API_BASE_URL;
         config.model.api_key_env = 'OPENAI_API_KEY';
+        config.model.timeout = 60;
+        config.model.max_retries = 3;
         
         // Set telegram config
         if (!config.telegram) {
@@ -1130,6 +1134,8 @@ REAGENT_USER_ID=${userId}
         config.model.model = AI_MODEL;
         config.model.base_url = AI_API_BASE_URL;
         config.model.api_key_env = 'OPENAI_API_KEY';
+        config.model.timeout = 60;
+        config.model.max_retries = 3;
         
         // Set discord config
         if (!config.discord) {
