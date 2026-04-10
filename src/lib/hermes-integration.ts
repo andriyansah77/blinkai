@@ -1051,6 +1051,13 @@ REAGENT_USER_ID=${userId}
           config.telegram = {};
         }
         config.telegram.bot_token = botToken;
+        config.telegram.enabled = true; // Enable Telegram platform
+        
+        // Add gateway config to allow all users (can be restricted later)
+        if (!config.gateway) {
+          config.gateway = {};
+        }
+        config.gateway.allow_all_users = true; // Allow all users for now
         
         // Write back to file
         const newConfigContent = yaml.stringify(config);
@@ -1105,6 +1112,13 @@ REAGENT_USER_ID=${userId}
           config.discord = {};
         }
         config.discord.bot_token = botToken;
+        config.discord.enabled = true; // Enable Discord platform
+        
+        // Add gateway config to allow all users (can be restricted later)
+        if (!config.gateway) {
+          config.gateway = {};
+        }
+        config.gateway.allow_all_users = true; // Allow all users for now
         
         // Write back to file
         const newConfigContent = yaml.stringify(config);
