@@ -1064,6 +1064,18 @@ REAGENT_USER_ID=${userId}
         await execAsync(`cat > ${configPath} << 'EOF'\n${newConfigContent}\nEOF`);
         
         console.log(`[Platform] Telegram token set successfully for user ${userId}`);
+        
+        // Also update .env file with gateway environment variables
+        const envPath = `/root/.hermes/profiles/${profileName}/.env`;
+        try {
+          // Append gateway config to .env
+          const envAddition = `\n# Gateway Configuration\nGATEWAY_ALLOW_ALL_USERS=true\nTELEGRAM_BOT_TOKEN=${botToken}\n`;
+          await execAsync(`echo '${envAddition}' >> ${envPath}`);
+          console.log(`[Platform] Gateway environment variables added to .env for user ${userId}`);
+        } catch (envError) {
+          console.warn(`[Platform] Failed to update .env file:`, envError);
+          // Continue anyway, config.yaml should be enough
+        }
       } catch (fileError) {
         console.error(`[Platform] Failed to edit config file:`, fileError);
         return { success: false, error: `Failed to set Telegram token: ${fileError}` };
@@ -1125,6 +1137,18 @@ REAGENT_USER_ID=${userId}
         await execAsync(`cat > ${configPath} << 'EOF'\n${newConfigContent}\nEOF`);
         
         console.log(`[Platform] Discord token set successfully for user ${userId}`);
+        
+        // Also update .env file with gateway environment variables
+        const envPath = `/root/.hermes/profiles/${profileName}/.env`;
+        try {
+          // Append gateway config to .env
+          const envAddition = `\n# Gateway Configuration\nGATEWAY_ALLOW_ALL_USERS=true\nDISCORD_BOT_TOKEN=${botToken}\n`;
+          await execAsync(`echo '${envAddition}' >> ${envPath}`);
+          console.log(`[Platform] Gateway environment variables added to .env for user ${userId}`);
+        } catch (envError) {
+          console.warn(`[Platform] Failed to update .env file:`, envError);
+          // Continue anyway, config.yaml should be enough
+        }
       } catch (fileError) {
         console.error(`[Platform] Failed to edit config file:`, fileError);
         return { success: false, error: `Failed to set Discord token: ${fileError}` };
