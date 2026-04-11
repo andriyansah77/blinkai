@@ -691,7 +691,31 @@ REAGENT_USER_ID=${userId}
       }
     }
 
-    return cleanedLines.join(' ').trim();
+    // Join lines and clean up extra spaces
+    let result = cleanedLines.join(' ').trim();
+    
+    // Remove any remaining CLI artifacts
+    result = result
+      .replace(/\[INFO\]/gi, '')
+      .replace(/\[DEBUG\]/gi, '')
+      .replace(/\[ERROR\]/gi, '')
+      .replace(/\[WARNING\]/gi, '')
+      .replace(/>>>/g, '')
+      .replace(/<<</g, '')
+      .replace(/─+/g, '')
+      .replace(/═+/g, '')
+      .replace(/│/g, '')
+      .replace(/┌/g, '')
+      .replace(/└/g, '')
+      .replace(/├/g, '')
+      .replace(/┤/g, '')
+      .replace(/┬/g, '')
+      .replace(/┴/g, '')
+      .replace(/┼/g, '')
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim();
+
+    return result;
   }
 
   async getSessions(userId: string): Promise<HermesSession[]> {

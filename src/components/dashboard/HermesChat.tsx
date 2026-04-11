@@ -1145,7 +1145,7 @@ export default function HermesChat({ className }: ChatProps) {
                           {suggestion.category === 'learning' && <Lightbulb className="w-4 h-4" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white/90 text-sm leading-relaxed group-hover:text-foreground transition-colors">
+                          <p className="text-foreground/90 text-sm leading-relaxed group-hover:text-foreground transition-colors">
                             {suggestion.text}
                           </p>
                           <span className={cn(
@@ -1246,30 +1246,31 @@ export default function HermesChat({ className }: ChatProps) {
 
                   <div className="text-sm leading-relaxed">
                     {message.role === "assistant" ? (
-                      <div className="prose prose-sm prose-invert max-w-none">
+                      <div className="prose prose-sm max-w-none dark:prose-invert">
                         <ReactMarkdown 
                           remarkPlugins={[remarkGfm]}
                           components={{
-                            // Custom styling for markdown elements
+                            // Custom styling for markdown elements with light/dark mode support
                             h1: ({children}) => <h1 className="text-lg font-bold mb-2 text-foreground">{children}</h1>,
                             h2: ({children}) => <h2 className="text-base font-semibold mb-2 text-foreground">{children}</h2>,
                             h3: ({children}) => <h3 className="text-sm font-medium mb-1 text-foreground">{children}</h3>,
-                            p: ({children}) => <p className="mb-2 text-white/90 last:mb-0">{children}</p>,
-                            ul: ({children}) => <ul className="list-disc list-inside mb-2 text-white/90">{children}</ul>,
-                            ol: ({children}) => <ol className="list-decimal list-inside mb-2 text-white/90">{children}</ol>,
-                            li: ({children}) => <li className="mb-1">{children}</li>,
+                            p: ({children}) => <p className="mb-2 text-foreground/90 last:mb-0">{children}</p>,
+                            ul: ({children}) => <ul className="list-disc list-inside mb-2 text-foreground/90 space-y-1">{children}</ul>,
+                            ol: ({children}) => <ol className="list-decimal list-inside mb-2 text-foreground/90 space-y-1">{children}</ol>,
+                            li: ({children}) => <li className="mb-1 text-foreground/90">{children}</li>,
                             strong: ({children}) => <strong className="font-semibold text-foreground">{children}</strong>,
-                            em: ({children}) => <em className="italic text-white/80">{children}</em>,
-                            code: ({children}) => <code className="bg-white/10 px-1 py-0.5 rounded text-xs font-mono text-blue-300">{children}</code>,
-                            pre: ({children}) => <pre className="bg-white/5 p-3 rounded-lg overflow-x-auto text-xs font-mono mb-2">{children}</pre>,
-                            blockquote: ({children}) => <blockquote className="border-l-2 border-white/20 pl-3 italic text-muted-foreground mb-2">{children}</blockquote>,
+                            em: ({children}) => <em className="italic text-foreground/80">{children}</em>,
+                            code: ({children}) => <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">{children}</code>,
+                            pre: ({children}) => <pre className="bg-muted p-3 rounded-lg overflow-x-auto text-xs font-mono mb-2 border border-border">{children}</pre>,
+                            blockquote: ({children}) => <blockquote className="border-l-2 border-primary/30 pl-3 italic text-muted-foreground mb-2">{children}</blockquote>,
+                            a: ({children, href}) => <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
                           }}
                         >
                           {message.content}
                         </ReactMarkdown>
                       </div>
                     ) : (
-                      <p className="whitespace-pre-wrap text-white/90">{message.content}</p>
+                      <p className="whitespace-pre-wrap text-foreground/90">{message.content}</p>
                     )}
                   </div>
                   <p className="text-xs opacity-60 mt-2">
