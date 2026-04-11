@@ -63,9 +63,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       address: wallet.address,
-      reagentBalance: wallet.reagentBalance,
-      pathusdBalance: wallet.pathusdBalance,
-      usdBalance: usdBalance?.balance || 0,
+      reagentBalance: parseFloat(wallet.reagentBalance) || 0,
+      pathusdBalance: parseFloat(wallet.pathusdBalance) || 0,
+      usdBalance: parseFloat(usdBalance?.balance || '0'),
       lastUpdate: wallet.lastBalanceUpdate.toISOString()
     });
 

@@ -188,7 +188,7 @@ export default function MiningPage() {
             </div>
             <h3 className="text-muted-foreground text-sm mb-1">USD Balance</h3>
             <p className="text-3xl font-bold text-foreground mb-2">
-              ${wallet?.usdBalance?.toFixed(2) || "0.00"}
+              ${typeof wallet?.usdBalance === 'number' ? wallet.usdBalance.toFixed(2) : parseFloat(wallet?.usdBalance || '0').toFixed(2)}
             </p>
             <p className="text-muted-foreground text-xs">Available for minting</p>
           </motion.div>
@@ -207,7 +207,7 @@ export default function MiningPage() {
             </div>
             <h3 className="text-muted-foreground text-sm mb-1">REAGENT Balance</h3>
             <p className="text-3xl font-bold text-foreground mb-2">
-              {wallet?.reagentBalance?.toLocaleString() || "0"}
+              {typeof wallet?.reagentBalance === 'number' ? wallet.reagentBalance.toLocaleString() : parseFloat(wallet?.reagentBalance || '0').toLocaleString()}
             </p>
             <p className="text-muted-foreground text-xs">TIP-20 tokens</p>
           </motion.div>
