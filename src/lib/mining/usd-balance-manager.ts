@@ -46,6 +46,31 @@ export interface DeductResult {
 
 export class UsdBalanceManager {
   /**
+   * Initialize balance for a new user
+   * @param userId - User ID
+   * @param walletId - Wallet ID
+   * @returns Balance information
+   */
+  async initializeBalance(userId: string, walletId: string): Promise<BalanceInfo> {
+    // Create balance record
+    const balance = await prisma.usdBalance.create({
+      data: {
+        userId,
+        walletId,
+        balance: '0',
+        lockedBalance: '0'
+      }
+    });
+
+    return {
+      userId: balance.userId,
+      balance: balance.balance,
+      lockedBalance: balance.lockedBalance,
+      availableBalance: '0'
+    };
+  }
+
+  /**
    * Get user's USD balance
    * @param userId - User ID
    * @returns Balance information

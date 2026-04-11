@@ -22,12 +22,38 @@ export interface SkillInstallResult {
  */
 export async function autoInstallMintingSkill(userId: string): Promise<SkillInstallResult> {
   try {
+    // Get or create user's agent
+    let agent = await prisma.hermesAgent.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!agent) {
+      console.log(`Creating default agent for user ${userId}`);
+      // Create default agent for user
+      agent = await prisma.hermesAgent.create({
+        data: {
+          userId,
+          name: 'ReAgent Assistant',
+          description: 'Your personal AI assistant with mining capabilities',
+          model: 'gpt-4o',
+          provider: 'openai',
+          systemPrompt: 'You are a helpful AI assistant with access to blockchain mining capabilities on the Tempo Network.',
+          temperature: 0.7,
+          maxTokens: 4000,
+          tools: JSON.stringify(['minting']),
+          memoryEnabled: true,
+          learningEnabled: true,
+          status: 'active'
+        }
+      });
+      console.log(`Default agent created for user ${userId}: ${agent.id}`);
+    }
+
     // Check if user already has the minting skill
     const existingSkill = await prisma.hermesSkill.findFirst({
       where: {
-        agent: {
-          userId
-        },
+        agentId: agent.id,
         name: MINTING_SKILL_METADATA.name
       }
     });
@@ -37,19 +63,6 @@ export async function autoInstallMintingSkill(userId: string): Promise<SkillInst
       return {
         success: true,
         skillId: existingSkill.id
-      };
-    }
-
-    // Get user's agent
-    const agent = await prisma.hermesAgent.findFirst({
-      where: { userId },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    if (!agent) {
-      return {
-        success: false,
-        error: 'No agent found for user'
       };
     }
 
