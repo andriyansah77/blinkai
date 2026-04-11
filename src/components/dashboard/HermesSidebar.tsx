@@ -17,7 +17,8 @@ import {
   Bot,
   Sparkles,
   Workflow,
-  Database
+  Database,
+  Pickaxe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -33,6 +34,12 @@ const MAIN_ITEMS = [
     icon: MessageSquare,
     label: "Chat",
     href: "/dashboard/chat",
+    badge: null,
+  },
+  {
+    icon: Pickaxe,
+    label: "Mining",
+    href: "/mining",
     badge: null,
   },
 ];

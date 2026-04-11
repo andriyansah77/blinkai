@@ -24,6 +24,15 @@ model User {
   hermesSessions HermesSession[]
   hermesMemories HermesMemory[]
   feedback     Feedback[]
+  
+  // Mining feature relations
+  wallet              Wallet?
+  usdBalance          UsdBalance?
+  inscriptions        Inscription[]
+  inscriptionSchedules InscriptionSchedule[]
+  tradeOrders         TradeOrder[]
+  buyTrades           Trade[] @relation("BuyerTrades")
+  sellTrades          Trade[] @relation("SellerTrades")
 }
 
 // ─── API Key Config (per user) ─────────────────────────────────────────────────
@@ -230,4 +239,215 @@ model Feedback {
   createdAt DateTime @default(now())
 
   @@index([userId, type])
+}
+
+// ─── Mining Feature Models ────────────────────────────────────────────────────
+
+// ─── Wallet ───────────────────────────────────────────────────────────────────
+model Wallet {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  address              String   @unique
+  encryptedPrivateKey  String   // AES-256 encrypted
+  keyIv                String   // Initialization vector for encryption
+  
+  // Balances (cached from blockchain)
+  reagentBalance       String   @default("0") // BigInt as string
+  pathusdBalance       String   @default("0") // BigInt as string
+  lastBalanceUpdate    DateTime @default(now())
+  
+  // Metadata
+  network              String   @default("tempo")
+  derivationPath       String?  // HD wallet path
+  imported             Boolean  @default(false)
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  // Relations
+  inscriptions         Inscription[]
+  usdBalance           UsdBalance?
+  tradeOrders          TradeOrder[]
+  
+  @@index([userId])
+  @@index([address])
+}
+
+// ─── USD Balance ──────────────────────────────────────────────────────────────
+model UsdBalance {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId      String   @unique
+  wallet        Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  balance       String   @default("0") // Decimal as string (e.g., "100.50")
+  lockedBalance String   @default("0") // Locked in trades
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  transactions  UsdTransaction[]
+  
+  @@index([userId])
+}
+
+// ─── USD Transaction ──────────────────────────────────────────────────────────
+model UsdTransaction {
+  id            String     @id @default(cuid())
+  balanceId     String
+  balance       UsdBalance @relation(fields: [balanceId], references: [id], onDelete: Cascade)
+  
+  // Transaction details
+  type          String     // "deposit" | "withdrawal" | "inscription_fee" | "gas_fee" | "trade" | "refund"
+  amount        String     // Decimal as string (positive or negative)
+  balanceBefore String
+  balanceAfter  String
+  
+  // Reference
+  referenceType String?    // "inscription" | "trade" | "manual"
+  referenceId   String?    // ID of related inscription/trade
+  
+  // Metadata
+  description   String?
+  adminId       String?    // For manual deposits/adjustments
+  
+  createdAt     DateTime   @default(now())
+  
+  @@index([balanceId, createdAt])
+}
+
+// ─── Inscription ──────────────────────────────────────────────────────────────
+model Inscription {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId        String
+  wallet          Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  // Inscription details
+  type            String   // "auto" | "manual" | "scheduled"
+  status          String   // "pending" | "submitted" | "confirmed" | "failed"
+  
+  // Amounts
+  inscriptionFee  String   // 0.5 or 1.0 PATHUSD
+  gasEstimate     String
+  gasFee          String?  // Actual gas paid (renamed from gasActual)
+  tokensEarned    String   @default("10000") // REAGENT tokens (renamed from tokensReceived)
+  
+  // Blockchain data
+  txHash          String?  @unique
+  blockNumber     Int?     // Changed to Int for consistency
+  confirmations   Int      @default(0)
+  
+  // Error handling
+  errorMessage    String?
+  refunded        Boolean  @default(false)
+  retryCount      Int      @default(0)
+  
+  // Schedule reference
+  scheduleId      String?
+  schedule        InscriptionSchedule? @relation(fields: [scheduleId], references: [id])
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  confirmedAt     DateTime?
+  
+  @@index([userId, status])
+  @@index([walletId, createdAt])
+}
+
+// ─── Inscription Schedule ─────────────────────────────────────────────────────
+model InscriptionSchedule {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Schedule configuration
+  frequency       String   // "hourly" | "daily" | "weekly" | "monthly" | "custom"
+  cronExpression  String   // Cron format
+  enabled         Boolean  @default(true) // Active or paused
+  maxExecutions   Int?     // Optional limit on total executions
+  executionCount  Int      @default(0) // Number of times executed
+  
+  // Status tracking
+  lastExecution   DateTime?
+  nextExecution   DateTime?
+  lastExecutionStatus String? // "success" | "failed"
+  pauseReason     String?  // Reason for pause (e.g., "Insufficient balance")
+  notifyOnPause   Boolean  @default(true) // Send notification when paused
+  
+  // Hermes cron job reference
+  hermesCronId    String?  @unique
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  inscriptions    Inscription[]
+  
+  @@index([userId, enabled])
+}
+
+// ─── Trade Order ──────────────────────────────────────────────────────────────
+model TradeOrder {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId        String
+  wallet          Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  // Order details
+  type            String   // "buy" | "sell"
+  status          String   // "open" | "partial" | "filled" | "cancelled"
+  
+  // Amounts
+  tokenAmount     String   // REAGENT amount
+  pricePerToken   String   // Price in PATHUSD
+  totalValue      String   // Total USD value
+  filledAmount    String   @default("0")
+  
+  // Escrow
+  lockedAmount    String   // Tokens (sell) or USD (buy) locked
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  expiresAt       DateTime?
+  
+  // Relations
+  buyTrades       Trade[] @relation("BuyOrderTrades")
+  sellTrades      Trade[] @relation("SellOrderTrades")
+  
+  @@index([type, status, pricePerToken])
+  @@index([userId, status])
+}
+
+// ─── Trade ────────────────────────────────────────────────────────────────────
+model Trade {
+  id              String     @id @default(cuid())
+  buyOrderId      String
+  buyOrder        TradeOrder @relation("BuyOrderTrades", fields: [buyOrderId], references: [id])
+  sellOrderId     String
+  sellOrder       TradeOrder @relation("SellOrderTrades", fields: [sellOrderId], references: [id])
+  
+  // Trade details
+  tokenAmount     String     // REAGENT traded
+  pricePerToken   String     // Execution price
+  totalValue      String     // Total USD value
+  platformFee     String     // 1% fee
+  
+  // Participants
+  buyerId         String
+  buyer           User       @relation("BuyerTrades", fields: [buyerId], references: [id])
+  sellerId        String
+  seller          User       @relation("SellerTrades", fields: [sellerId], references: [id])
+  
+  executedAt      DateTime   @default(now())
+  
+  @@index([buyerId, executedAt])
+  @@index([sellerId, executedAt])
 }

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { HermesAgentDB } from "@/lib/hermes-db";
 import { hermesCliWrapper } from "@/lib/hermes-cli-wrapper";
+import { autoInstallMintingSkill } from "@/lib/hooks/auto-install-minting-skill";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -188,7 +189,20 @@ return helpGuide(params);`
       });
     }
 
-    // 6. Create initial session
+    // 6. Auto-install Minting Skill (proprietary, cannot be uninstalled)
+    try {
+      const mintingSkillResult = await autoInstallMintingSkill(session.user.id!);
+      if (mintingSkillResult.success) {
+        console.log(`Minting skill auto-installed: ${mintingSkillResult.skillId}`);
+      } else {
+        console.warn(`Failed to auto-install minting skill: ${mintingSkillResult.error}`);
+      }
+    } catch (error) {
+      console.error('Error auto-installing minting skill:', error);
+      // Continue even if minting skill installation fails
+    }
+
+    // 7. Create initial session
     const session_id = await HermesAgentDB.createSession(
       agent.id, 
       session.user.id!, 

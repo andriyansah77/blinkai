@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
@@ -22,7 +25,17 @@
     "deploy:github": "bash scripts/setup-github-deploy.sh",
     "deploy:linux": "bash scripts/deploy-to-vps.sh",
     "deploy:windows": "powershell -ExecutionPolicy Bypass -File scripts/deploy-to-vps.ps1",
-    "update:github": "bash scripts/update-from-github.sh"
+    "update:github": "bash scripts/update-from-github.sh",
+    "reagent:deploy": "npx ts-node --project scripts/tsconfig.json scripts/deploy-reagent-token.ts",
+    "reagent:verify": "npx ts-node --project scripts/tsconfig.json scripts/verify-reagent-roles.ts",
+    "reagent:test": "npx ts-node --project scripts/tsconfig.json scripts/test-reagent-mint.ts",
+    "reagent:all": "npm run reagent:deploy && npm run reagent:verify && npm run reagent:test",
+    "tempo:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-tempo-wallet.ps1",
+    "tempo:setup:linux": "bash scripts/setup-tempo-wallet.sh",
+    "reagent:deploy:tempo": "npx ts-node --project scripts/tsconfig.json scripts/deploy-with-tempo-cli.ts",
+    "reagent:deploy:production": "npx ts-node --project scripts/tsconfig.json scripts/deploy-production.ts",
+    "reagent:deploy:direct": "npx ts-node --project scripts/tsconfig.json scripts/deploy-direct.ts",
+    "reagent:deploy:manual": "npx ts-node --project scripts/tsconfig.json scripts/deploy-manual.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",
@@ -44,6 +57,8 @@
     "child_process": "^1.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "decimal.js": "^10.6.0",
+    "ethers": "^6.16.0",
     "framer-motion": "^11.15.0",
     "fs-extra": "^11.2.0",
     "highlight.js": "^11.9.0",
@@ -68,6 +83,9 @@
     "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/fs-extra": "^11.0.0",
     "@types/marked": "^5.0.0",
@@ -78,11 +96,15 @@
     "@types/react-dom": "^18",
     "@types/uuid": "^9.0.7",
     "@types/ws": "^8.5.10",
+    "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.18",
+    "jsdom": "^23.0.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "typescript": "^5",
+    "vitest": "^1.0.4"
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { hermesIntegration } from "@/lib/hermes-integration";
+import { preventProprietarySkillUninstall } from "@/lib/hooks/auto-install-minting-skill";
 
 export async function GET() {
   try {
@@ -50,6 +51,15 @@ export async function POST(request: NextRequest) {
       case 'uninstall':
         if (!skillName) {
           return NextResponse.json({ error: "Skill name is required" }, { status: 400 });
+        }
+        
+        // Check if skill is proprietary and cannot be uninstalled
+        const isProprietary = await preventProprietarySkillUninstall(skillName);
+        if (isProprietary) {
+          return NextResponse.json({
+            success: false,
+            error: "This skill is proprietary and cannot be uninstalled"
+          }, { status: 403 });
         }
         
         const uninstallResult = await hermesIntegration.uninstallSkill(session.user.id!, skillName);

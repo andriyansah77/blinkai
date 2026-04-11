@@ -1,0 +1,24 @@
+{
+  "network": "mainnet",
+  "chainId": 4217,
+  "tokenAddress": "0x20C000000000000000000000a59277C0c1d65Bc5",
+  "tokenName": "ReAgent Token",
+  "tokenSymbol": "REAGENT",
+  "decimals": 6,
+  "adminAddress": "0xbd6d0CC8F02f7A961b02cC451998748e761cDffE",
+  "platformWalletAddress": "0xbd6d0CC8F02f7A961b02cC451998748e761cDffE",
+  "quoteTokenAddress": "0x20c0000000000000000000000000000000000000",
+  "rpcUrl": "https://rpc.tempo.xyz",
+  "salt": "0x72656167656e742d313737353835343933302d37373834333900000000000000",
+  "deploymentTxHash": "0x01c02087cc8a0d2d0edcc80cac1903b765aa8b0bfbee62ff4d23a32a9678cd2d",
+  "deploymentMethod": "manual-ui",
+  "timestamp": "2024-04-11T00:00:00.000Z",
+  "explorerUrl": "https://explore.tempo.xyz/address/0x20C000000000000000000000a59277C0c1d65Bc5",
+  "status": "deployed",
+  "nextSteps": [
+    "Grant ISSUER_ROLE to admin address",
+    "Set supply cap to 400M REAGENT",
+    "Verify token on Explorer",
+    "Test minting functionality"
+  ]
+}
