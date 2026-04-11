@@ -93,6 +93,41 @@ export default function HermesChat({ className }: ChatProps) {
     scrollToBottom();
   }, [messages]);
 
+  // Load chat history from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && agent?.id) {
+      const storageKey = `chat-history-${agent.id}`;
+      const savedHistory = localStorage.getItem(storageKey);
+      if (savedHistory) {
+        try {
+          const parsed = JSON.parse(savedHistory);
+          // Convert timestamp strings back to Date objects
+          const messagesWithDates = parsed.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }));
+          setMessages(messagesWithDates);
+          console.log(`[Chat] Loaded ${messagesWithDates.length} messages from history`);
+        } catch (error) {
+          console.error('[Chat] Failed to load chat history:', error);
+        }
+      }
+    }
+  }, [agent?.id]);
+
+  // Save chat history to localStorage whenever messages change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && agent?.id && messages.length > 0) {
+      const storageKey = `chat-history-${agent.id}`;
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(messages));
+        console.log(`[Chat] Saved ${messages.length} messages to history`);
+      } catch (error) {
+        console.error('[Chat] Failed to save chat history:', error);
+      }
+    }
+  }, [messages, agent?.id]);
+
   // Load initial suggestions
   useEffect(() => {
     loadSuggestions();
@@ -212,6 +247,12 @@ export default function HermesChat({ className }: ChatProps) {
 
       // Handle special actions
       if (result.result.action === 'clear_chat') {
+        // Clear localStorage
+        if (typeof window !== 'undefined' && agent?.id) {
+          const storageKey = `chat-history-${agent.id}`;
+          localStorage.removeItem(storageKey);
+          console.log('[Chat] Cleared chat history from localStorage');
+        }
         setTimeout(() => setMessages([]), 1000);
       } else if (result.result.action === 'export_chat') {
         // Handle chat export

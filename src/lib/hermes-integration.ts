@@ -639,6 +639,18 @@ REAGENT_USER_ID=${userId}
       /^┬/,  // Box drawing
       /^┴/,  // Box drawing
       /^┼/,  // Box drawing
+      /╭/,   // Box drawing rounded
+      /╮/,   // Box drawing rounded
+      /╯/,   // Box drawing rounded
+      /╰/,   // Box drawing rounded
+      /┊/,   // Dotted line
+      /🔎/,   // Search emoji
+      /⚕/,   // Medical symbol
+      /preparing/i,
+      /search_files/i,
+      /find /i,
+      /session_id:/i,
+      /\d+\.\d+s$/,  // Timing like "0.6s"
     ];
 
     return metadataPatterns.some(pattern => pattern.test(line.trim()));
