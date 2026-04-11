@@ -238,6 +238,30 @@ REAGENT_USER_ID=${userId}
             
             console.log(`[Profile] .env file created for user ${userId}`);
             console.log(`[Profile] AI configuration set successfully`);
+            
+            // 3. Copy profile markdown files (PLATFORM.md, TOOLS.md, SOUL.md)
+            console.log(`[Profile] Copying profile markdown files for user ${userId}`);
+            const profileDir = `/root/.hermes/profiles/${profileName}`;
+            const sourceProfilesDir = '/root/blinkai/hermes-profiles';
+            
+            try {
+              // Copy PLATFORM.md
+              await execAsync(`cp ${sourceProfilesDir}/PLATFORM.md ${profileDir}/PLATFORM.md`);
+              console.log(`[Profile] ✅ PLATFORM.md copied`);
+              
+              // Copy TOOLS.md
+              await execAsync(`cp ${sourceProfilesDir}/TOOLS.md ${profileDir}/TOOLS.md`);
+              console.log(`[Profile] ✅ TOOLS.md copied`);
+              
+              // Copy SOUL.md
+              await execAsync(`cp ${sourceProfilesDir}/SOUL.md ${profileDir}/SOUL.md`);
+              console.log(`[Profile] ✅ SOUL.md copied`);
+              
+              console.log(`[Profile] All profile files copied successfully for user ${userId}`);
+            } catch (copyError) {
+              console.error(`[Profile] Failed to copy profile markdown files:`, copyError);
+              // Continue anyway, profile is created
+            }
           } catch (configError) {
             console.error(`[Profile] Failed to set AI configuration:`, configError);
             // Continue anyway, profile is created
