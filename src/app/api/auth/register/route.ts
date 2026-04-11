@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user + credit ledger + api key config + wallet + usd balance in a transaction
+    // Create user + credit ledger + api key config in a transaction
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
@@ -68,21 +68,27 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Generate wallet for mining feature
-      console.log(`[Registration] Generating wallet for user ${newUser.id}`);
+      return newUser;
+    });
+
+    // Generate wallet for mining feature (after user is committed)
+    console.log(`[Registration] Generating wallet for user ${user.id}`);
+    try {
       const walletManager = new WalletManager();
-      const wallet = await walletManager.generateWallet(newUser.id);
+      const wallet = await walletManager.generateWallet(user.id);
       
       console.log(`[Registration] ✅ Wallet generated: ${wallet.address}`);
 
       // Initialize USD balance
-      console.log(`[Registration] Initializing USD balance for user ${newUser.id}`);
+      console.log(`[Registration] Initializing USD balance for user ${user.id}`);
       const balanceManager = new UsdBalanceManager();
-      await balanceManager.initializeBalance(newUser.id, wallet.id);
+      await balanceManager.initializeBalance(user.id, wallet.id);
       console.log(`[Registration] ✅ USD balance initialized`);
-
-      return newUser;
-    });
+    } catch (walletError: any) {
+      console.error(`[Registration] ⚠️ Wallet generation failed for user ${user.id}:`, walletError.message);
+      // Don't fail registration if wallet generation fails
+      // User can generate wallet later from mining page
+    }
 
     // Setup Hermes profile and gateway for new user (async, don't block registration)
     console.log(`[Registration] Starting auto-setup for user ${user.id}`);
