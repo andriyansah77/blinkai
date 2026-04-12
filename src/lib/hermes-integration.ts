@@ -134,7 +134,9 @@ export class HermesIntegration {
         timeout: options.timeout || 30000,
         env: {
           ...process.env,
-          HERMES_HOME: profileHome
+          HERMES_HOME: profileHome,
+          REAGENT_USER_ID: userId,
+          REAGENT_API_BASE: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
         }
       });
       
@@ -533,7 +535,9 @@ REAGENT_USER_ID=${userId}
         stdio: 'pipe',
         env: {
           ...process.env,
-          HERMES_HOME: profileHome
+          HERMES_HOME: profileHome,
+          REAGENT_USER_ID: userId,
+          REAGENT_API_BASE: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
         }
       });
 

@@ -474,10 +474,13 @@ function DeployStep({ data }: any) {
   const [deployStatus, setDeployStatus] = useState<'deploying' | 'success' | 'error'>('deploying');
   const [progress, setProgress] = useState(0);
   const [currentTask, setCurrentTask] = useState('');
+  const [walletInfo, setWalletInfo] = useState<any>(null);
 
   const deployTasks = [
     'Creating your AI agent...',
     'Setting up personality and skills...',
+    'Generating your blockchain wallet...',
+    'Initializing mining balance...',
     'Connecting channels...',
     'Configuring plan and credits...',
     'Deploying to cloud infrastructure...',
@@ -504,6 +507,17 @@ function DeployStep({ data }: any) {
 
       const result = await response.json();
       
+      // Get wallet info
+      try {
+        const walletResponse = await fetch('/api/wallet');
+        if (walletResponse.ok) {
+          const walletData = await walletResponse.json();
+          setWalletInfo(walletData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch wallet info:', error);
+      }
+      
       // Simulate deployment process with real backend call
       for (let i = 0; i < deployTasks.length; i++) {
         setCurrentTask(deployTasks[i]);
@@ -513,10 +527,10 @@ function DeployStep({ data }: any) {
 
       setDeployStatus('success');
       
-      // Redirect to dashboard after 2 seconds
+      // Redirect to dashboard after 3 seconds
       setTimeout(() => {
         router.push('/dashboard');
-      }, 2000);
+      }, 3000);
 
     } catch (error) {
       console.error('Deployment failed:', error);
@@ -555,13 +569,45 @@ function DeployStep({ data }: any) {
             
             <h3 className="text-xl font-semibold text-white mb-2">🎉 Agent deployed successfully!</h3>
             <p className="text-white/60 mb-6">
-              {data.agentName} is now live and ready to chat. Redirecting to your dashboard...
+              {data.agentName} is now live and ready to chat!
             </p>
             
-            <div className="flex items-center justify-center gap-2 text-green-400">
+            {walletInfo && (
+              <div className="bg-white/[0.06] border border-white/[0.08] rounded-lg p-6 mb-6 text-left">
+                <h4 className="font-semibold text-white mb-4 flex items-center gap-2">
+                  <span className="text-2xl">💰</span>
+                  Your Wallet is Ready
+                </h4>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-white/60">Wallet Address</p>
+                    <p className="text-white font-mono text-sm break-all">{walletInfo.address}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-white/60">ETH Balance</p>
+                      <p className="text-white font-semibold">{walletInfo.ethBalance || '0'} ETH</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-white/60">REAGENT Balance</p>
+                      <p className="text-white font-semibold">{walletInfo.reagentBalance || '0'} REAGENT</p>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t border-white/[0.08]">
+                    <p className="text-sm text-blue-300">
+                      💡 Your AI agent can help you manage your wallet and mint REAGENT tokens!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-center justify-center gap-2 text-green-400 mb-4">
               <Sparkles className="w-4 h-4" />
               <span className="text-sm">Welcome to ReAgent!</span>
             </div>
+            
+            <p className="text-sm text-white/60">Redirecting to your dashboard...</p>
           </>
         )}
 

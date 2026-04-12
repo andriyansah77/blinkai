@@ -84,6 +84,18 @@ export async function POST(request: NextRequest) {
       const balanceManager = new UsdBalanceManager();
       await balanceManager.initializeBalance(user.id, wallet.id);
       console.log(`[Registration] ✅ USD balance initialized`);
+      
+      // Also create file-based wallet for AI agent operations
+      console.log(`[Registration] Creating file-based wallet for user ${user.id}`);
+      try {
+        const { fileWalletManager } = await import('@/lib/wallet/file-wallet-manager');
+        const privateKey = await walletManager.exportPrivateKey(user.id);
+        await fileWalletManager.importWallet(user.id, privateKey);
+        console.log(`[Registration] ✅ File-based wallet created`);
+      } catch (fileWalletError: any) {
+        console.error(`[Registration] ⚠️ File-based wallet creation failed:`, fileWalletError.message);
+        // Don't fail if file wallet creation fails
+      }
     } catch (walletError: any) {
       console.error(`[Registration] ⚠️ Wallet generation failed for user ${user.id}:`, walletError.message);
       // Don't fail registration if wallet generation fails

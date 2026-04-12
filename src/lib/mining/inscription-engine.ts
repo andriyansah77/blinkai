@@ -31,6 +31,7 @@ export interface InscriptionResult {
   tokensEarned?: string;
   feePaid?: string;
   gasPaid?: string;
+  gasUsed?: string;
   error?: string;
 }
 
@@ -69,7 +70,7 @@ export class InscriptionEngine {
       if (!wallet) {
         return {
           success: false,
-          error: 'Wallet not found. Please contact support.'
+          error: 'Wallet not linked. Please connect your wallet first and refresh the page.'
         };
       }
 
@@ -87,9 +88,11 @@ export class InscriptionEngine {
       );
 
       if (!hasSufficientBalance) {
+        // Get current balance for better error message
+        const balanceInfo = await usdBalanceManager.getBalance(userId);
         return {
           success: false,
-          error: `Insufficient balance. Required: ${totalCost.toString()} PATHUSD. Please deposit funds.`
+          error: `Insufficient pathUSD balance. Required: ${totalCost.toString()} pathUSD. Current: ${balanceInfo.availableBalance} pathUSD. Please deposit funds to continue.`
         };
       }
 
