@@ -386,8 +386,15 @@ export default function MiningWebPage() {
         // Show specific error from API
         const errorMsg = data.error?.message || data.error?.code || JSON.stringify(data.error) || 'Bad request';
         console.error('400 Error details:', data.error);
-        setError(errorMsg);
-        toast.error(errorMsg);
+        
+        // Check if it's a client signing requirement
+        if (data.requiresClientSigning) {
+          setError('⚠️ MetaMask wallets require client-side signing, which is not yet implemented. Please use the Dashboard Mining interface (/mining) instead, which uses managed wallets.');
+          toast.error('Please use Dashboard Mining (/mining) for now');
+        } else {
+          setError(errorMsg);
+          toast.error(errorMsg);
+        }
         return;
       }
       
@@ -620,15 +627,25 @@ export default function MiningWebPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-green-500/10 border border-green-500/30 rounded-xl p-6"
+              className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-6"
             >
               <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-green-400 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-6 h-6 text-orange-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <h3 className="text-green-400 font-semibold mb-2">Ready to Mint!</h3>
-                  <p className="text-green-400/90 text-sm">
-                    {userStatus.message || 'Your wallet is connected and ready. Gas fees will be paid directly from your MetaMask wallet.'}
+                  <h3 className="text-orange-400 font-semibold mb-2">⚠️ Feature Under Development</h3>
+                  <p className="text-orange-400/90 text-sm mb-3">
+                    MetaMask wallet minting requires client-side transaction signing, which is currently under development.
                   </p>
+                  <p className="text-orange-400/90 text-sm mb-3">
+                    For now, please use the <strong>Dashboard Mining</strong> interface which uses managed wallets and works fully.
+                  </p>
+                  <button
+                    onClick={() => router.push('/mining')}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm font-medium"
+                  >
+                    Go to Dashboard Mining
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </motion.div>

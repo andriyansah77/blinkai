@@ -33,6 +33,8 @@ export interface InscriptionResult {
   gasPaid?: string;
   gasUsed?: string;
   error?: string;
+  requiresClientSigning?: boolean;
+  transactionData?: any;
 }
 
 export interface TransactionStatus {
@@ -101,10 +103,38 @@ export class InscriptionEngine {
       // User pays gas directly from their MetaMask wallet
 
       try {
-        // 5. Construct transaction
+        // 5. Check if this is an external wallet (no private key stored)
+        // Query database directly to check encrypted key
+        const dbWallet = await prisma.wallet.findUnique({
+          where: { id: wallet.id }
+        });
+        
+        const isExternalWallet = !dbWallet?.encryptedPrivateKey || dbWallet.encryptedPrivateKey === '';
+        
+        if (isExternalWallet) {
+          // For external wallets, we cannot sign server-side
+          // Return transaction data for client-side signing
+          const tx = await this.constructInscriptionTransaction(wallet.address);
+          
+          await prisma.inscription.update({
+            where: { id: inscription.id },
+            data: { 
+              status: 'pending_signature',
+              errorMessage: 'Awaiting client-side signature'
+            }
+          });
+          
+          return {
+            success: false,
+            error: 'Client-side signing required. This feature is not yet implemented. Please use the dashboard mining interface (/mining) which uses managed wallets.',
+            inscriptionId: inscription.id,
+            requiresClientSigning: true,
+            transactionData: tx
+          };
+        }
+        
+        // 6. For managed wallets, sign transaction server-side
         const tx = await this.constructInscriptionTransaction(wallet.address);
-
-        // 6. Sign transaction
         const privateKey = await walletManager.exportPrivateKey(userId);
         const signedTx = await this.signTransaction(tx, privateKey);
 
