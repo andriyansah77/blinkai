@@ -26,22 +26,9 @@ export async function GET(request: NextRequest) {
     const wallet = await walletManager.getWallet(userId);
     const hasWallet = !!wallet;
 
-    // 3. Check balance
-    let balance = null;
-    let hasBalance = false;
-    
-    if (hasWallet) {
-      try {
-        balance = await usdBalanceManager.getBalance(userId);
-        hasBalance = parseFloat(balance.availableBalance) > 0;
-      } catch (error) {
-        // Balance might not exist yet
-        console.error('Failed to get balance:', error);
-      }
-    }
-
-    // 4. Calculate readiness
-    const canMint = hasWallet && balance && parseFloat(balance.availableBalance) >= 1.0;
+    // 3. For external wallets (MetaMask), user can mint if wallet is linked
+    // No pathUSD balance check needed
+    const canMint = hasWallet;
 
     return NextResponse.json({
       success: true,
@@ -49,16 +36,10 @@ export async function GET(request: NextRequest) {
         authenticated: true,
         hasWallet,
         walletAddress: wallet?.address || null,
-        balance: balance ? {
-          total: balance.balance,
-          available: balance.availableBalance,
-          locked: balance.lockedBalance
-        } : null,
         canMint,
-        requirements: {
-          minBalance: '1.0',
-          currency: 'pathUSD'
-        }
+        message: hasWallet 
+          ? 'Ready to mint! Gas fees will be paid from your connected wallet.'
+          : 'Please connect your wallet to start minting.'
       }
     });
 

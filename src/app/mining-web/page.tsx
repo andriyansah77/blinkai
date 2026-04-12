@@ -615,36 +615,19 @@ export default function MiningWebPage() {
             </motion.div>
           )}
 
-          {/* User Status Warning - Show if wallet connected but can't mint */}
-          {wallet.connected && session && userStatus && !userStatus.canMint && (
+          {/* User Status Info - Show if wallet connected and ready */}
+          {wallet.connected && session && userStatus && userStatus.canMint && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-6"
+              className="bg-green-500/10 border border-green-500/30 rounded-xl p-6"
             >
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-6 h-6 text-orange-400 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-6 h-6 text-green-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <h3 className="text-orange-400 font-semibold mb-2">Deposit Required</h3>
-                  <p className="text-orange-400/90 mb-3">
-                    You need pathUSD balance to mint REAGENT tokens. Each mint costs approximately 1.0 pathUSD (protocol fee + gas).
-                  </p>
-                  <div className="bg-orange-500/10 rounded-lg p-3 mb-3">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-orange-400/80">Current Balance:</span>
-                      <span className="text-orange-400 font-mono font-medium">
-                        {userStatus.balance?.available || '0'} pathUSD
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-orange-400/80">Required:</span>
-                      <span className="text-orange-400 font-mono font-medium">
-                        {userStatus.requirements?.minBalance || '1.0'} pathUSD
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-orange-400/80 text-sm">
-                    Please deposit pathUSD to your account to continue. Contact support for deposit instructions.
+                  <h3 className="text-green-400 font-semibold mb-2">Ready to Mint!</h3>
+                  <p className="text-green-400/90 text-sm">
+                    {userStatus.message || 'Your wallet is connected and ready. Gas fees will be paid directly from your MetaMask wallet.'}
                   </p>
                 </div>
               </div>
@@ -726,10 +709,6 @@ export default function MiningWebPage() {
               {gasEstimate && (
                 <>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Protocol Fee</span>
-                    <span className="text-foreground font-medium">{gasEstimate.protocolFee || '$0.250'} pathUSD</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Network Fee (est.)</span>
                     <span className="text-foreground font-medium">{gasEstimate.gasEstimate || '~0.00021'} PATH</span>
                   </div>
@@ -738,10 +717,16 @@ export default function MiningWebPage() {
               )}
               
               <div className="flex items-center justify-between">
-                <span className="text-foreground font-semibold">Total Fee</span>
+                <span className="text-foreground font-semibold">Gas Fee</span>
                 <span className="text-foreground font-bold">
-                  {gasEstimate ? gasEstimate.totalFee || '$0.250 pathUSD' : 'Estimate first'}
+                  {gasEstimate ? gasEstimate.gasEstimate || '~0.00021 PATH' : 'Estimate first'}
                 </span>
+              </div>
+              
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mt-3">
+                <p className="text-blue-400 text-xs">
+                  💡 Gas fees will be paid directly from your connected MetaMask wallet in PATH tokens.
+                </p>
               </div>
 
               {/* Action Buttons */}

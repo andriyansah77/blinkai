@@ -25,33 +25,23 @@ export async function GET(request: NextRequest) {
     // 3. Get gas estimate
     const gasEstimate = await gasEstimator.estimateGasForInscription();
 
-    // 4. Calculate costs
-    const inscriptionFee = type === 'auto' ? AUTO_INSCRIPTION_FEE : MANUAL_INSCRIPTION_FEE;
-    const totalCost = new Decimal(inscriptionFee).plus(gasEstimate.estimatedGas);
+    // 4. Calculate costs (no protocol fee for external wallets)
+    const totalCost = gasEstimate.estimatedGas;
 
     // 5. Return estimate
     return NextResponse.json({
       success: true,
       estimate: {
         type,
-        inscriptionFee,
+        inscriptionFee: '0', // No fee for external wallets
         estimatedGas: gasEstimate.estimatedGas,
         gasPrice: gasEstimate.gasPrice,
         gasUnits: gasEstimate.gasUnits,
-        totalCost: totalCost.toString(),
+        totalCost: totalCost,
         tokensToEarn: TOKENS_PER_INSCRIPTION,
         timestamp: gasEstimate.timestamp.toISOString()
       },
-      pricing: {
-        auto: {
-          fee: AUTO_INSCRIPTION_FEE,
-          description: 'Automated inscription via AI agent'
-        },
-        manual: {
-          fee: MANUAL_INSCRIPTION_FEE,
-          description: 'Manual inscription via dashboard'
-        }
-      }
+      note: 'Gas fees will be paid directly from your connected wallet'
     });
 
   } catch (error: any) {

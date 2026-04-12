@@ -74,70 +74,50 @@ export class InscriptionEngine {
         };
       }
 
-      // 2. Determine fee based on type
+      // 2. Determine fee based on type (for record keeping only)
       const inscriptionFee = type === 'auto' ? AUTO_INSCRIPTION_FEE : MANUAL_INSCRIPTION_FEE;
 
-      // 3. Estimate gas
+      // 3. Estimate gas (for display only)
       const gasEstimate = await gasEstimator.estimateGasForInscription();
-      const totalCost = new Decimal(inscriptionFee).plus(gasEstimate.estimatedGas);
+      
+      // Note: For external wallets (MetaMask), user pays gas directly
+      // No pathUSD balance check needed - user will pay with their wallet
 
-      // 4. Validate balance
-      const hasSufficientBalance = await usdBalanceManager.hasSufficientBalance(
-        userId,
-        totalCost.toString()
-      );
-
-      if (!hasSufficientBalance) {
-        // Get current balance for better error message
-        const balanceInfo = await usdBalanceManager.getBalance(userId);
-        return {
-          success: false,
-          error: `Insufficient pathUSD balance. Required: ${totalCost.toString()} pathUSD. Current: ${balanceInfo.availableBalance} pathUSD. Please deposit funds to continue.`
-        };
-      }
-
-      // 5. Create inscription record
+      // 4. Create inscription record
       const inscription = await prisma.inscription.create({
         data: {
           userId,
           walletId: wallet.id,
           type,
           status: 'pending',
-          inscriptionFee,
+          inscriptionFee: '0', // No fee for external wallet
           gasEstimate: gasEstimate.estimatedGas,
           gasFee: '0',
           tokensEarned: TOKENS_PER_INSCRIPTION
         }
       });
 
-      // 6. Deduct inscription fee
-      await usdBalanceManager.deduct(
-        userId,
-        inscriptionFee,
-        'inscription_fee',
-        `${type} inscription fee`,
-        'inscription',
-        inscription.id
-      );
+      // Note: No balance deduction for external wallets
+      // User pays gas directly from their MetaMask wallet
 
       try {
-        // 7. Construct transaction
+        // 5. Construct transaction
         const tx = await this.constructInscriptionTransaction(wallet.address);
 
-        // 8. Sign transaction
+        // 6. Sign transaction
         const privateKey = await walletManager.exportPrivateKey(userId);
         const signedTx = await this.signTransaction(tx, privateKey);
 
-        // 9. Submit to blockchain
+        // 7. Submit to blockchain
         const txHash = await this.submitTransaction(signedTx);
 
-        // 10. Update inscription with tx hash
+        // 8. Update inscription with tx hash
         await prisma.inscription.update({
           where: { id: inscription.id },
           data: { txHash }
         });
 
-        // 11. Monitor transaction (async, don't wait)
+        // 9. Monitor transaction (async, don't wait)
         this.monitorTransaction(txHash, inscription.id, userId).catch(error => {
           console.error('Transaction monitoring failed:', error);
         });
@@ -147,7 +127,7 @@ export class InscriptionEngine {
           inscriptionId: inscription.id,
           txHash,
           tokensEarned: TOKENS_PER_INSCRIPTION,
-          feePaid: inscriptionFee
+          feePaid: '0' // No fee for external wallet
         };
 
       } catch (blockchainError: any) {
@@ -162,8 +142,7 @@ export class InscriptionEngine {
           }
         });
 
-        // Refund inscription fee
-        await this.refundFailedInscription(inscription.id, userId);
+        // No refund needed for external wallets
 
         return {
           success: false,
