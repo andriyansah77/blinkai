@@ -90,7 +90,16 @@ export async function POST(request: NextRequest) {
           try {
             console.log(`[Chat] Starting chat for user ${session.user.id}, messages count: ${messages.length}`);
             
-            // Get the async generator with full conversation history
+            // Limit conversation history to last 6 messages (3 exchanges) to prevent timeout
+            // This keeps context manageable while avoiding 504 errors
+            const maxHistoryMessages = 6;
+            const conversationHistory = messages.length > maxHistoryMessages + 1 
+              ? messages.slice(-(maxHistoryMessages + 1), -1) // Last 6 messages before current
+              : messages.slice(0, -1); // All messages except the last one
+            
+            console.log(`[Chat] Sending ${conversationHistory.length} history messages + 1 current message`);
+            
+            // Get the async generator with limited conversation history
             const responseGenerator = hermesIntegration.sendChatMessage(
               session.user.id!,
               lastMessage.content,
@@ -100,7 +109,7 @@ export async function POST(request: NextRequest) {
                 skills,
                 toolsets,
                 quiet: true,
-                conversationHistory: messages.slice(0, -1) // All messages except the last one
+                conversationHistory: conversationHistory
               }
             );
 
