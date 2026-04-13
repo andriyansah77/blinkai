@@ -72,6 +72,7 @@ export default function MiningWebPage() {
   const [gasEstimate, setGasEstimate] = useState<any>(null);
   const [copied, setCopied] = useState(false);
   const [userStatus, setUserStatus] = useState<any>(null);
+  const [walletLinked, setWalletLinked] = useState(false);
 
   // Check if wallet is already connected
   useEffect(() => {
@@ -120,7 +121,7 @@ export default function MiningWebPage() {
           });
 
           // Link wallet to user account if signed in
-          if (session) {
+          if (session && !walletLinked) {
             try {
               const linkResponse = await fetch('/api/mining/wallet/link', {
                 method: 'POST',
@@ -129,7 +130,8 @@ export default function MiningWebPage() {
               });
               
               if (linkResponse.ok) {
-                console.log('Wallet linked to account on page load');
+                setWalletLinked(true);
+                console.log('Wallet linked to account');
               }
             } catch (linkError) {
               console.error('Failed to link wallet:', linkError);
@@ -265,7 +267,8 @@ export default function MiningWebPage() {
           });
           
           if (linkResponse.ok) {
-            console.log('Wallet linked to account successfully');
+            setWalletLinked(true);
+            console.log('Wallet linked successfully');
             // Refresh user status after linking
             fetchUserStatus();
           }
