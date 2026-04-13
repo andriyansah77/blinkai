@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
 
         let outputBuffer = "";
         let qrCodeDetected = false;
+        let choicePromptSent = false;
 
         // Handle PTY output
         ptyProcess.onData((data: string) => {
@@ -57,8 +58,24 @@ export async function GET(request: NextRequest) {
           
           console.log(`[WhatsApp QR] Output chunk:`, data.substring(0, 100));
 
+          // Auto-respond to choice prompt
+          if (!choicePromptSent && data.includes("Choose [1/2]:")) {
+            console.log(`[WhatsApp QR] Detected choice prompt, sending option 1`);
+            choicePromptSent = true;
+            // Send "1" + Enter to choose "Separate business number"
+            ptyProcess.write("1\r");
+            
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ 
+                type: "status",
+                message: "Selected business number option..."
+              })}\n\n`)
+            );
+            return;
+          }
+
           // Detect QR code in output
-          if (!qrCodeDetected && (data.includes("█") || data.includes("▄") || data.includes("▀"))) {
+          if (!qrCodeDetected && (data.includes("█") || data.includes("▄") || data.includes("▀") || data.includes("▓") || data.includes("▒"))) {
             qrCodeDetected = true;
             console.log(`[WhatsApp QR] QR code detected for user ${userId}`);
             
@@ -69,7 +86,7 @@ export async function GET(request: NextRequest) {
                 data: data 
               })}\n\n`)
             );
-          } else if (data.includes("Successfully connected") || data.includes("Connected to WhatsApp")) {
+          } else if (data.includes("Successfully connected") || data.includes("Connected to WhatsApp") || data.includes("✓")) {
             console.log(`[WhatsApp QR] Connection successful for user ${userId}`);
             
             controller.enqueue(

@@ -473,10 +473,14 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
             setWhatsappStatus('Connecting to WhatsApp...');
             break;
           
+          case 'status':
+            setWhatsappStatus(data.message);
+            break;
+          
           case 'qr_code':
             console.log('[WhatsApp] QR code received');
             setQrCode(data.data);
-            setWhatsappStatus('Scan QR code with WhatsApp mobile app');
+            setWhatsappStatus('📱 Scan QR code with WhatsApp mobile app');
             break;
           
           case 'connected_success':
@@ -494,7 +498,7 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
           
           case 'exit':
             if (data.exitCode !== 0) {
-              setWhatsappStatus('❌ Connection failed');
+              setWhatsappStatus('❌ Connection failed. Please try again.');
             }
             eventSource.close();
             break;
