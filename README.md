@@ -56,6 +56,35 @@ docker compose exec app npx prisma db push
 
 ---
 
+## NPX CLI Tool
+
+Mint REAGENT tokens from command line:
+
+```bash
+# Using npx (no installation required)
+npx @reagent/cli balance
+npx @reagent/cli mint
+npx @reagent/cli history
+
+# Or install globally
+npm install -g @reagent/cli
+reagent balance
+reagent mint
+
+# Generate cURL commands
+reagent mint --curl
+```
+
+**Setup:**
+```bash
+export REAGENT_API_BASE=https://reagent.eu.cc
+export REAGENT_USER_ID=your_user_id
+```
+
+See [NPX_CLI_SETUP.md](./NPX_CLI_SETUP.md) for complete guide.
+
+---
+
 ## Key Endpoints
 
 - `/api/hermes/chat` - Chat with AI agent
@@ -63,6 +92,7 @@ docker compose exec app npx prisma db push
 - `/api/hermes/gateway` - Gateway configuration
 - `/api/mining/mint` - Mine REAGENT tokens
 - `/api/wallet/balance` - Check wallet balance
+- `/api/hermes/skills/minting` - Minting operations (for CLI/cURL)
 
 ---
 

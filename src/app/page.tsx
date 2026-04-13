@@ -888,6 +888,203 @@ const session = await getServerSession(authOptions);`
         </div>
       </section>
 
+      {/* Developer Guide */}
+      <section className="py-20 border-t border-white/10 bg-white/[0.02]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full mb-4">
+              <Code className="w-3.5 h-3.5 text-orange-400" />
+              <span className="text-xs font-medium text-orange-400 uppercase tracking-wider">Developer Guide</span>
+            </div>
+            <h2 className="text-3xl font-bold mb-4">Mint tokens from anywhere</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Use our CLI tool or API to mint REAGENT tokens from command line, scripts, or your own applications</p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {/* NPX CLI */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-8 hover:border-orange-500/30 transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
+                  <Terminal className="w-6 h-6 text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">NPX CLI Tool</h3>
+                  <p className="text-sm text-gray-400">No installation required</p>
+                </div>
+              </div>
+
+              <p className="text-gray-300 mb-6">
+                Mint tokens directly from your terminal using npx. Perfect for automation, scripts, and CI/CD pipelines.
+              </p>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Quick Start</p>
+                  <div className="bg-black/40 border border-white/5 rounded-lg p-4 font-mono text-sm">
+                    <div className="text-gray-400 mb-1"># Check balance</div>
+                    <div className="text-orange-400">npx @reagent/cli balance</div>
+                    <div className="text-gray-400 mt-3 mb-1"># Mint 10K REAGENT</div>
+                    <div className="text-orange-400">npx @reagent/cli mint</div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Available Commands</p>
+                  <div className="space-y-2">
+                    {[
+                      { cmd: 'balance', desc: 'Check USD, ETH, REAGENT balance' },
+                      { cmd: 'estimate', desc: 'Estimate minting cost' },
+                      { cmd: 'mint', desc: 'Mint 10,000 REAGENT tokens' },
+                      { cmd: 'history', desc: 'View minting history' },
+                      { cmd: 'stats', desc: 'Global mining statistics' }
+                    ].map((item, index) => (
+                      <div key={index} className="flex items-start gap-3 text-sm">
+                        <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded">{item.cmd}</code>
+                        <span className="text-gray-400">{item.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => window.open('https://github.com/andriyansah77/blinkai/tree/main/packages/reagent-cli', '_blank')}
+                className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <Github className="w-4 h-4" />
+                View CLI Documentation
+                <ExternalLink className="w-3 h-3 opacity-50" />
+              </button>
+            </motion.div>
+
+            {/* cURL API */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-8 hover:border-orange-500/30 transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
+                  <Code className="w-6 h-6 text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">REST API</h3>
+                  <p className="text-sm text-gray-400">Direct HTTP access</p>
+                </div>
+              </div>
+
+              <p className="text-gray-300 mb-6">
+                Use our REST API with cURL or any HTTP client. Integrate minting into your applications with simple POST requests.
+              </p>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Example Request</p>
+                  <div className="bg-black/40 border border-white/5 rounded-lg p-4 font-mono text-xs overflow-x-auto">
+                    <div className="text-orange-400">curl -X POST \</div>
+                    <div className="text-gray-300 ml-2">&quot;https://reagent.eu.cc/api/hermes/skills/minting&quot; \</div>
+                    <div className="text-gray-300 ml-2">-H &quot;Content-Type: application/json&quot; \</div>
+                    <div className="text-gray-300 ml-2">-H &quot;X-User-ID: YOUR_USER_ID&quot; \</div>
+                    <div className="text-gray-300 ml-2">-d &apos;{&quot;action&quot;:&quot;mint_tokens&quot;}&apos;</div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Available Actions</p>
+                  <div className="space-y-2">
+                    {[
+                      { action: 'check_balance', desc: 'Get wallet balances' },
+                      { action: 'estimate_cost', desc: 'Estimate gas cost' },
+                      { action: 'mint_tokens', desc: 'Execute minting' },
+                      { action: 'get_history', desc: 'Fetch mint history' },
+                      { action: 'get_stats', desc: 'Global statistics' }
+                    ].map((item, index) => (
+                      <div key={index} className="flex items-start gap-3 text-sm">
+                        <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded text-xs">{item.action}</code>
+                        <span className="text-gray-400">{item.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => window.open('https://github.com/andriyansah77/blinkai/blob/main/packages/reagent-cli/CURL_EXAMPLES.md', '_blank')}
+                className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <Github className="w-4 h-4" />
+                View API Documentation
+                <ExternalLink className="w-3 h-3 opacity-50" />
+              </button>
+            </motion.div>
+          </div>
+
+          {/* Quick Examples */}
+          <div className="mt-12 max-w-6xl mx-auto">
+            <div className="bg-gradient-to-br from-orange-500/5 to-transparent border border-orange-500/20 rounded-xl p-8">
+              <div className="flex items-start gap-4 mb-6">
+                <Sparkles className="w-6 h-6 text-orange-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="text-lg font-semibold mb-2">Automation Examples</h4>
+                  <p className="text-gray-400 text-sm">Integrate minting into your workflows with these examples</p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="bg-black/20 border border-white/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Terminal className="w-4 h-4 text-orange-400" />
+                    <h5 className="font-semibold text-sm">Bash Script</h5>
+                  </div>
+                  <div className="bg-black/40 rounded p-3 font-mono text-xs text-gray-300 overflow-x-auto">
+                    <div className="text-gray-500">#!/bin/bash</div>
+                    <div className="text-orange-400">npx @reagent/cli mint</div>
+                  </div>
+                </div>
+
+                <div className="bg-black/20 border border-white/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Code className="w-4 h-4 text-orange-400" />
+                    <h5 className="font-semibold text-sm">Node.js</h5>
+                  </div>
+                  <div className="bg-black/40 rounded p-3 font-mono text-xs text-gray-300 overflow-x-auto">
+                    <div className="text-blue-400">const</div> <div className="text-gray-300">res = await</div>
+                    <div className="text-gray-300">fetch(api)</div>
+                  </div>
+                </div>
+
+                <div className="bg-black/20 border border-white/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Database className="w-4 h-4 text-orange-400" />
+                    <h5 className="font-semibold text-sm">Cron Job</h5>
+                  </div>
+                  <div className="bg-black/40 rounded p-3 font-mono text-xs text-gray-300 overflow-x-auto">
+                    <div className="text-orange-400">0 10 * * *</div>
+                    <div className="text-gray-300">npx @reagent/cli mint</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-center gap-4">
+                <button
+                  onClick={() => window.open('https://github.com/andriyansah77/blinkai/blob/main/CLI_USAGE_EXAMPLES.md', '_blank')}
+                  className="text-sm text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-2"
+                >
+                  View More Examples
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-20 border-t border-white/10 relative overflow-hidden">
         {/* Background gradient */}

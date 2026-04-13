@@ -1,0 +1,37 @@
+{
+  "name": "@reagent/cli",
+  "version": "1.0.0",
+  "description": "CLI tool for ReAgent - Mint REAGENT tokens and manage your AI agent",
+  "main": "index.js",
+  "bin": {
+    "reagent": "./index.js",
+    "reagent-mint": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "reagent",
+    "blockchain",
+    "ai",
+    "minting",
+    "tempo",
+    "cli"
+  ],
+  "author": "ReAgent Team",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andriyansah77/blinkai.git"
+  }
+}
