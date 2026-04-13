@@ -202,7 +202,7 @@ const session = await getServerSession(authOptions);`
               {session ? (
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+                  className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg shadow-orange-500/20"
                 >
                   Dashboard
                 </button>
@@ -210,13 +210,13 @@ const session = await getServerSession(authOptions);`
                 <>
                   <button
                     onClick={() => router.push("/sign-in")}
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                    className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => router.push("/sign-up")}
-                    className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+                    className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg shadow-orange-500/20"
                   >
                     Get Started
                   </button>
@@ -250,9 +250,21 @@ const session = await getServerSession(authOptions);`
         <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-6 py-20 relative">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full mb-6">
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-              <span className="text-orange-400 text-sm">Powered by Hermes & Tempo Network</span>
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-orange-500/10 via-orange-500/5 to-transparent border border-orange-500/20 rounded-lg mb-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Built with</span>
+              </div>
+              <div className="h-4 w-px bg-orange-500/20"></div>
+              <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4 text-orange-400" />
+                <span className="text-sm font-semibold text-orange-400">Hermes AI</span>
+              </div>
+              <div className="h-4 w-px bg-orange-500/20"></div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-orange-400" />
+                <span className="text-sm font-semibold text-orange-400">Tempo Network</span>
+              </div>
             </div>
 
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
@@ -269,17 +281,18 @@ const session = await getServerSession(authOptions);`
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button
                 onClick={() => router.push(session ? "/dashboard" : "/sign-up")}
-                className="px-8 py-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+                className="group relative px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105"
               >
-                {session ? "Go to Dashboard" : "Get Started"}
-                <ArrowRight className="w-4 h-4" />
+                <span>{session ? "Go to Dashboard" : "Start Building"}</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
                 onClick={() => window.open("https://github.com/andriyansah77/blinkai", "_blank")}
-                className="px-8 py-4 bg-white/5 border border-white/10 rounded-lg font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                className="group px-8 py-4 bg-white/5 border border-white/10 rounded-lg font-semibold hover:bg-white/10 hover:border-white/20 transition-all duration-200 flex items-center justify-center gap-2 backdrop-blur-sm"
               >
-                <Github className="w-4 h-4" />
-                View on GitHub
+                <Github className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                <span>View Source</span>
+                <ExternalLink className="w-3 h-3 opacity-50" />
               </button>
             </div>
 
@@ -298,33 +311,84 @@ const session = await getServerSession(authOptions);`
       <section id="how-it-works" className="py-20 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How it works</h2>
-            <p className="text-gray-400">Three steps. That's it.</p>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full mb-4">
+              <Terminal className="w-3.5 h-3.5 text-orange-400" />
+              <span className="text-xs font-medium text-orange-400 uppercase tracking-wider">Developer Workflow</span>
+            </div>
+            <h2 className="text-3xl font-bold mb-4">Ship in minutes, not days</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Deploy production-ready AI agents with blockchain integration using our streamlined developer workflow</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-orange-400 font-bold">01</span>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="relative">
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-6 hover:border-orange-500/30 transition-all duration-300 group">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <span className="text-orange-400 font-bold text-sm">01</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Initialize Project</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">Sign up via API or dashboard. Auto-provisioned HD wallet with AES-256 encryption and secure key management.</p>
+                  </div>
+                </div>
+                <div className="bg-black/40 border border-white/5 rounded-lg p-3 font-mono text-xs text-gray-300">
+                  <span className="text-orange-400">$</span> curl -X POST /api/auth/signup
+                </div>
               </div>
-              <h3 className="font-semibold mb-2">Create your account</h3>
-              <p className="text-gray-400 text-sm">Sign up and get an auto-generated wallet with encrypted private keys</p>
+              {/* Connector line */}
+              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-gradient-to-r from-orange-500/50 to-transparent"></div>
             </div>
 
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-orange-400 font-bold">02</span>
+            <div className="relative">
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-6 hover:border-orange-500/30 transition-all duration-300 group">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <span className="text-orange-400 font-bold text-sm">02</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Configure Agent</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">Deploy Hermes AI with 73+ skills, custom personality, and multi-channel gateway integration (Discord, Telegram, Slack).</p>
+                  </div>
+                </div>
+                <div className="bg-black/40 border border-white/5 rounded-lg p-3 font-mono text-xs text-gray-300">
+                  <span className="text-orange-400">$</span> hermes deploy --config agent.yml
+                </div>
               </div>
-              <h3 className="font-semibold mb-2">Set up your agent</h3>
-              <p className="text-gray-400 text-sm">Configure your AI agent with custom personality and connect channels</p>
+              {/* Connector line */}
+              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-gradient-to-r from-orange-500/50 to-transparent"></div>
             </div>
 
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-orange-400 font-bold">03</span>
+            <div className="relative">
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-6 hover:border-orange-500/30 transition-all duration-300 group">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <span className="text-orange-400 font-bold text-sm">03</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Start Mining</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">Execute TIP-20 token inscriptions on Tempo Network. 10K REAGENT per mint with automated gas estimation.</p>
+                  </div>
+                </div>
+                <div className="bg-black/40 border border-white/5 rounded-lg p-3 font-mono text-xs text-gray-300">
+                  <span className="text-orange-400">$</span> POST /api/mining/inscribe
+                </div>
               </div>
-              <h3 className="font-semibold mb-2">Start mining</h3>
-              <p className="text-gray-400 text-sm">Mine REAGENT tokens automatically through your AI agent</p>
+            </div>
+          </div>
+
+          {/* Tech Stack Badge */}
+          <div className="mt-12 flex justify-center">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm">
+              <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Tech Stack:</span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-300 font-mono">Next.js</span>
+                <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+                <span className="text-sm text-gray-300 font-mono">Hermes AI</span>
+                <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+                <span className="text-sm text-gray-300 font-mono">Tempo Chain</span>
+                <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+                <span className="text-sm text-gray-300 font-mono">TypeScript</span>
+              </div>
             </div>
           </div>
         </div>
@@ -432,7 +496,7 @@ const session = await getServerSession(authOptions);`
 
                   <button
                     onClick={() => router.push("/sign-up")}
-                    className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                    className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-orange-500/25"
                   >
                     Get Started
                   </button>
@@ -551,7 +615,7 @@ const session = await getServerSession(authOptions);`
               </ul>
               <button
                 onClick={() => router.push("/sign-up")}
-                className="w-full py-3 bg-orange-500 hover:bg-orange-600 rounded-lg font-medium transition-colors"
+                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-orange-500/25"
               >
                 Get Pro
               </button>
@@ -669,10 +733,10 @@ const session = await getServerSession(authOptions);`
           <p className="text-gray-400 mb-8">Deploy your AI agent in minutes with blockchain integration.</p>
           <button
             onClick={() => router.push(session ? "/dashboard" : "/sign-up")}
-            className="px-8 py-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors inline-flex items-center gap-2"
+            className="group px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 inline-flex items-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105"
           >
             Deploy Your Agent
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
       </section>
