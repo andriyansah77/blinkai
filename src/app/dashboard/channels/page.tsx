@@ -553,12 +553,12 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-foreground font-semibold text-lg">
-            {showWhatsAppQR ? 'WhatsApp QR Code' : `Configure ${selectedChannel?.name || 'Channel'}`}
+            {showWhatsAppInstructions ? 'WhatsApp Setup Instructions' : `Configure ${selectedChannel?.name || 'Channel'}`}
           </h2>
           <button
             onClick={() => {
-              if (showWhatsAppQR) {
-                setShowWhatsAppQR(false);
+              if (showWhatsAppInstructions) {
+                setShowWhatsAppInstructions(false);
               } else {
                 onClose();
               }
