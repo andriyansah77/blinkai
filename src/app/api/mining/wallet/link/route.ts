@@ -1,6 +1,6 @@
 /**
  * POST /api/mining/wallet/link
- * Link MetaMask wallet to user account
+ * Link MetaMask wallet to user account and grant ISSUER_ROLE
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,6 +8,63 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { ethers } from 'ethers';
+
+// Grant ISSUER_ROLE to wallet
+async function grantIssuerRole(walletAddress: string): Promise<{ success: boolean; txHash?: string; error?: string }> {
+  try {
+    const platformPrivateKey = process.env.PLATFORM_WALLET_PRIVATE_KEY;
+    const reagentTokenAddress = process.env.REAGENT_TOKEN_ADDRESS;
+    const rpcUrl = process.env.TEMPO_RPC_URL || 'https://rpc.tempo.xyz';
+
+    if (!platformPrivateKey) {
+      console.error('Platform wallet private key not configured');
+      return { success: false, error: 'Platform wallet not configured' };
+    }
+
+    if (!reagentTokenAddress) {
+      console.error('REAGENT token address not configured');
+      return { success: false, error: 'Token address not configured' };
+    }
+
+    // Connect to Tempo Network
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    const platformWallet = new ethers.Wallet(platformPrivateKey, provider);
+
+    // ISSUER_ROLE = keccak256("ISSUER_ROLE")
+    const ISSUER_ROLE = ethers.keccak256(ethers.toUtf8Bytes('ISSUER_ROLE'));
+
+    // Create contract interface
+    const contractInterface = new ethers.Interface([
+      'function grantRole(bytes32 role, address account) external',
+      'function hasRole(bytes32 role, address account) external view returns (bool)'
+    ]);
+
+    // Check if wallet already has ISSUER_ROLE
+    const contract = new ethers.Contract(reagentTokenAddress, contractInterface, provider);
+    const hasRole = await contract.hasRole(ISSUER_ROLE, walletAddress) as boolean;
+
+    if (hasRole) {
+      console.log(`Wallet ${walletAddress} already has ISSUER_ROLE`);
+      return { success: true, txHash: 'already_granted' };
+    }
+
+    // Grant ISSUER_ROLE
+    const contractWithSigner = contract.connect(platformWallet) as ethers.Contract;
+    const tx = await contractWithSigner.grantRole(ISSUER_ROLE, walletAddress) as ethers.ContractTransactionResponse;
+    
+    console.log(`Granting ISSUER_ROLE to ${walletAddress}, tx: ${tx.hash}`);
+    
+    // Wait for confirmation
+    await tx.wait();
+    
+    console.log(`ISSUER_ROLE granted to ${walletAddress}`);
+    
+    return { success: true, txHash: tx.hash };
+  } catch (error: any) {
+    console.error('Failed to grant ISSUER_ROLE:', error);
+    return { success: false, error: error.message };
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,6 +112,12 @@ export async function POST(request: NextRequest) {
             lastBalanceUpdate: new Date()
           }
         });
+        
+        // Grant ISSUER_ROLE to new address
+        const roleResult = await grantIssuerRole(address.toLowerCase());
+        if (!roleResult.success) {
+          console.error('Failed to grant ISSUER_ROLE:', roleResult.error);
+        }
       }
 
       return NextResponse.json({
@@ -81,12 +144,21 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // 5. Grant ISSUER_ROLE to the wallet
+    const roleResult = await grantIssuerRole(address.toLowerCase());
+    if (!roleResult.success) {
+      console.error('Failed to grant ISSUER_ROLE:', roleResult.error);
+      // Don't fail the wallet linking, just log the error
+      // User can try minting and we'll show a better error message
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Wallet linked successfully',
       wallet: {
         address: address.toLowerCase(),
-        linked: true
+        linked: true,
+        roleGranted: roleResult.success
       }
     });
 
