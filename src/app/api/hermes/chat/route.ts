@@ -88,9 +88,9 @@ export async function POST(request: NextRequest) {
           let hasReceivedContent = false;
           
           try {
-            console.log(`[Chat] Starting chat for user ${session.user.id}, message: ${lastMessage.content.substring(0, 50)}...`);
+            console.log(`[Chat] Starting chat for user ${session.user.id}, messages count: ${messages.length}`);
             
-            // Get the async generator
+            // Get the async generator with full conversation history
             const responseGenerator = hermesIntegration.sendChatMessage(
               session.user.id!,
               lastMessage.content,
@@ -99,7 +99,8 @@ export async function POST(request: NextRequest) {
                 provider,
                 skills,
                 toolsets,
-                quiet: true
+                quiet: true,
+                conversationHistory: messages.slice(0, -1) // All messages except the last one
               }
             );
 

@@ -367,6 +367,7 @@ REAGENT_USER_ID=${userId}
       skills?: string[];
       toolsets?: string[];
       quiet?: boolean;
+      conversationHistory?: Array<{role: string; content: string}>;
     } = {}
   ): AsyncGenerator<string> {
     console.log(`[Hermes] sendChatMessage called for user ${userId}`);
@@ -390,8 +391,8 @@ REAGENT_USER_ID=${userId}
       console.log(`[Hermes] CLI not available, using direct AI API fallback`);
     }
     
-    // Fallback to direct AI API
-    console.log(`[Hermes] Using direct AI API fallback`);
+    // Fallback to direct AI API with conversation history
+    console.log(`[Hermes] Using direct AI API fallback with ${options.conversationHistory?.length || 0} previous messages`);
     yield* this.streamDirectAIResponse(message, options);
   }
 
@@ -400,6 +401,7 @@ REAGENT_USER_ID=${userId}
     options: {
       model?: string;
       provider?: string;
+      conversationHistory?: Array<{role: string; content: string}>;
     } = {}
   ): AsyncGenerator<string> {
     try {
@@ -411,6 +413,27 @@ REAGENT_USER_ID=${userId}
         return;
       }
 
+      // Build messages array with conversation history
+      const messages: Array<{role: string; content: string}> = [
+        {
+          role: 'system',
+          content: 'You are a helpful AI assistant powered by ReAgent with Hermes integration. You have access to conversation history and should maintain context throughout the conversation.'
+        }
+      ];
+
+      // Add conversation history if provided
+      if (options.conversationHistory && options.conversationHistory.length > 0) {
+        messages.push(...options.conversationHistory);
+      }
+
+      // Add current user message
+      messages.push({
+        role: 'user',
+        content: message
+      });
+
+      console.log(`[Hermes] Sending ${messages.length} messages to AI API (including system prompt)`);
+
       // Prepare request to AI API
       const response = await fetch(`${AI_API_BASE_URL}/chat/completions`, {
         method: 'POST',
@@ -420,16 +443,7 @@ REAGENT_USER_ID=${userId}
         },
         body: JSON.stringify({
           model: model,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a helpful AI assistant powered by ReAgent with Hermes integration.'
-            },
-            {
-              role: 'user',
-              content: message
-            }
-          ],
+          messages: messages,
           stream: true,
           temperature: 0.7,
           max_tokens: 4000
