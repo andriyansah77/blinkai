@@ -51,9 +51,24 @@ export async function GET(request: NextRequest) {
         let outputBuffer = "";
         let qrCodeDetected = false;
         let choicePromptSent = false;
+        let streamClosed = false;
+
+        // Helper function to safely enqueue data
+        const safeEnqueue = (data: Uint8Array) => {
+          if (!streamClosed) {
+            try {
+              controller.enqueue(data);
+            } catch (error) {
+              console.error('[WhatsApp QR] Failed to enqueue data:', error);
+              streamClosed = true;
+            }
+          }
+        };
 
         // Handle PTY output
         ptyProcess.onData((data: string) => {
+          if (streamClosed) return;
+          
           outputBuffer += data;
           
           console.log(`[WhatsApp QR] Output chunk:`, data.substring(0, 100));
@@ -65,7 +80,7 @@ export async function GET(request: NextRequest) {
             // Send "1" + Enter to choose "Separate business number"
             ptyProcess.write("1\r");
             
-            controller.enqueue(
+            safeEnqueue(
               encoder.encode(`data: ${JSON.stringify({ 
                 type: "status",
                 message: "Selected business number option..."
@@ -80,7 +95,7 @@ export async function GET(request: NextRequest) {
             console.log(`[WhatsApp QR] QR code detected for user ${userId}`);
             
             // Send QR code data
-            controller.enqueue(
+            safeEnqueue(
               encoder.encode(`data: ${JSON.stringify({ 
                 type: "qr_code", 
                 data: data 
@@ -89,7 +104,7 @@ export async function GET(request: NextRequest) {
           } else if (data.includes("Successfully connected") || data.includes("Connected to WhatsApp") || data.includes("✓")) {
             console.log(`[WhatsApp QR] Connection successful for user ${userId}`);
             
-            controller.enqueue(
+            safeEnqueue(
               encoder.encode(`data: ${JSON.stringify({ 
                 type: "connected_success",
                 message: "WhatsApp connected successfully!"
@@ -98,14 +113,21 @@ export async function GET(request: NextRequest) {
             
             // Close stream after successful connection
             setTimeout(() => {
-              ptyProcess.kill();
-              activeSessions.delete(userId);
-              controller.close();
+              if (!streamClosed) {
+                streamClosed = true;
+                ptyProcess.kill();
+                activeSessions.delete(userId);
+                try {
+                  controller.close();
+                } catch (e) {
+                  console.error('[WhatsApp QR] Error closing controller:', e);
+                }
+              }
             }, 2000);
           } else if (data.includes("Error") || data.includes("Failed")) {
             console.error(`[WhatsApp QR] Error for user ${userId}:`, data);
             
-            controller.enqueue(
+            safeEnqueue(
               encoder.encode(`data: ${JSON.stringify({ 
                 type: "error",
                 message: data
@@ -113,7 +135,7 @@ export async function GET(request: NextRequest) {
             );
           } else {
             // Send regular output
-            controller.enqueue(
+            safeEnqueue(
               encoder.encode(`data: ${JSON.stringify({ 
                 type: "output", 
                 data: data 
@@ -128,15 +150,22 @@ export async function GET(request: NextRequest) {
           
           activeSessions.delete(userId);
           
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ 
-              type: "exit",
-              exitCode,
-              signal
-            })}\n\n`)
-          );
-          
-          controller.close();
+          if (!streamClosed) {
+            streamClosed = true;
+            safeEnqueue(
+              encoder.encode(`data: ${JSON.stringify({ 
+                type: "exit",
+                exitCode,
+                signal
+              })}\n\n`)
+            );
+            
+            try {
+              controller.close();
+            } catch (e) {
+              console.error('[WhatsApp QR] Error closing controller on exit:', e);
+            }
+          }
         });
 
         // Cleanup on client disconnect
@@ -145,11 +174,22 @@ export async function GET(request: NextRequest) {
           
           if (activeSessions.has(userId)) {
             const pty = activeSessions.get(userId);
-            pty.kill();
+            try {
+              pty.kill();
+            } catch (e) {
+              console.error('[WhatsApp QR] Error killing PTY on abort:', e);
+            }
             activeSessions.delete(userId);
           }
           
-          controller.close();
+          if (!streamClosed) {
+            streamClosed = true;
+            try {
+              controller.close();
+            } catch (e) {
+              console.error('[WhatsApp QR] Error closing controller on abort:', e);
+            }
+          }
         });
       },
     });
