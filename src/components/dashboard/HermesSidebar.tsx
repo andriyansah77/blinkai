@@ -101,25 +101,43 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const response = await fetch('/api/hermes/skills');
+        console.log('[Sidebar] Fetching skills...');
+        const response = await fetch('/api/hermes/skills', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Include cookies for auth
+        });
+        
+        console.log('[Sidebar] Skills API response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
-          console.log('[Sidebar] Skills data:', data);
+          console.log('[Sidebar] Skills data received:', data);
           
-          const skillsList = data.skills || [];
-          const installedCount = skillsList.filter((s: any) => s.installed).length;
-          
-          console.log('[Sidebar] Total skills:', skillsList.length, 'Installed:', installedCount);
-          
-          setSkillsData({
-            total: skillsList.length,
-            installed: installedCount
-          });
+          if (data.success && Array.isArray(data.skills)) {
+            const skillsList = data.skills;
+            const installedCount = skillsList.filter((s: any) => s.installed).length;
+            
+            console.log('[Sidebar] Total skills:', skillsList.length, 'Installed:', installedCount);
+            
+            setSkillsData({
+              total: skillsList.length,
+              installed: installedCount
+            });
+          } else {
+            console.warn('[Sidebar] Invalid skills data format:', data);
+            setSkillsData({ total: 0, installed: 0 });
+          }
         } else {
-          console.error('[Sidebar] Skills API error:', response.status);
+          const errorText = await response.text();
+          console.error('[Sidebar] Skills API error:', response.status, errorText);
+          setSkillsData({ total: 0, installed: 0 });
         }
       } catch (error) {
         console.error('[Sidebar] Failed to fetch skills:', error);
+        setSkillsData({ total: 0, installed: 0 });
       } finally {
         setLoadingSkills(false);
       }
