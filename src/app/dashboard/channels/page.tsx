@@ -405,6 +405,7 @@ export default function ChannelsPage() {
           }}
           channelTypes={CHANNEL_TYPES}
           selectedType={selectedType}
+          userId={session?.user?.id}
         />
       )}
 
@@ -442,9 +443,10 @@ interface ConfigureChannelModalProps {
   onError: (message: string) => void;
   channelTypes: any[];
   selectedType?: string;
+  userId?: string;
 }
 
-function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, selectedType: initialType }: ConfigureChannelModalProps) {
+function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, selectedType: initialType, userId }: ConfigureChannelModalProps) {
   const [selectedType, setSelectedType] = useState(initialType || "");
   const [formData, setFormData] = useState({
     bot_token: ""
@@ -592,7 +594,7 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
                   <div>
                     <p className="font-medium text-foreground mb-2">Step 2: Run WhatsApp Setup</p>
                     <code className="block bg-black/30 p-3 rounded text-xs font-mono text-green-400">
-                      hermes --profile user-{session?.user?.id} whatsapp
+                      hermes --profile user-{userId} whatsapp
                     </code>
                   </div>
                   
@@ -612,7 +614,7 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
                     <p>Once connected, the gateway will automatically start receiving messages.</p>
                     <p className="mt-2">You can check status with:</p>
                     <code className="block bg-black/30 p-3 rounded text-xs font-mono text-green-400 mt-2">
-                      hermes --profile user-{session?.user?.id} gateway status
+                      hermes --profile user-{userId} gateway status
                     </code>
                   </div>
                 </div>
