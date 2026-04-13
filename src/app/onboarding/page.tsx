@@ -244,26 +244,31 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
     {
       id: "discord",
       name: "Discord",
-      icon: "🎮",
+      icon: MessageSquare,
+      color: "from-indigo-500 to-purple-500",
       description: "Connect to Discord servers and channels"
     },
     {
       id: "telegram",
       name: "Telegram",
-      icon: "✈️",
+      icon: MessageSquare,
+      color: "from-blue-500 to-cyan-500",
       description: "Chat via Telegram bot"
     },
     {
       id: "slack",
       name: "Slack",
-      icon: "💼",
+      icon: MessageSquare,
+      color: "from-purple-500 to-pink-500",
       description: "Integrate with Slack workspaces"
     },
     {
       id: "whatsapp",
       name: "WhatsApp",
-      icon: "📱",
-      description: "Connect via WhatsApp Business API"
+      icon: MessageSquare,
+      color: "from-green-500 to-emerald-500",
+      description: "Connect via WhatsApp Business API (Coming Soon)",
+      disabled: true
     }
   ];
 
@@ -284,33 +289,42 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
     <div className="space-y-6">
       <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {channels.map((channel) => (
-            <button
-              key={channel.id}
-              onClick={() => toggleChannel(channel.id)}
-              className={`p-4 rounded-lg border transition-all text-left ${
-                selectedChannels.includes(channel.id)
-                  ? 'bg-blue-600/20 border-blue-500/50'
-                  : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">{channel.icon}</span>
-                <div>
-                  <h3 className="font-medium text-white">{channel.name}</h3>
-                  <p className="text-sm text-white/60 mt-1">{channel.description}</p>
+          {channels.map((channel) => {
+            const IconComponent = channel.icon;
+            return (
+              <button
+                key={channel.id}
+                onClick={() => !channel.disabled && toggleChannel(channel.id)}
+                disabled={channel.disabled}
+                className={`p-4 rounded-lg border transition-all text-left ${
+                  channel.disabled
+                    ? 'bg-white/[0.02] border-white/[0.05] opacity-50 cursor-not-allowed'
+                    : selectedChannels.includes(channel.id)
+                    ? 'bg-blue-600/20 border-blue-500/50'
+                    : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${channel.color} flex items-center justify-center flex-shrink-0`}>
+                    <IconComponent className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-white">{channel.name}</h3>
+                    <p className="text-sm text-white/60 mt-1">{channel.description}</p>
+                  </div>
+                  {selectedChannels.includes(channel.id) && !channel.disabled && (
+                    <Check className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                  )}
                 </div>
-                {selectedChannels.includes(channel.id) && (
-                  <Check className="w-5 h-5 text-blue-400 ml-auto" />
-                )}
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="mt-6 p-4 bg-blue-600/10 border border-blue-500/20 rounded-lg">
+        <div className="mt-6 p-4 bg-blue-600/10 border border-blue-500/20 rounded-lg flex items-start gap-3">
+          <Sparkles className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-300">
-            💡 You can always add more channels later from your dashboard
+            You can always add more channels later from your dashboard
           </p>
         </div>
       </div>
@@ -351,7 +365,8 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
         "2 connected channels",
         "Community support"
       ],
-      badge: "🎁 Perfect for getting started",
+      badge: "Perfect for getting started",
+      badgeIcon: Gift,
       popular: false
     },
     {
@@ -368,7 +383,8 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
         "Custom skills",
         "Analytics dashboard"
       ],
-      badge: "👑 Most Popular",
+      badge: "Most Popular",
+      badgeIcon: Crown,
       popular: true
     },
     {
@@ -385,7 +401,8 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
         "Custom integrations",
         "SLA guarantee"
       ],
-      badge: "🚀 For teams",
+      badge: "For teams",
+      badgeIcon: Zap,
       popular: false
     }
   ];
@@ -434,7 +451,8 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
               ))}
             </div>
 
-            <div className="text-center">
+            <div className="flex items-center justify-center gap-2">
+              {plan.badgeIcon && <plan.badgeIcon className="w-4 h-4 text-white/60" />}
               <span className="text-xs text-white/60">{plan.badge}</span>
             </div>
 
@@ -567,7 +585,10 @@ function DeployStep({ data }: any) {
               <Check className="w-8 h-8 text-white" />
             </div>
             
-            <h3 className="text-xl font-semibold text-white mb-2">🎉 Agent deployed successfully!</h3>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Sparkles className="w-6 h-6 text-yellow-400" />
+              <h3 className="text-xl font-semibold text-white">Agent deployed successfully!</h3>
+            </div>
             <p className="text-white/60 mb-6">
               {data.agentName} is now live and ready to chat!
             </p>
@@ -575,7 +596,7 @@ function DeployStep({ data }: any) {
             {walletInfo && (
               <div className="bg-white/[0.06] border border-white/[0.08] rounded-lg p-6 mb-6 text-left">
                 <h4 className="font-semibold text-white mb-4 flex items-center gap-2">
-                  <span className="text-2xl">💰</span>
+                  <Wallet className="w-6 h-6 text-green-400" />
                   Your Wallet is Ready
                 </h4>
                 <div className="space-y-3">
@@ -593,9 +614,10 @@ function DeployStep({ data }: any) {
                       <p className="text-white font-semibold">{walletInfo.reagentBalance || '0'} REAGENT</p>
                     </div>
                   </div>
-                  <div className="pt-3 border-t border-white/[0.08]">
+                  <div className="pt-3 border-t border-white/[0.08] flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-blue-300">
-                      💡 Your AI agent can help you manage your wallet and mint REAGENT tokens!
+                      Your AI agent can help you manage your wallet and mint REAGENT tokens!
                     </p>
                   </div>
                 </div>
@@ -614,7 +636,7 @@ function DeployStep({ data }: any) {
         {deployStatus === 'error' && (
           <>
             <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-white text-2xl">⚠️</span>
+              <span className="text-white text-2xl">✕</span>
             </div>
             
             <h3 className="text-xl font-semibold text-white mb-2">Deployment failed</h3>
@@ -633,9 +655,10 @@ function DeployStep({ data }: any) {
       </div>
 
       {deployStatus === 'deploying' && (
-        <div className="bg-blue-600/10 border border-blue-500/20 rounded-lg p-4">
+        <div className="bg-blue-600/10 border border-blue-500/20 rounded-lg p-4 flex items-start gap-3">
+          <Loader2 className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5 animate-spin" />
           <p className="text-sm text-blue-300">
-            ⏱️ This usually takes 1-2 minutes. Please don't close this page.
+            This usually takes 1-2 minutes. Please don't close this page.
           </p>
         </div>
       )}
