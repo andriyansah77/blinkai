@@ -14,7 +14,8 @@ import {
   Loader2,
   Sparkles,
   Crown,
-  Gift
+  Gift,
+  Wallet
 } from "lucide-react";
 
 interface OnboardingStep {
