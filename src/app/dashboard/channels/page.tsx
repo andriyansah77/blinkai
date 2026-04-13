@@ -3,7 +3,22 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plus, Database, MessageSquare, Settings, Globe, Lock, Activity, ExternalLink } from "lucide-react";
+import { 
+  Plus, 
+  Database, 
+  MessageSquare, 
+  Settings, 
+  Activity, 
+  RefreshCw,
+  Send,
+  Hash,
+  Users,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Trash2,
+  ExternalLink
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -23,8 +38,8 @@ export default function ChannelsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedType, setSelectedType] = useState("");
 
@@ -36,32 +51,60 @@ export default function ChannelsPage() {
     }
   }, [status, router]);
 
-  const fetchChannels = async () => {
-    try {
-      // Fetch channels
-      const channelsResponse = await fetch('/api/channels');
-      if (channelsResponse.ok) {
-        const channelsData = await channelsResponse.json();
-        setChannels(channelsData.channels || []);
-      }
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (status === "authenticated") {
+      const interval = setInterval(() => {
+        fetchChannels(true);
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [status]);
 
-      // Fetch user agents
-      const agentsResponse = await fetch('/api/hermes/agents');
-      if (agentsResponse.ok) {
-        const agentsData = await agentsResponse.json();
-        setAgents(agentsData.agents || []);
+  const fetchChannels = async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+      setRefreshing(true);
+      
+      const response = await fetch('/api/hermes/gateway');
+      if (response.ok) {
+        const data = await response.json();
+        // Convert gateway status to channels format
+        const gatewayChannels: Channel[] = [];
+        
+        if (data.platforms) {
+          Object.entries(data.platforms).forEach(([platform, config]: [string, any]) => {
+            if (config && config.status) {
+              gatewayChannels.push({
+                id: platform,
+                type: platform,
+                name: `${platform.charAt(0).toUpperCase() + platform.slice(1)} Gateway`,
+                status: config.status === 'connected' ? 'connected' : 'disconnected',
+                lastActivity: new Date().toISOString(),
+                messageCount: 0,
+                config: config
+              });
+            }
+          });
+        }
+        
+        setChannels(gatewayChannels);
       }
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      console.error('Failed to fetch channels:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   if (status === "loading" || loading) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          <p className="text-muted-foreground text-sm">Loading channels...</p>
+        </div>
       </div>
     );
   }
@@ -74,93 +117,63 @@ export default function ChannelsPage() {
     { 
       id: "telegram", 
       name: "Telegram", 
-      icon: "📱", // Changed from ✈️ to 📱 for better representation
-      description: "Bot API via grammY, supports groups",
+      icon: Send,
+      description: "Connect via Telegram Bot API",
       color: "from-blue-500 to-cyan-600",
-      features: ["Private chats", "Groups", "Channels", "Inline queries"],
+      iconColor: "text-blue-400",
+      bgColor: "bg-blue-500/20",
       enabled: true,
-      setupFields: ["botToken", "username"],
-      status: "NOT CONNECTED"
+      fields: ["bot_token"]
     },
     { 
       id: "discord", 
       name: "Discord", 
-      icon: "🎮", 
-      description: "Servers, channels, and DMs",
+      icon: Hash,
+      description: "Connect to Discord servers",
       color: "from-indigo-500 to-purple-600",
-      features: ["Text channels", "Voice channels", "Slash commands", "Webhooks"],
+      iconColor: "text-indigo-400",
+      bgColor: "bg-indigo-500/20",
       enabled: true,
-      setupFields: ["botToken", "serverId"],
-      status: "NOT CONNECTED"
+      fields: ["bot_token"]
     },
     { 
       id: "whatsapp", 
       name: "WhatsApp", 
-      icon: "💬", // Changed from 📱 to 💬 to differentiate from Telegram
-      description: "QR code pairing via Hermes framework",
+      icon: MessageSquare,
+      description: "QR code pairing via Hermes",
       color: "from-green-600 to-green-700",
-      features: ["QR code setup", "Business messaging", "Media sharing", "Groups"],
+      iconColor: "text-green-400",
+      bgColor: "bg-green-500/20",
       enabled: true,
-      setupFields: [], // WhatsApp uses QR code, no manual fields needed
-      status: "NOT CONNECTED"
+      fields: [] // QR code based, no manual fields
     },
     { 
       id: "slack", 
       name: "Slack", 
-      icon: "🔧", // More appropriate icon for Slack
-      description: "Bolt SDK, workspace apps",
-      color: "from-green-500 to-emerald-600",
-      features: ["Channels", "Direct messages", "Slash commands", "Interactive messages"],
-      enabled: false,
-      comingSoon: true,
-      status: "COMING SOON"
-    },
-    { 
-      id: "signal", 
-      name: "Signal", 
-      icon: "🔒", // Privacy-focused icon
-      description: "Privacy-focused via signal-cli",
-      color: "from-blue-400 to-blue-600",
-      features: ["End-to-end encryption", "Groups", "Disappearing messages", "Voice calls"],
-      enabled: false,
-      comingSoon: true,
-      status: "SOON"
-    },
-    { 
-      id: "imessage", 
-      name: "iMessage", 
-      icon: "💬", 
-      description: "Via BlueBubbles macOS server",
-      color: "from-green-400 to-green-600",
-      features: ["iPhone integration", "Group chats", "Media sharing", "Read receipts"],
-      enabled: false,
-      comingSoon: true,
-      status: "SOON"
+      icon: Users,
+      description: "Connect to Slack workspaces",
+      color: "from-purple-500 to-pink-600",
+      iconColor: "text-purple-400",
+      bgColor: "bg-purple-500/20",
+      enabled: true,
+      fields: ["bot_token"]
     }
   ];
 
-  const getChannelIcon = (type: string) => {
-    const channelType = CHANNEL_TYPES.find(t => t.id === type);
-    return channelType?.icon || "💬";
+  const getChannelType = (type: string) => {
+    return CHANNEL_TYPES.find(t => t.id === type);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'connected': return 'text-green-400';
-      case 'disconnected': return 'text-gray-400';
-      case 'error': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'connected': return <CheckCircle2 className="w-4 h-4 text-green-400" />;
+      case 'disconnected': return <XCircle className="w-4 h-4 text-gray-400" />;
+      case 'error': return <AlertCircle className="w-4 h-4 text-red-400" />;
+      default: return <XCircle className="w-4 h-4 text-gray-400" />;
     }
   };
 
-  const getStatusDot = (status: string) => {
-    switch (status) {
-      case 'connected': return 'bg-green-400';
-      case 'disconnected': return 'bg-gray-400';
-      case 'error': return 'bg-red-400';
-      default: return 'bg-gray-400';
-    }
-  };
+  const connectedCount = channels.filter(c => c.status === 'connected').length;
 
   return (
     <div className="h-screen bg-background text-foreground overflow-y-auto">
@@ -169,214 +182,188 @@ export default function ChannelsPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-              <Database className="w-6 h-6 text-primary" />
-              Channels
+              <Database className="w-6 h-6 text-purple-400" />
+              Gateway Channels
             </h1>
-            <p className="text-muted-foreground mt-1">Connect your AI agent to Discord, Telegram, and other platforms using your isolated Hermes instance</p>
+            <p className="text-muted-foreground mt-1">
+              {connectedCount} connected • Connect your agent to messaging platforms
+            </p>
           </div>
-          <button 
-            onClick={() => {
-              setSelectedType("");
-              setShowAddModal(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Add Channel
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => fetchChannels()}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg text-foreground font-medium transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <button 
+              onClick={() => {
+                setSelectedType("");
+                setShowAddModal(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add Channel
+            </button>
+          </div>
         </div>
 
-        {/* Available Channel Types */}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {CHANNEL_TYPES.map((type) => {
+            const channel = channels.find(c => c.type === type.id);
+            const Icon = type.icon;
+            return (
+              <div key={type.id} className="bg-card border border-border rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", type.bgColor)}>
+                    <Icon className={cn("w-5 h-5", type.iconColor)} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-foreground font-medium">{type.name}</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      {channel?.status === 'connected' ? (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-xs text-green-400">Connected</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-gray-400" />
+                          <span className="text-xs text-gray-400">Not connected</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Available Platforms */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                Channels
-                <span className="text-sm text-muted-foreground font-normal">{CHANNEL_TYPES.length} channels</span>
-              </h2>
-              <p className="text-muted-foreground text-sm mt-1">Each user gets their own isolated Hermes instance - your platforms won't interfere with others.</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {CHANNEL_TYPES.map((type, index) => (
-              <motion.div
-                key={type.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={cn(
-                  "relative p-6 bg-card border border-border rounded-xl transition-all duration-300",
-                  type.enabled 
-                    ? "hover:bg-accent cursor-pointer hover:border-border" 
-                    : "opacity-60"
-                )}
-                onClick={() => {
-                  if (type.enabled) {
+          <h2 className="text-lg font-semibold text-foreground mb-4">Available Platforms</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {CHANNEL_TYPES.map((type, index) => {
+              const Icon = type.icon;
+              const channel = channels.find(c => c.type === type.id);
+              const isConnected = channel?.status === 'connected';
+              
+              return (
+                <motion.div
+                  key={type.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-card border border-border rounded-xl p-6 hover:border-purple-500/50 transition-all group cursor-pointer"
+                  onClick={() => {
                     setSelectedType(type.id);
                     setShowAddModal(true);
-                  }
-                }}
-              >
-                {/* Background gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${type.color} opacity-0 hover:opacity-5 transition-opacity rounded-xl`} />
-                
-                {/* Coming Soon Badge */}
-                {type.comingSoon && (
-                  <div className="absolute top-4 right-4">
-                    <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full font-medium">
-                      {type.status}
-                    </span>
-                  </div>
-                )}
-                
-                <div className="relative">
-                  {/* Icon and Title */}
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center text-2xl",
-                      type.enabled ? "bg-white/[0.08]" : "bg-accent/50"
-                    )}>
-                      {type.icon}
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", type.bgColor)}>
+                      <Icon className={cn("w-6 h-6", type.iconColor)} />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground text-lg mb-1">{type.name}</h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{type.description}</p>
-                    </div>
+                    {isConnected && (
+                      <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    )}
                   </div>
-
-                  {/* Status */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full",
-                        type.enabled && type.status === "NOT CONNECTED" ? "bg-gray-400" :
-                        type.enabled && type.status === "CONNECTED" ? "bg-green-400" :
-                        "bg-orange-400"
-                      )} />
-                      <span className={cn(
-                        "text-sm font-medium",
-                        type.enabled && type.status === "NOT CONNECTED" ? "text-gray-400" :
-                        type.enabled && type.status === "CONNECTED" ? "text-green-400" :
-                        "text-orange-400"
-                      )}>
-                        {type.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  {type.enabled ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedType(type.id);
-                        setShowAddModal(true);
-                      }}
-                      className="w-full bg-accent hover:bg-accent/90 border border-border rounded-lg py-2.5 px-4 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                    >
-                      Click to configure →
-                    </button>
-                  ) : (
-                    <button
-                      disabled
-                      className="w-full bg-card border border-border/60 rounded-lg py-2.5 px-4 text-muted-foreground text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      Ask your bot to configure →
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+                  
+                  <h3 className="font-semibold text-foreground mb-2">{type.name}</h3>
+                  <p className="text-muted-foreground text-sm mb-4">{type.description}</p>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedType(type.id);
+                      setShowAddModal(true);
+                    }}
+                    className="w-full bg-accent hover:bg-accent/80 text-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isConnected ? 'Reconfigure' : 'Configure'}
+                  </button>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
 
         {/* Connected Channels */}
-        <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Connected Channels</h2>
-          
-          {channels.length === 0 ? (
-            <div className="text-center py-12 bg-card border border-border rounded-xl">
-              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
-                <Database className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-foreground font-semibold text-lg mb-2">No channels connected</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Connect your first channel using your own isolated Hermes instance - completely separate from other users
-              </p>
-              <button
-                onClick={() => {
-                  setSelectedType("");
-                  setShowAddModal(true);
-                }}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Connect Your First Channel
-              </button>
-            </div>
-          ) : (
+        {channels.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Connected Channels</h2>
             <div className="space-y-4">
-              {channels.map((channel, index) => (
-                <motion.div
-                  key={channel.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center text-2xl">
-                        {getChannelIcon(channel.type)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-semibold text-foreground">{channel.name}</h3>
-                          <span className="text-xs text-muted-foreground bg-accent px-2 py-1 rounded capitalize">
-                            {channel.type}
-                          </span>
-                          {channel.agentName && (
-                            <span className="text-xs text-primary bg-blue-500/20 px-2 py-1 rounded">
-                              → {channel.agentName}
+              {channels.map((channel, index) => {
+                const channelType = getChannelType(channel.type);
+                const Icon = channelType?.icon || MessageSquare;
+                
+                return (
+                  <motion.div
+                    key={channel.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", channelType?.bgColor)}>
+                          <Icon className={cn("w-6 h-6", channelType?.iconColor)} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-3 mb-1">
+                            <h3 className="font-semibold text-foreground">{channel.name}</h3>
+                            <span className="text-xs text-muted-foreground bg-accent px-2 py-1 rounded capitalize">
+                              {channel.type}
                             </span>
-                          )}
-                          <div className="flex items-center gap-1">
-                            <div className={`w-2 h-2 rounded-full ${getStatusDot(channel.status)}`} />
-                            <span className={`text-xs font-medium ${getStatusColor(channel.status)} capitalize`}>
-                              {channel.status}
-                            </span>
+                            <div className="flex items-center gap-1">
+                              {getStatusIcon(channel.status)}
+                              <span className={cn(
+                                "text-xs font-medium capitalize",
+                                channel.status === 'connected' ? 'text-green-400' :
+                                channel.status === 'error' ? 'text-red-400' : 'text-gray-400'
+                              )}>
+                                {channel.status}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Activity className="w-3 h-3" />
+                              <span>Gateway active</span>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3" />
-                            <span>{channel.messageCount.toLocaleString()} messages</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Activity className="w-3 h-3" />
-                            <span>Last: {new Date(channel.lastActivity).toLocaleDateString()}</span>
-                          </div>
-                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                      <button className="text-muted-foreground hover:text-foreground transition-colors">
-                        <Settings className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => {
+                            setSelectedType(channel.type);
+                            setShowAddModal(true);
+                          }}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Add Channel Modal */}
+      {/* Add/Configure Channel Modal */}
       {showAddModal && (
-        <AddChannelModal
+        <ConfigureChannelModal
           onClose={() => {
             setShowAddModal(false);
             setSelectedType("");
@@ -388,74 +375,61 @@ export default function ChannelsPage() {
           }}
           channelTypes={CHANNEL_TYPES}
           selectedType={selectedType}
-          agents={agents}
         />
       )}
     </div>
   );
 }
 
-interface AddChannelModalProps {
+interface ConfigureChannelModalProps {
   onClose: () => void;
   onSuccess: () => void;
   channelTypes: any[];
   selectedType?: string;
-  agents: any[];
 }
 
-function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initialType, agents }: AddChannelModalProps) {
+function ConfigureChannelModal({ onClose, onSuccess, channelTypes, selectedType: initialType }: ConfigureChannelModalProps) {
   const [selectedType, setSelectedType] = useState(initialType || "");
-  const [selectedAgent, setSelectedAgent] = useState("");
   const [formData, setFormData] = useState({
-    name: "",
-    botToken: "",
-    serverId: "",
-    username: "",
-    phoneNumber: "",
-    apiKey: "",
-    webhookUrl: ""
+    bot_token: ""
   });
   const [loading, setLoading] = useState(false);
 
   const selectedChannel = channelTypes.find(t => t.id === selectedType);
-  const enabledChannels = channelTypes.filter(t => t.enabled);
 
-  // Auto-select first agent if only one exists
-  useEffect(() => {
-    if (agents.length === 1 && !selectedAgent) {
-      setSelectedAgent(agents[0].id);
-    }
-  }, [agents, selectedAgent]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const getFieldLabel = (field: string) => {
-    const labels = {
-      botToken: "Bot Token",
-      serverId: "Server ID (Optional)",
-      username: "Bot Username",
-      phoneNumber: "Phone Number",
-      apiKey: "API Key",
-      webhookUrl: "Webhook URL"
-    };
-    return labels[field as keyof typeof labels] || field;
-  };
+    try {
+      const config: any = {
+        platform: selectedType
+      };
 
-  const getFieldPlaceholder = (field: string, channelType: string) => {
-    const placeholders: Record<string, Record<string, string>> = {
-      telegram: {
-        botToken: "123456789:EXAMPLE_BOT_TOKEN_PLACEHOLDER",
-        username: "@your_bot_username"
-      },
-      discord: {
-        botToken: "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA.Gh7Ijk.EXAMPLE_TOKEN_PLACEHOLDER",
-        serverId: "123456789012345678"
-      },
-      whatsapp: {
-        phoneNumber: "+1234567890",
-        apiKey: "your-whatsapp-api-key",
-        webhookUrl: "https://your-domain.com/webhook"
+      // Add platform-specific config based on Hermes CLI requirements
+      if (selectedType === 'telegram' || selectedType === 'discord' || selectedType === 'slack') {
+        config.bot_token = formData.bot_token;
       }
-    };
-    return placeholders[channelType]?.[field] || `Enter ${field}`;
+      // WhatsApp uses QR code, no token needed
+
+      const response = await fetch('/api/hermes/gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      });
+
+      if (response.ok) {
+        onSuccess();
+      } else {
+        const error = await response.json();
+        alert('Failed to configure channel: ' + (error.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Failed to configure channel:', error);
+      alert('Failed to configure channel. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getSetupInstructions = (channelType: string) => {
@@ -463,85 +437,41 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
       telegram: {
         title: "Setup Telegram Bot",
         steps: [
-          "1. Message @BotFather on Telegram",
-          "2. Send /newbot and follow instructions",
-          "3. Copy the bot token provided",
-          "4. Optionally set bot username with /setusername"
+          "1. Open Telegram and search for @BotFather",
+          "2. Send /newbot and follow the instructions",
+          "3. Copy the bot token provided by BotFather",
+          "4. Paste the token below and click Configure"
         ]
       },
       discord: {
         title: "Setup Discord Bot",
         steps: [
           "1. Go to Discord Developer Portal",
-          "2. Create new application and bot",
-          "3. Copy the bot token from Bot section",
-          "4. Get server ID from Discord (Developer Mode)"
+          "2. Create a new application",
+          "3. Go to Bot section and create a bot",
+          "4. Copy the bot token and paste below"
         ]
       },
       whatsapp: {
-        title: "Setup WhatsApp via Hermes",
+        title: "Setup WhatsApp",
         steps: [
-          "1. Click 'Connect to WhatsApp' below",
-          "2. Hermes will generate a QR code",
+          "1. Click 'Start WhatsApp Gateway' below",
+          "2. A QR code will be generated",
           "3. Open WhatsApp on your phone",
-          "4. Scan the QR code to pair your account"
+          "4. Scan the QR code to connect"
+        ]
+      },
+      slack: {
+        title: "Setup Slack Bot",
+        steps: [
+          "1. Go to api.slack.com/apps",
+          "2. Create a new app",
+          "3. Add Bot Token Scopes",
+          "4. Install app to workspace and copy token"
         ]
       }
     };
     return instructions[channelType];
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedAgent) {
-      alert('Please select an agent to connect this channel to.');
-      return;
-    }
-    
-    setLoading(true);
-
-    try {
-      const config: any = {
-        name: formData.name,
-        type: selectedType,
-        agentId: selectedAgent
-      };
-
-      // Add platform-specific config
-      if (selectedType === 'telegram') {
-        config.botToken = formData.botToken;
-        config.username = formData.username;
-      } else if (selectedType === 'discord') {
-        config.botToken = formData.botToken;
-        config.serverId = formData.serverId;
-      } else if (selectedType === 'whatsapp') {
-        config.phoneNumber = formData.phoneNumber;
-        config.apiKey = formData.apiKey;
-        config.webhookUrl = formData.webhookUrl;
-      }
-
-      const response = await fetch('/api/channels', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(`✅ ${selectedChannel?.name} channel connected successfully to your isolated Hermes instance!\n\n${result.hermesSetup || 'Platform configured and your personal gateway started.'}\n\nNote: This is completely isolated from other users.`);
-        onSuccess();
-      } else {
-        const error = await response.json();
-        console.error('Failed to create channel:', error);
-        alert('Failed to create channel: ' + (error.message || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Failed to create channel:', error);
-      alert('Failed to create channel. Please try again.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -552,64 +482,41 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
         className="bg-card border border-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-foreground font-semibold text-lg">Connect New Channel</h2>
+          <h2 className="text-foreground font-semibold text-lg">
+            Configure {selectedChannel?.name || 'Channel'}
+          </h2>
           <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            ✕
+            <XCircle className="w-6 h-6" />
           </button>
         </div>
         
         {!selectedType ? (
           <div>
-            <p className="text-muted-foreground text-sm mb-6">Choose a platform to connect:</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {enabledChannels.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setSelectedType(type.id)}
-                  className="p-4 bg-card hover:bg-accent border border-border rounded-lg text-left transition-colors group"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-2xl">{type.icon}</span>
-                    <div>
-                      <h3 className="text-foreground font-medium">{type.name}</h3>
-                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
-                        Available
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground text-sm mb-3">{type.description}</p>
-                  <div className="space-y-1">
-                    {type.features.slice(0, 2).map((feature: string, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <div className="w-1 h-1 bg-white/40 rounded-full" />
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </button>
-              ))}
-            </div>
-            
-            {/* Disabled platforms */}
-            <div className="mt-8">
-              <h3 className="text-muted-foreground text-sm mb-4">Coming Soon</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {channelTypes.filter(t => !t.enabled).map((type) => (
-                  <div
+            <p className="text-muted-foreground text-sm mb-6">Choose a platform to configure:</p>
+            <div className="grid grid-cols-2 gap-4">
+              {channelTypes.map((type) => {
+                const Icon = type.icon;
+                return (
+                  <button
                     key={type.id}
-                    className="p-3 bg-accent/30 border border-border/60 rounded-lg text-center opacity-60"
+                    onClick={() => setSelectedType(type.id)}
+                    className="p-4 bg-card hover:bg-accent border border-border rounded-lg text-left transition-colors group"
                   >
-                    <div className="text-lg mb-1">{type.icon}</div>
-                    <div className="text-muted-foreground text-xs">{type.name}</div>
-                    <div className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full mt-2">
-                      Soon
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", type.bgColor)}>
+                        <Icon className={cn("w-5 h-5", type.iconColor)} />
+                      </div>
+                      <div>
+                        <h3 className="text-foreground font-medium">{type.name}</h3>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                    <p className="text-muted-foreground text-sm">{type.description}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         ) : (
@@ -617,63 +524,34 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
             {/* Setup Form */}
             <div>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Agent Selection */}
-                <div>
-                  <label className="block text-muted-foreground text-sm mb-2">
-                    Select Agent to Connect
-                    <span className="text-red-400 ml-1">*</span>
-                  </label>
-                  {agents.length === 0 ? (
-                    <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                      <p className="text-orange-400 text-sm">
-                        No agents found. Please create an agent first in the Agents section.
-                      </p>
-                    </div>
-                  ) : (
-                    <select
-                      value={selectedAgent}
-                      onChange={(e) => setSelectedAgent(e.target.value)}
-                      className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                      required
-                    >
-                      <option value="" className="bg-card">Choose an agent...</option>
-                      {agents.map((agent) => (
-                        <option key={agent.id} value={agent.id} className="bg-card">
-                          {agent.name} ({agent.model})
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-muted-foreground text-sm mb-2">Channel Name</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                    placeholder={`My ${selectedChannel?.name} Bot`}
-                    required
-                  />
-                </div>
-
-                {selectedChannel?.setupFields?.map((field: string) => (
-                  <div key={field}>
-                    <label className="block text-muted-foreground text-sm mb-2">
-                      {getFieldLabel(field)}
-                      {field === 'serverId' && <span className="text-muted-foreground"> (Optional)</span>}
-                    </label>
-                    <input
-                      type={field.includes('token') || field.includes('key') ? 'password' : 'text'}
-                      value={formData[field as keyof typeof formData]}
-                      onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-                      className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                      placeholder={getFieldPlaceholder(field, selectedType)}
-                      required={field !== 'serverId'}
-                    />
+                {selectedChannel?.fields && selectedChannel.fields.length > 0 ? (
+                  <>
+                    {selectedChannel.fields.map((field: string) => (
+                      <div key={field}>
+                        <label className="block text-muted-foreground text-sm mb-2">
+                          Bot Token
+                          <span className="text-red-400 ml-1">*</span>
+                        </label>
+                        <input
+                          type="password"
+                          value={formData.bot_token}
+                          onChange={(e) => setFormData({ ...formData, bot_token: e.target.value })}
+                          className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                          placeholder="Paste your bot token here"
+                          required
+                        />
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <p className="text-green-400 text-sm">
+                      {selectedType === 'whatsapp' 
+                        ? 'WhatsApp uses QR code pairing. Click the button below to start the gateway and scan the QR code.'
+                        : 'No additional configuration needed. Click Configure to start the gateway.'}
+                    </p>
                   </div>
-                ))}
+                )}
 
                 <div className="flex gap-3 pt-4">
                   <button
@@ -685,51 +563,28 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
                   </button>
                   <button
                     type="submit"
-                    disabled={loading || !formData.name || !selectedAgent || (selectedType !== 'whatsapp' && !formData.botToken)}
+                    disabled={loading || (selectedChannel?.fields?.length > 0 && !formData.bot_token)}
                     className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
                   >
-                    {loading ? "Connecting..." : `Connect to ${selectedChannel?.name}`}
+                    {loading ? "Configuring..." : `Configure ${selectedChannel?.name}`}
                   </button>
                 </div>
               </form>
             </div>
 
             {/* Setup Instructions */}
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-foreground font-medium mb-4">
+            <div className="bg-accent/30 border border-border rounded-lg p-4">
+              <h3 className="text-foreground font-medium mb-4 flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
                 {getSetupInstructions(selectedType)?.title}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {getSetupInstructions(selectedType)?.steps.map((step, idx) => (
-                  <div key={idx} className="text-muted-foreground text-sm">
-                    {step}
+                  <div key={idx} className="flex items-start gap-2">
+                    <span className="text-muted-foreground text-sm">{step}</span>
                   </div>
                 ))}
               </div>
-              
-              {selectedType === 'telegram' && (
-                <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <p className="text-primary text-xs">
-                    💡 Tip: After creating your bot, send it a message to activate it, then add it to groups if needed.
-                  </p>
-                </div>
-              )}
-              
-              {selectedType === 'discord' && (
-                <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                  <p className="text-purple-400 text-xs">
-                    💡 Tip: Make sure to give your bot the necessary permissions in your Discord server settings.
-                  </p>
-                </div>
-              )}
-              
-              {selectedType === 'whatsapp' && (
-                <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                  <p className="text-green-400 text-xs">
-                    💡 Tip: WhatsApp setup uses QR code pairing through Hermes framework - no API keys needed!
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -737,10 +592,3 @@ function AddChannelModal({ onClose, onSuccess, channelTypes, selectedType: initi
     </div>
   );
 }
-
-
-
-
-
-
-
