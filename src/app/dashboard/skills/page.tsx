@@ -170,7 +170,7 @@ export default function SkillsPage() {
           >
             {categories.map(category => (
               <option key={category} value={category} className="bg-card">
-                {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
+                {category === "all" ? "All Categories" : (category && typeof category === 'string' ? category.charAt(0).toUpperCase() + category.slice(1) : category)}
               </option>
             ))}
           </select>
