@@ -1318,23 +1318,36 @@ REAGENT_USER_ID=${userId}
     }
   }
 
-  async setupWhatsApp(userId: string): Promise<{ success: boolean; error?: string }> {
+  async setupWhatsApp(userId: string): Promise<{ success: boolean; error?: string; instructions?: string }> {
     try {
       console.log(`[Platform] Setting up WhatsApp for user ${userId}`);
       
-      const command: HermesCommand = {
-        command: 'whatsapp'
-      };
+      const profileName = `user-${userId}`;
+      
+      // WhatsApp requires interactive terminal for QR code
+      // We cannot run it through subprocess, so we provide instructions instead
+      const instructions = `WhatsApp setup requires an interactive terminal to display the QR code.
 
-      const result = await this.executeHermesCommand(userId, command);
+Please run this command in your SSH terminal:
+
+  hermes --profile ${profileName} whatsapp
+
+Then scan the QR code with your WhatsApp mobile app:
+1. Open WhatsApp on your phone
+2. Go to Settings > Linked Devices
+3. Tap "Link a Device"
+4. Scan the QR code displayed in the terminal
+
+Once connected, the gateway will automatically handle WhatsApp messages.`;
+
+      console.log(`[Platform] WhatsApp requires manual setup via terminal for user ${userId}`);
       
-      if (result.success) {
-        console.log(`[Platform] WhatsApp setup completed for user ${userId}. QR code should be displayed.`);
-      } else {
-        console.error(`[Platform] WhatsApp setup failed for user ${userId}:`, result.error);
-      }
-      
-      return { success: result.success, error: result.error };
+      // Return success with instructions
+      return { 
+        success: true, 
+        error: undefined,
+        instructions 
+      };
     } catch (error) {
       console.error(`[Platform] Exception during WhatsApp setup for user ${userId}:`, error);
       return { success: false, error: `WhatsApp setup failed: ${error}` };

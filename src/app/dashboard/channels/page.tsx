@@ -481,7 +481,15 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
 
       if (response.ok) {
         const result = await response.json();
-        onSuccess(`${selectedChannel?.name} gateway configured successfully!`);
+        
+        // Check if WhatsApp requires manual setup
+        if (result.requiresManualSetup && result.instructions) {
+          // Show instructions in alert or modal
+          alert(result.instructions);
+          onSuccess(`${selectedChannel?.name} setup instructions provided. Please follow the terminal instructions.`);
+        } else {
+          onSuccess(`${selectedChannel?.name} gateway configured successfully!`);
+        }
       } else {
         const error = await response.json();
         onError(error.error || 'Failed to configure channel');
@@ -517,10 +525,12 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
       whatsapp: {
         title: "Setup WhatsApp",
         steps: [
-          "1. Click 'Start WhatsApp Gateway' below",
-          "2. A QR code will be generated",
-          "3. Open WhatsApp on your phone",
-          "4. Scan the QR code to connect"
+          "⚠️ WhatsApp requires SSH terminal access",
+          "1. SSH into your server: ssh root@159.65.141.68",
+          "2. Run: hermes --profile user-[your-id] whatsapp",
+          "3. A QR code will appear in the terminal",
+          "4. Open WhatsApp on your phone > Settings > Linked Devices",
+          "5. Tap 'Link a Device' and scan the QR code"
         ]
       },
       slack: {
@@ -607,9 +617,9 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
                   </>
                 ) : (
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                    <p className="text-green-400 text-sm">
+                    <p className="text-green-400 text-sm mb-3">
                       {selectedType === 'whatsapp' 
-                        ? 'WhatsApp uses QR code pairing. Click the button below to start the gateway and scan the QR code.'
+                        ? '⚠️ WhatsApp requires SSH terminal access to display QR code. Click below to see instructions.'
                         : 'No additional configuration needed. Click Configure to start the gateway.'}
                     </p>
                   </div>
@@ -631,10 +641,10 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Configuring...
+                        {selectedType === 'whatsapp' ? 'Getting Instructions...' : 'Configuring...'}
                       </>
                     ) : (
-                      `Configure ${selectedChannel?.name}`
+                      selectedType === 'whatsapp' ? 'Get Setup Instructions' : `Configure ${selectedChannel?.name}`
                     )}
                   </button>
                 </div>

@@ -70,6 +70,17 @@ export async function POST(request: Request) {
           
         case 'whatsapp':
           result = await hermesIntegration.setupWhatsApp(session.user.id!);
+          
+          // WhatsApp returns instructions instead of direct setup
+          if (result.success && (result as any).instructions) {
+            return NextResponse.json({
+              success: true,
+              message: 'WhatsApp setup instructions',
+              platform,
+              instructions: (result as any).instructions,
+              requiresManualSetup: true
+            });
+          }
           break;
           
         case 'slack':
