@@ -89,6 +89,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { confirm, forceClientSigning } = body;
 
+    console.log('[Inscribe API] Request params:', { confirm, forceClientSigning, userId });
+
     if (!confirm) {
       return NextResponse.json(
         {
@@ -104,6 +106,12 @@ export async function POST(request: NextRequest) {
 
     // 4. Execute inscription
     const result = await inscriptionEngine.executeInscription(userId, 'manual', forceClientSigning || false);
+    
+    console.log('[Inscribe API] Inscription result:', { 
+      success: result.success, 
+      requiresClientSigning: result.requiresClientSigning,
+      inscriptionId: result.inscriptionId 
+    });
 
     if (!result.success) {
       return NextResponse.json(

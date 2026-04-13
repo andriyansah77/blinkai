@@ -121,7 +121,16 @@ export class InscriptionEngine {
           where: { id: wallet.id }
         });
         
+        console.log('[InscriptionEngine] Wallet check:', {
+          walletId: wallet.id,
+          address: wallet.address,
+          hasEncryptedKey: !!dbWallet?.encryptedPrivateKey,
+          forceClientSigning
+        });
+        
         const isExternalWallet = forceClientSigning || !dbWallet?.encryptedPrivateKey || dbWallet.encryptedPrivateKey === '';
+        
+        console.log('[InscriptionEngine] isExternalWallet:', isExternalWallet);
         
         if (isExternalWallet) {
           // For external wallets, return unsigned transaction for client-side signing
