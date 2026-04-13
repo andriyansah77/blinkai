@@ -7,17 +7,21 @@ import { Plus, Sparkles, Code, Zap, Settings, Search, Play, Star, TrendingUp, Do
 import { motion } from "framer-motion";
 
 interface Skill {
-  id: string;
   name: string;
+  source: string;
   description: string;
-  category: string;
-  tags: string[];
-  usage: number;
-  rating: number;
+  installed: boolean;
+  enabled: boolean;
+  // Optional fields for compatibility
+  id?: string;
+  category?: string;
+  tags?: string[];
+  usage?: number;
+  rating?: number;
   agentId?: string;
   agentName?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface Agent {
@@ -78,13 +82,13 @@ export default function SkillsPage() {
     return null;
   }
 
-  const categories = ["all", ...Array.from(new Set(skills.map(skill => skill.category)))];
+  const categories = ["all", ...Array.from(new Set(skills.map(skill => skill.description || skill.category || 'general').filter(Boolean)))];
   
   const filteredSkills = skills.filter(skill => {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         skill.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         skill.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesCategory = selectedCategory === "all" || skill.category === selectedCategory;
+                         (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                         (skill.tags && skill.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
+    const matchesCategory = selectedCategory === "all" || skill.description === selectedCategory || skill.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -202,7 +206,7 @@ export default function SkillsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredSkills.map((skill, index) => (
               <motion.div
-                key={skill.id}
+                key={skill.name}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -212,12 +216,12 @@ export default function SkillsPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-xl">
-                      {getCategoryIcon(skill.category)}
+                      {getCategoryIcon(skill.description || skill.category || 'general')}
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">{skill.name}</h3>
                       <span className="text-xs text-muted-foreground bg-accent px-2 py-1 rounded">
-                        {skill.category}
+                        {skill.source}
                       </span>
                     </div>
                   </div>
@@ -227,10 +231,12 @@ export default function SkillsPage() {
                 </div>
 
                 {/* Description */}
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{skill.description}</p>
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                  {skill.description || 'No description available'}
+                </p>
 
                 {/* Tags */}
-                {skill.tags.length > 0 && (
+                {skill.tags && skill.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-4">
                     {skill.tags.slice(0, 3).map((tag, tagIndex) => (
                       <span
@@ -253,13 +259,18 @@ export default function SkillsPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                       <TrendingUp className="w-3 h-3 text-primary" />
-                      <span className="text-xs text-muted-foreground">{skill.usage} uses</span>
+                      <span className="text-xs text-muted-foreground">{skill.usage || 0} uses</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 text-yellow-400" />
-                      <span className="text-xs text-muted-foreground">{skill.rating.toFixed(1)}</span>
+                      <span className="text-xs text-muted-foreground">{(skill.rating || 0).toFixed(1)}</span>
                     </div>
                   </div>
+                  {skill.installed && (
+                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
+                      Installed
+                    </span>
+                  )}
                 </div>
 
                 {/* Agent Info */}
@@ -281,9 +292,11 @@ export default function SkillsPage() {
                 </div>
 
                 {/* Created Date */}
-                <p className="text-muted-foreground/60 text-xs mt-3">
-                  Created {new Date(skill.createdAt).toLocaleDateString()}
-                </p>
+                {skill.createdAt && (
+                  <p className="text-muted-foreground/60 text-xs mt-3">
+                    Created {new Date(skill.createdAt).toLocaleDateString()}
+                  </p>
+                )}
               </motion.div>
             ))}
           </div>
