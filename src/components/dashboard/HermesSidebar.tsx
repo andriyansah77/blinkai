@@ -104,13 +104,22 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
         const response = await fetch('/api/hermes/skills');
         if (response.ok) {
           const data = await response.json();
+          console.log('[Sidebar] Skills data:', data);
+          
+          const skillsList = data.skills || [];
+          const installedCount = skillsList.filter((s: any) => s.installed).length;
+          
+          console.log('[Sidebar] Total skills:', skillsList.length, 'Installed:', installedCount);
+          
           setSkillsData({
-            total: data.skills?.length || 0,
-            installed: data.skills?.filter((s: any) => s.installed).length || 0
+            total: skillsList.length,
+            installed: installedCount
           });
+        } else {
+          console.error('[Sidebar] Skills API error:', response.status);
         }
       } catch (error) {
-        console.error('Failed to fetch skills:', error);
+        console.error('[Sidebar] Failed to fetch skills:', error);
       } finally {
         setLoadingSkills(false);
       }
@@ -213,9 +222,9 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
                 >
                   <item.icon className="w-4 h-4" />
                   <span>{item.label}</span>
-                  {isSkills && !loadingSkills && skillsData.installed > 0 && (
+                  {isSkills && (
                     <span className="ml-auto text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-medium">
-                      {skillsData.installed}
+                      {loadingSkills ? '...' : skillsData.installed}
                     </span>
                   )}
                 </Link>
