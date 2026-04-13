@@ -133,6 +133,8 @@ export async function POST(request: NextRequest) {
       txHash: result.txHash,
       tokensEarned: result.tokensEarned,
       feePaid: result.feePaid,
+      requiresClientSigning: result.requiresClientSigning,
+      unsignedTransaction: result.unsignedTransaction,
       rateLimit: {
         remaining: rateLimit.remaining,
         resetAt: new Date(rateLimit.resetAt).toISOString()

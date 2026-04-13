@@ -374,7 +374,12 @@ export default function MiningWebPage() {
       const data = await response.json();
       
       // Log for debugging
-      console.log('Inscribe response:', { status: response.status, data });
+      console.log('Inscribe response:', { 
+        status: response.status, 
+        data,
+        hasClientSigning: !!data.requiresClientSigning,
+        hasUnsignedTx: !!data.unsignedTransaction
+      });
       
       // Handle different error cases
       if (response.status === 401) {
@@ -406,7 +411,7 @@ export default function MiningWebPage() {
           
           const tx = data.unsignedTransaction;
           
-          const signedTx = await window.ethereum.request({
+          const txHash = await window.ethereum.request({
             method: 'eth_sendTransaction',
             params: [{
               from: tx.from,
@@ -418,15 +423,15 @@ export default function MiningWebPage() {
             }],
           });
 
-          console.log('Transaction signed:', signedTx);
+          console.log('Transaction hash received:', txHash);
           toast.success('Transaction submitted!');
 
           // Transaction hash is returned directly from eth_sendTransaction
           setResult({
             amount: '10000',
-            txHash: signedTx,
-            gasPaid: '~0.0001',
-            explorerUrl: `https://explore.tempo.xyz/tx/${signedTx}`,
+            txHash: txHash,
+            gasPaid: '~0.0001 PATH',
+            explorerUrl: `https://explore.tempo.xyz/tx/${txHash}`,
           });
           
           toast.success('Successfully minted 10,000 REAGENT!');
@@ -836,13 +841,26 @@ export default function MiningWebPage() {
                     <h3 className="text-green-400 font-semibold mb-2">✓ Inscription Successful!</h3>
                     <p className="text-foreground text-lg font-bold mb-2">{result.amount} REAGENT</p>
                     <div className="space-y-1 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Transaction Hash</span>
-                        <span className="text-foreground font-mono text-xs">{result.txHash?.slice(0, 20)}...</span>
-                      </div>
+                      {result.txHash && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Transaction Hash</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-foreground font-mono text-xs">{result.txHash.slice(0, 10)}...{result.txHash.slice(-8)}</span>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(result.txHash);
+                                toast.success('Transaction hash copied!');
+                              }}
+                              className="p-1 hover:bg-accent rounded transition-colors"
+                            >
+                              <Copy className="w-3 h-3 text-muted-foreground" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Gas Paid</span>
-                        <span className="text-foreground">{result.gasPaid} PATH</span>
+                        <span className="text-foreground">{result.gasPaid}</span>
                       </div>
                     </div>
                     {result.explorerUrl && (
