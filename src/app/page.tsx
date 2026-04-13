@@ -20,7 +20,10 @@ import {
   X,
   Code,
   Terminal,
-  Database
+  Database,
+  Sparkles,
+  Gift,
+  Crown
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -535,130 +538,241 @@ const session = await getServerSession(authOptions);`
       <section id="pricing" className="py-20 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Simple, transparent pricing</h2>
-            <p className="text-gray-400">Everything you need to run your AI agent. No hidden fees.</p>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full mb-4">
+              <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+              <span className="text-xs font-medium text-orange-400 uppercase tracking-wider">Pricing Plans</span>
+            </div>
+            <h2 className="text-3xl font-bold mb-4">Start free, scale as you grow</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Deploy your AI agent with 2,000 free credits. No credit card required. Upgrade when you're ready.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Free */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <div className="mb-6">
-                <h3 className="font-semibold text-lg mb-1">Free</h3>
-                <p className="text-gray-400 text-sm">For personal projects</p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0 }}
+              whileHover={{ y: -8 }}
+              className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-8 hover:border-orange-500/30 transition-all duration-300 relative overflow-hidden group"
+            >
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/0 group-hover:from-orange-500/5 group-hover:to-transparent transition-all duration-300"></div>
+              
+              <div className="relative">
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Gift className="w-5 h-5 text-orange-400" />
+                    <h3 className="font-bold text-xl">Free</h3>
+                  </div>
+                  <p className="text-gray-400 text-sm">Perfect for getting started</p>
+                </div>
+                
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold">$0</span>
+                    <span className="text-gray-400 text-lg">/month</span>
+                  </div>
+                  <p className="text-orange-400 text-sm mt-2 font-medium">2,000 credits included</p>
+                </div>
+                
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3 text-sm text-gray-300">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>2,000 AI credits per month</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-300">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>Basic AI models (GPT-3.5, Llama)</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-300">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>Up to 2 connected channels</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-300">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>73+ built-in skills</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-300">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>Token mining (10K REAGENT/mint)</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-300">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>Community support</span>
+                  </li>
+                </ul>
+                
+                <button
+                  onClick={() => router.push("/sign-up")}
+                  className="w-full py-3.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-semibold transition-all duration-200 group/btn"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    Start Building
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </span>
+                </button>
               </div>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$0</span>
-                <span className="text-gray-400">/mo</span>
-              </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  1,000 credits/mo
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  Basic AI models
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  2 connected channels
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  Community support
-                </li>
-              </ul>
-              <button
-                onClick={() => router.push("/sign-up")}
-                className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-lg font-medium transition-colors"
-              >
-                Start Free
-              </button>
-            </div>
+            </motion.div>
 
-            {/* Pro */}
-            <div className="bg-white/5 border-2 border-blue-500/50 rounded-xl p-6 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-blue-500 text-white text-xs font-medium px-3 py-1 rounded-full">
-                  Most Popular
-                </span>
+            {/* Pro - Coming Soon */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              whileHover={{ y: -8 }}
+              className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-2 border-orange-500/30 rounded-xl p-8 relative overflow-hidden group"
+            >
+              {/* Popular badge */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-orange-500/50">
+                  COMING SOON
+                </div>
               </div>
-              <div className="mb-6">
-                <h3 className="font-semibold text-lg mb-1">Pro</h3>
-                <p className="text-gray-400 text-sm">For power users</p>
-              </div>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$19</span>
-                <span className="text-gray-400">/mo</span>
-              </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  10,000 credits/mo
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  Advanced AI models
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  Unlimited channels
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  Priority support
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  Custom skills
-                </li>
-              </ul>
-              <button
-                onClick={() => router.push("/sign-up")}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-orange-500/25"
-              >
-                Get Pro
-              </button>
-            </div>
 
-            {/* Enterprise */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <div className="mb-6">
-                <h3 className="font-semibold text-lg mb-1">Enterprise</h3>
-                <p className="text-gray-400 text-sm">For teams & heavy work</p>
+              {/* Animated glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <div className="relative">
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Crown className="w-5 h-5 text-orange-400" />
+                    <h3 className="font-bold text-xl">Pro</h3>
+                  </div>
+                  <p className="text-gray-400 text-sm">For power users & teams</p>
+                </div>
+                
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold text-gray-500">$--</span>
+                    <span className="text-gray-500 text-lg">/month</span>
+                  </div>
+                  <p className="text-orange-400 text-sm mt-2 font-medium">Pricing TBA</p>
+                </div>
+                
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Higher credit limits</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Advanced AI models (GPT-4, Claude)</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Unlimited connected channels</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Priority support & SLA</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Custom skill development</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Advanced analytics</span>
+                  </li>
+                </ul>
+                
+                <button
+                  disabled
+                  className="w-full py-3.5 bg-gradient-to-r from-orange-500/50 to-orange-600/50 text-white/50 rounded-lg font-semibold cursor-not-allowed"
+                >
+                  Coming Soon
+                </button>
               </div>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$99</span>
-                <span className="text-gray-400">/mo</span>
+            </motion.div>
+
+            {/* Enterprise - Coming Soon */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ y: -8 }}
+              className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-8 hover:border-orange-500/30 transition-all duration-300 relative overflow-hidden group"
+            >
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/0 group-hover:from-orange-500/5 group-hover:to-transparent transition-all duration-300"></div>
+              
+              <div className="relative">
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="w-5 h-5 text-orange-400" />
+                    <h3 className="font-bold text-xl">Enterprise</h3>
+                  </div>
+                  <p className="text-gray-400 text-sm">For large-scale deployments</p>
+                </div>
+                
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold text-gray-500">$--</span>
+                    <span className="text-gray-500 text-lg">/month</span>
+                  </div>
+                  <p className="text-orange-400 text-sm mt-2 font-medium">Custom pricing</p>
+                </div>
+                
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Unlimited credits</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>All AI models + custom models</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>White-label solution</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Dedicated infrastructure</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>24/7 dedicated support</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-400">
+                    <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <span>Custom SLA & compliance</span>
+                  </li>
+                </ul>
+                
+                <button
+                  disabled
+                  className="w-full py-3.5 bg-white/5 text-white/50 border border-white/10 rounded-lg font-semibold cursor-not-allowed"
+                >
+                  Coming Soon
+                </button>
               </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  100,000 credits/mo
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  All AI models
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  White-label solution
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  Dedicated support
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <Check className="w-4 h-4 text-green-400" />
-                  SLA guarantee
-                </li>
-              </ul>
-              <button
-                onClick={() => router.push("/sign-up")}
-                className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-lg font-medium transition-colors"
-              >
-                Contact Sales
-              </button>
+            </motion.div>
+          </div>
+
+          {/* Additional info */}
+          <div className="mt-12 text-center">
+            <p className="text-gray-400 text-sm mb-4">All plans include:</p>
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-400" />
+                <span>Auto-generated HD wallet</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-400" />
+                <span>AES-256 encryption</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-400" />
+                <span>Token mining on Tempo</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-400" />
+                <span>Open source</span>
+              </div>
             </div>
           </div>
         </div>
