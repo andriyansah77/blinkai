@@ -3,7 +3,24 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plus, Sparkles, Code, Zap, Settings, Search, Play, Star, TrendingUp, DollarSign } from "lucide-react";
+import { 
+  Plus, 
+  Sparkles, 
+  Code, 
+  Settings, 
+  Search, 
+  RefreshCw,
+  Package,
+  Globe,
+  Database,
+  FileText,
+  Cpu,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  Trash2,
+  Download
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Skill {
@@ -12,68 +29,90 @@ interface Skill {
   description: string;
   installed: boolean;
   enabled: boolean;
-  // Optional fields for compatibility
-  id?: string;
-  category?: string;
-  tags?: string[];
-  usage?: number;
-  rating?: number;
-  agentId?: string;
-  agentName?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface Agent {
-  id: string;
-  name: string;
 }
 
 export default function SkillsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedSource, setSelectedSource] = useState("all");
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/sign-in");
     } else if (status === "authenticated") {
-      fetchData();
+      fetchSkills();
     }
   }, [status, router]);
 
-  const fetchData = async () => {
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (status === "authenticated") {
+      const interval = setInterval(() => {
+        fetchSkills(true); // Silent refresh
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [status]);
+
+  const fetchSkills = async (silent = false) => {
     try {
-      const [skillsRes, agentsRes] = await Promise.all([
-        fetch("/api/hermes/skills"),
-        fetch("/api/hermes/agents")
-      ]);
-
-      if (skillsRes.ok) {
-        const skillsData = await skillsRes.json();
-        setSkills(skillsData.skills || []);
-      }
-
-      if (agentsRes.ok) {
-        const agentsData = await agentsRes.json();
-        setAgents(agentsData.agents || []);
+      if (!silent) setLoading(true);
+      setRefreshing(true);
+      
+      const response = await fetch("/api/hermes/skills");
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSkills(data.skills || []);
+      } else {
+        console.error("Failed to fetch skills:", response.status);
       }
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      console.error("Failed to fetch skills:", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleUninstall = async (skillName: string) => {
+    if (!confirm(`Are you sure you want to uninstall "${skillName}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/hermes/skills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "uninstall",
+          skillName
+        }),
+      });
+
+      if (response.ok) {
+        await fetchSkills();
+      } else {
+        const error = await response.json();
+        alert(`Failed to uninstall skill: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("Failed to uninstall skill:", error);
+      alert("Failed to uninstall skill");
     }
   };
 
   if (status === "loading" || loading) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          <p className="text-muted-foreground text-sm">Loading skills...</p>
+        </div>
       </div>
     );
   }
@@ -82,26 +121,36 @@ export default function SkillsPage() {
     return null;
   }
 
-  const categories = ["all", ...Array.from(new Set(skills.map(skill => skill.description || skill.category || 'general').filter(Boolean)))];
+  const sources = ["all", ...Array.from(new Set(skills.map(skill => skill.source)))];
   
   const filteredSkills = skills.filter(skill => {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                         (skill.tags && skill.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
-    const matchesCategory = selectedCategory === "all" || skill.description === selectedCategory || skill.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+                         (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSource = selectedSource === "all" || skill.source === selectedSource;
+    return matchesSearch && matchesSource;
   });
 
-  const getCategoryIcon = (category: string) => {
-    switch (category.toLowerCase()) {
-      case 'web': return '🌐';
-      case 'analysis': return '📊';
-      case 'text': return '📝';
-      case 'code': return '💻';
-      case 'data': return '🗄️';
-      default: return '⚡';
+  const getSourceIcon = (source: string) => {
+    switch (source.toLowerCase()) {
+      case 'builtin': return <Package className="w-5 h-5 text-blue-400" />;
+      case 'local': return <Cpu className="w-5 h-5 text-green-400" />;
+      case 'hub': return <Globe className="w-5 h-5 text-purple-400" />;
+      default: return <Zap className="w-5 h-5 text-yellow-400" />;
     }
   };
+
+  const getCategoryIcon = (description: string) => {
+    const desc = description?.toLowerCase() || '';
+    if (desc.includes('web') || desc.includes('http')) return <Globe className="w-5 h-5" />;
+    if (desc.includes('data') || desc.includes('database')) return <Database className="w-5 h-5" />;
+    if (desc.includes('code') || desc.includes('programming')) return <Code className="w-5 h-5" />;
+    if (desc.includes('text') || desc.includes('document')) return <FileText className="w-5 h-5" />;
+    return <Sparkles className="w-5 h-5" />;
+  };
+
+  const installedCount = skills.filter(s => s.installed).length;
+  const builtinCount = skills.filter(s => s.source === 'builtin').length;
+  const localCount = skills.filter(s => s.source === 'local').length;
 
   return (
     <div className="h-screen bg-background text-foreground overflow-y-auto">
@@ -111,49 +160,67 @@ export default function SkillsPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Sparkles className="w-6 h-6 text-purple-400" />
-              Skills
+              Skills Management
             </h1>
-            <p className="text-muted-foreground mt-1">Create and manage AI agent capabilities</p>
+            <p className="text-muted-foreground mt-1">
+              {installedCount} skills installed • {builtinCount} builtin • {localCount} local
+            </p>
           </div>
-          <button 
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Create Skill
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => fetchSkills()}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg text-foreground font-medium transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <button 
+              onClick={() => window.open('https://github.com/NousResearch/hermes-agent', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Browse Hub
+            </button>
+          </div>
         </div>
 
-        {/* Featured Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-6 mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-400" />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-card border border-border rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <Package className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <h3 className="text-foreground font-semibold text-lg mb-1">
-                  Earn Money by Creating Skills!
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  Create and sell your own skills on Agent Place and earn money. No catch.
-                </p>
+                <p className="text-muted-foreground text-sm">Builtin Skills</p>
+                <p className="text-foreground text-2xl font-bold">{builtinCount}</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <button className="bg-primary hover:bg-primary/90 text-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                Create
-              </button>
-              <button className="bg-primary/10 hover:bg-primary/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                Earn Money
-              </button>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <Cpu className="w-5 h-5 text-green-400" />
+              </div>
+              <div>
+                <p className="text-muted-foreground text-sm">Local Skills</p>
+                <p className="text-foreground text-2xl font-bold">{localCount}</p>
+              </div>
             </div>
           </div>
-        </motion.div>
+          <div className="bg-card border border-border rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-muted-foreground text-sm">Total Installed</p>
+                <p className="text-foreground text-2xl font-bold">{installedCount}</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -161,20 +228,20 @@ export default function SkillsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search skills..."
+              placeholder="Search skills by name or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white/[0.05] border border-border rounded-lg pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
             />
           </div>
           <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            value={selectedSource}
+            onChange={(e) => setSelectedSource(e.target.value)}
             className="bg-white/[0.05] border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
-            {categories.map(category => (
-              <option key={category} value={category} className="bg-card">
-                {category === "all" ? "All Categories" : (category && typeof category === 'string' ? category.charAt(0).toUpperCase() + category.slice(1) : category)}
+            {sources.map(source => (
+              <option key={source} value={source} className="bg-card">
+                {source === "all" ? "All Sources" : source.charAt(0).toUpperCase() + source.slice(1)}
               </option>
             ))}
           </select>
@@ -187,20 +254,14 @@ export default function SkillsPage() {
               <Sparkles className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-foreground font-semibold text-lg mb-2">
-              {skills.length === 0 ? "No skills yet" : "No skills found"}
+              {skills.length === 0 ? "No skills found" : "No matching skills"}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
               {skills.length === 0 
-                ? "Create your first skill to extend your AI agent's capabilities"
-                : "Try adjusting your search or create a new skill"
+                ? "Skills will appear here once they are installed via Hermes CLI"
+                : "Try adjusting your search or filter"
               }
             </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-primary hover:bg-primary/90 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Create Your First Skill
-            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -209,282 +270,78 @@ export default function SkillsPage() {
                 key={skill.name}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-card border border-border rounded-xl p-6 hover:bg-accent transition-colors"
+                transition={{ delay: index * 0.05 }}
+                className="bg-card border border-border rounded-xl p-6 hover:border-purple-500/50 transition-all group"
               >
                 {/* Skill Header */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-xl">
-                      {getCategoryIcon(skill.description || skill.category || 'general')}
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      {getCategoryIcon(skill.description)}
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">{skill.name}</h3>
-                      <span className="text-xs text-muted-foreground bg-accent px-2 py-1 rounded">
-                        {skill.source}
-                      </span>
-                    </div>
-                  </div>
-                  <button className="text-muted-foreground hover:text-foreground transition-colors">
-                    <Settings className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Description */}
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                  {skill.description || 'No description available'}
-                </p>
-
-                {/* Tags */}
-                {skill.tags && skill.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {skill.tags.slice(0, 3).map((tag, tagIndex) => (
-                      <span
-                        key={tagIndex}
-                        className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {skill.tags.length > 3 && (
-                      <span className="text-xs text-muted-foreground">
-                        +{skill.tags.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Stats */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3 text-primary" />
-                      <span className="text-xs text-muted-foreground">{skill.usage || 0} uses</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-yellow-400" />
-                      <span className="text-xs text-muted-foreground">{(skill.rating || 0).toFixed(1)}</span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">{skill.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        {getSourceIcon(skill.source)}
+                        <span className="text-xs text-muted-foreground">
+                          {skill.source}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   {skill.installed && (
-                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
-                      Installed
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+                  )}
+                </div>
+
+                {/* Description */}
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-2 min-h-[40px]">
+                  {skill.description || 'No description available'}
+                </p>
+
+                {/* Status Badge */}
+                <div className="flex items-center gap-2 mb-4">
+                  {skill.enabled ? (
+                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Enabled
+                    </span>
+                  ) : (
+                    <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded-full flex items-center gap-1">
+                      <XCircle className="w-3 h-3" />
+                      Disabled
                     </span>
                   )}
                 </div>
 
-                {/* Agent Info */}
-                {skill.agentName && (
-                  <div className="text-xs text-muted-foreground mb-4">
-                    Agent: {skill.agentName}
-                  </div>
-                )}
-
                 {/* Actions */}
-                <div className="flex gap-2">
-                  <button className="flex-1 bg-primary hover:bg-primary/90 text-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
-                    <Play className="w-3 h-3" />
-                    Test
-                  </button>
-                  <button className="bg-accent hover:bg-accent/80 text-foreground py-2 px-3 rounded-lg text-sm transition-colors">
-                    <Code className="w-4 h-4" />
+                <div className="flex gap-2 pt-4 border-t border-border">
+                  {skill.source === 'local' && (
+                    <button
+                      onClick={() => handleUninstall(skill.name)}
+                      className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Uninstall
+                    </button>
+                  )}
+                  <button 
+                    className="flex-1 bg-accent hover:bg-accent/80 text-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    title="View details"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Details
                   </button>
                 </div>
-
-                {/* Created Date */}
-                {skill.createdAt && (
-                  <p className="text-muted-foreground/60 text-xs mt-3">
-                    Created {new Date(skill.createdAt).toLocaleDateString()}
-                  </p>
-                )}
               </motion.div>
             ))}
           </div>
         )}
       </div>
-
-      {/* Create Skill Modal */}
-      {showCreateModal && (
-        <CreateSkillModal
-          agents={agents}
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            fetchData();
-          }}
-        />
-      )}
     </div>
   );
 }
 
-interface CreateSkillModalProps {
-  agents: Agent[];
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-function CreateSkillModal({ agents, onClose, onSuccess }: CreateSkillModalProps) {
-  const [formData, setFormData] = useState({
-    agentId: "",
-    name: "",
-    description: "",
-    category: "general",
-    tags: "",
-    code: `async function mySkill(params) {
-  // Your skill code here
-  const { input } = params;
-  
-  return {
-    success: true,
-    result: "Hello from skill!",
-    input
-  };
-}
-
-return mySkill(params);`
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await fetch("/api/hermes/skills", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          tags: formData.tags.split(",").map(tag => tag.trim()).filter(Boolean)
-        }),
-      });
-
-      if (response.ok) {
-        onSuccess();
-      } else {
-        const error = await response.json();
-        console.error("Failed to create skill:", error);
-      }
-    } catch (error) {
-      console.error("Failed to create skill:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-card border border-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-      >
-        <h2 className="text-foreground font-semibold text-lg mb-4">Create New Skill</h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-muted-foreground text-sm mb-2">Agent</label>
-            <select
-              value={formData.agentId}
-              onChange={(e) => setFormData({ ...formData, agentId: e.target.value })}
-              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-              required
-            >
-              <option value="">Select an agent</option>
-              {agents.map(agent => (
-                <option key={agent.id} value={agent.id}>{agent.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-muted-foreground text-sm mb-2">Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                placeholder="My Skill"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-muted-foreground text-sm mb-2">Category</label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-              >
-                <option value="general">General</option>
-                <option value="web">Web</option>
-                <option value="analysis">Analysis</option>
-                <option value="text">Text</option>
-                <option value="code">Code</option>
-                <option value="data">Data</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-muted-foreground text-sm mb-2">Description</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
-              rows={3}
-              placeholder="Describe what this skill does..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-muted-foreground text-sm mb-2">Tags (comma-separated)</label>
-            <input
-              type="text"
-              value={formData.tags}
-              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-              placeholder="web, scraping, data"
-            />
-          </div>
-
-          <div>
-            <label className="block text-muted-foreground text-sm mb-2">Code</label>
-            <textarea
-              value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              className="w-full bg-accent border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none font-mono text-sm"
-              rows={12}
-              placeholder="Enter your skill code..."
-              required
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-accent hover:bg-accent/80 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !formData.name || !formData.agentId}
-              className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
-            >
-              {loading ? "Creating..." : "Create Skill"}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-}
 
 
 
