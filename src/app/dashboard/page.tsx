@@ -23,7 +23,8 @@ import {
   Globe,
   Calendar,
   RefreshCw,
-  XCircle
+  XCircle,
+  Copy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HermesAgentDB } from "@/lib/hermes-db";
@@ -88,6 +89,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [copiedUserId, setCopiedUserId] = useState(false);
+
+  const handleCopyUserId = () => {
+    if (session?.user?.id) {
+      navigator.clipboard.writeText(session.user.id);
+      setCopiedUserId(true);
+      setTimeout(() => setCopiedUserId(false), 2000);
+    }
+  };
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -351,9 +361,32 @@ export default function DashboardPage() {
             <p className="text-muted-foreground">
               Your ReAgent dashboard with Hermes integration
             </p>
-            <p className="text-muted-foreground text-xs mt-1">
-              Last updated: {lastUpdated.toLocaleTimeString()}
-            </p>
+            <div className="flex items-center gap-3 mt-2">
+              <p className="text-muted-foreground text-xs">
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </p>
+              {session?.user?.id && (
+                <>
+                  <span className="text-muted-foreground text-xs">•</span>
+                  <div className="flex items-center gap-2">
+                    <p className="text-muted-foreground text-xs">
+                      User ID: {session.user.id.slice(0, 8)}...{session.user.id.slice(-4)}
+                    </p>
+                    <button
+                      onClick={handleCopyUserId}
+                      className="p-1 hover:bg-accent rounded transition-colors"
+                      title="Copy User ID"
+                    >
+                      {copiedUserId ? (
+                        <CheckCircle className="w-3 h-3 text-green-400" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-muted-foreground" />
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <button
