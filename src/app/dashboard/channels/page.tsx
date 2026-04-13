@@ -531,16 +531,25 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
           "1. Open Telegram and search for @BotFather",
           "2. Send /newbot and follow the instructions",
           "3. Copy the bot token provided by BotFather",
-          "4. Paste the token below and click Configure"
+          "4. Paste the token below and click Configure",
+          "5. Start a chat with your bot to activate it"
         ]
       },
       discord: {
         title: "Setup Discord Bot",
         steps: [
-          "1. Go to Discord Developer Portal",
-          "2. Create a new application",
-          "3. Go to Bot section and create a bot",
-          "4. Copy the bot token and paste below"
+          "1. Go to Discord Developer Portal (discord.com/developers)",
+          "2. Create a new application or select existing one",
+          "3. Go to Bot section and create/reset bot token",
+          "4. IMPORTANT: Enable these Privileged Gateway Intents:",
+          "   • SERVER MEMBERS INTENT",
+          "   • MESSAGE CONTENT INTENT",
+          "5. Copy the bot token and paste below",
+          "6. Go to OAuth2 → URL Generator",
+          "7. Select scopes: 'bot' and 'applications.commands'",
+          "8. Select permissions: Send Messages, Read Messages, etc.",
+          "9. Copy the generated URL and invite bot to your server",
+          "10. After configuring here, bot will connect automatically"
         ]
       },
       whatsapp: {
@@ -557,9 +566,12 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
         title: "Setup Slack Bot",
         steps: [
           "1. Go to api.slack.com/apps",
-          "2. Create a new app",
-          "3. Add Bot Token Scopes",
-          "4. Install app to workspace and copy token"
+          "2. Create a new app or select existing",
+          "3. Go to OAuth & Permissions",
+          "4. Add Bot Token Scopes (chat:write, channels:read, etc.)",
+          "5. Install app to workspace",
+          "6. Copy the Bot User OAuth Token",
+          "7. Paste the token below and click Configure"
         ]
       }
     };
