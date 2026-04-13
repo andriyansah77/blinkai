@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { 
   Bot, 
   Coins, 
@@ -27,9 +28,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
-              </div>
+              <Image src="/logo.jpg" alt="ReAgent" width={32} height={32} className="rounded-lg" />
               <span className="font-semibold text-lg">ReAgent</span>
             </div>
             
@@ -46,7 +45,7 @@ export default function LandingPage() {
               {session ? (
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="px-4 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
                 >
                   Dashboard
                 </button>
@@ -60,7 +59,7 @@ export default function LandingPage() {
                   </button>
                   <button
                     onClick={() => router.push("/sign-up")}
-                    className="px-4 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                    className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
                   >
                     Get Started
                   </button>
@@ -76,9 +75,9 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-6 py-20 relative">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-6">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-blue-400 text-sm">Powered by Hermes & Tempo Network</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full mb-6">
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+              <span className="text-orange-400 text-sm">Powered by Hermes & Tempo Network</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
@@ -95,7 +94,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button
                 onClick={() => router.push(session ? "/dashboard" : "/sign-up")}
-                className="px-8 py-4 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                className="px-8 py-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
               >
                 {session ? "Go to Dashboard" : "Get Started"}
                 <ArrowRight className="w-4 h-4" />
@@ -130,24 +129,24 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-400 font-bold">01</span>
+              <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-orange-400 font-bold">01</span>
               </div>
               <h3 className="font-semibold mb-2">Create your account</h3>
               <p className="text-gray-400 text-sm">Sign up and get an auto-generated wallet with encrypted private keys</p>
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-400 font-bold">02</span>
+              <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-orange-400 font-bold">02</span>
               </div>
               <h3 className="font-semibold mb-2">Set up your agent</h3>
               <p className="text-gray-400 text-sm">Configure your AI agent with custom personality and connect channels</p>
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-400 font-bold">03</span>
+              <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-orange-400 font-bold">03</span>
               </div>
               <h3 className="font-semibold mb-2">Start mining</h3>
               <p className="text-gray-400 text-sm">Mine REAGENT tokens automatically through your AI agent</p>
@@ -324,7 +323,7 @@ export default function LandingPage() {
               </ul>
               <button
                 onClick={() => router.push("/sign-up")}
-                className="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-medium transition-colors"
+                className="w-full py-3 bg-orange-500 hover:bg-orange-600 rounded-lg font-medium transition-colors"
               >
                 Get Pro
               </button>
@@ -442,7 +441,7 @@ export default function LandingPage() {
           <p className="text-gray-400 mb-8">Deploy your AI agent in minutes with blockchain integration.</p>
           <button
             onClick={() => router.push(session ? "/dashboard" : "/sign-up")}
-            className="px-8 py-4 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition-colors inline-flex items-center gap-2"
+            className="px-8 py-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors inline-flex items-center gap-2"
           >
             Deploy Your Agent
             <ArrowRight className="w-4 h-4" />
@@ -455,9 +454,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
-              </div>
+              <Image src="/logo.jpg" alt="ReAgent" width={32} height={32} className="rounded-lg" />
               <div>
                 <span className="font-semibold">ReAgent</span>
                 <p className="text-gray-500 text-xs">© 2026 MIT License</p>

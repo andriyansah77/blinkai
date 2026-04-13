@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Bot, 
@@ -103,9 +104,7 @@ export default function OnboardingPage() {
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
-              </div>
+              <Image src="/logo.jpg" alt="ReAgent" width={32} height={32} className="rounded-lg" />
               <span className="font-semibold">ReAgent Setup</span>
             </div>
             <span className="text-sm text-gray-500">
@@ -118,7 +117,7 @@ export default function OnboardingPage() {
               <div key={step.id} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
                   index <= currentStep 
-                    ? 'bg-blue-500 text-white' 
+                    ? 'bg-orange-500 text-white' 
                     : 'bg-white/10 text-gray-500'
                 }`}>
                   {index < currentStep ? (
@@ -129,7 +128,7 @@ export default function OnboardingPage() {
                 </div>
                 {index < steps.length - 1 && (
                   <div className={`w-12 h-0.5 mx-2 transition-colors ${
-                    index < currentStep ? 'bg-blue-500' : 'bg-white/10'
+                    index < currentStep ? 'bg-orange-500' : 'bg-white/10'
                   }`} />
                 )}
               </div>
@@ -193,7 +192,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
               value={agentName}
               onChange={(e) => setAgentName(e.target.value)}
               placeholder="e.g., Alex, Maya, or your custom name"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50"
             />
           </div>
 
@@ -204,7 +203,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
               onChange={(e) => setAgentPersonality(e.target.value)}
               placeholder="Describe your agent's personality... e.g., 'Friendly and helpful assistant who loves to help with coding projects'"
               rows={4}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 resize-none"
             />
           </div>
 
@@ -228,7 +227,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
         <button
           onClick={handleNext}
           disabled={!agentName.trim()}
-          className="flex items-center gap-2 bg-white text-black hover:bg-gray-200 disabled:bg-gray-500 px-6 py-3 rounded-lg font-medium transition-colors"
+          className="flex items-center gap-2 bg-orange-500 text-white hover:bg-orange-600 disabled:bg-gray-500 px-6 py-3 rounded-lg font-medium transition-colors"
         >
           Continue
           <ArrowRight className="w-4 h-4" />
@@ -301,7 +300,7 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
                   channel.disabled
                     ? 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
                     : selectedChannels.includes(channel.id)
-                    ? 'bg-blue-500/20 border-blue-500/50'
+                    ? 'bg-orange-500/20 border-orange-500/50'
                     : 'bg-white/5 border-white/10 hover:bg-white/10'
                 }`}
               >
@@ -314,7 +313,7 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
                     <p className="text-sm text-gray-400 mt-1">{channel.description}</p>
                   </div>
                   {selectedChannels.includes(channel.id) && !channel.disabled && (
-                    <Check className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-orange-400 flex-shrink-0" />
                   )}
                 </div>
               </button>
@@ -322,9 +321,9 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
           })}
         </div>
 
-        <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-start gap-3">
-          <Sparkles className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-300">
+        <div className="mt-6 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg flex items-start gap-3">
+          <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-orange-300">
             You can always add more channels later from your dashboard
           </p>
         </div>
@@ -418,13 +417,13 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
             onClick={() => setSelectedPlan(plan.id)}
             className={`p-6 rounded-xl border transition-all text-left relative ${
               selectedPlan === plan.id
-                ? 'bg-blue-500/20 border-blue-500/50 ring-2 ring-blue-500/30'
+                ? 'bg-orange-500/20 border-orange-500/50 ring-2 ring-orange-500/30'
                 : 'bg-white/5 border-white/10 hover:bg-white/10'
             }`}
           >
             {plan.popular && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-blue-500 text-white text-xs font-medium px-3 py-1 rounded-full">
+                <span className="bg-orange-500 text-white text-xs font-medium px-3 py-1 rounded-full">
                   Most Popular
                 </span>
               </div>
@@ -455,7 +454,7 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
 
             {selectedPlan === plan.id && (
               <div className="absolute top-4 right-4">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
                   <Check className="w-4 h-4 text-white" />
                 </div>
               </div>
@@ -554,8 +553,8 @@ function DeployStep({ data }: any) {
       <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
         {deployStatus === 'deploying' && (
           <>
-            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+            <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Loader2 className="w-8 h-8 text-orange-400 animate-spin" />
             </div>
             
             <h3 className="text-xl font-semibold mb-2">Setting up your agent</h3>
@@ -563,7 +562,7 @@ function DeployStep({ data }: any) {
             
             <div className="w-full bg-white/10 rounded-full h-2 mb-4">
               <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                className="bg-orange-500 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -608,8 +607,8 @@ function DeployStep({ data }: any) {
                     </div>
                   </div>
                   <div className="pt-3 border-t border-white/10 flex items-start gap-2">
-                    <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-blue-300">
+                    <Sparkles className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-orange-300">
                       Your AI agent can help you manage your wallet and mint REAGENT tokens!
                     </p>
                   </div>
@@ -639,7 +638,7 @@ function DeployStep({ data }: any) {
             
             <button
               onClick={deployAgent}
-              className="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-orange-500 text-white hover:bg-orange-600 px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Try Again
             </button>
@@ -648,9 +647,9 @@ function DeployStep({ data }: any) {
       </div>
 
       {deployStatus === 'deploying' && (
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 flex items-start gap-3">
-          <Loader2 className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5 animate-spin" />
-          <p className="text-sm text-blue-300">
+        <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 flex items-start gap-3">
+          <Loader2 className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5 animate-spin" />
+          <p className="text-sm text-orange-300">
             This usually takes 1-2 minutes. Please don't close this page.
           </p>
         </div>
