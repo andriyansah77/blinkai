@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Bot, 
   Brain, 
@@ -87,9 +87,12 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [copiedUserId, setCopiedUserId] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
 
   const handleCopyUserId = () => {
     if (session?.user?.id) {
@@ -99,9 +102,14 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchDashboardData = useCallback(async () => {
+  const fetchDashboardData = useCallback(async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (isRefresh) {
+        setRefreshing(true);
+        setSyncStatus('syncing');
+      } else {
+        setLoading(true);
+      }
       setError(null);
       
       // Ensure Hermes profile exists for this user (auto-create if needed)
@@ -194,6 +202,11 @@ export default function DashboardPage() {
 
       setStats(dashboardStats);
       setLastUpdated(new Date());
+      
+      if (isRefresh) {
+        setSyncStatus('success');
+        setTimeout(() => setSyncStatus('idle'), 2000);
+      }
 
       // Generate real activities based on actual system state
       const recentActivities = generateRealActivities(statusData, dashboardStats);
@@ -202,8 +215,13 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
       setError(error instanceof Error ? error.message : "Failed to load dashboard data");
+      if (isRefresh) {
+        setSyncStatus('error');
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
@@ -213,11 +231,13 @@ export default function DashboardPage() {
     } else if (status === "authenticated") {
       fetchDashboardData();
       
-      // Auto-refresh every 30 seconds
-      const interval = setInterval(fetchDashboardData, 30000);
-      return () => clearInterval(interval);
+      // Auto-refresh every 30 seconds if enabled
+      if (autoRefresh) {
+        const interval = setInterval(() => fetchDashboardData(true), 30000);
+        return () => clearInterval(interval);
+      }
     }
-  }, [status, router, fetchDashboardData]);
+  }, [status, router, fetchDashboardData, autoRefresh]);
 
   // Generate real activities based on system state
   const generateRealActivities = (statusData: any, stats: DashboardStats): RecentActivity[] => {
@@ -316,10 +336,88 @@ export default function DashboardPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground text-sm">Loading dashboard...</p>
+      <div className="h-full bg-background overflow-auto">
+        {/* Header Skeleton */}
+        <div className="border-b border-border p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="h-8 w-64 bg-accent animate-pulse rounded-lg mb-2" />
+              <div className="h-4 w-96 bg-accent animate-pulse rounded-lg" />
+              <div className="flex items-center gap-3 mt-2">
+                <div className="h-3 w-32 bg-accent animate-pulse rounded" />
+                <div className="h-3 w-3 bg-accent animate-pulse rounded-full" />
+                <div className="h-3 w-40 bg-accent animate-pulse rounded" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-24 bg-accent animate-pulse rounded-lg" />
+              <div className="h-10 w-32 bg-accent animate-pulse rounded-lg" />
+              <div className="h-10 w-36 bg-accent animate-pulse rounded-lg" />
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-8">
+          {/* System Status Skeleton */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-6 w-32 bg-accent animate-pulse rounded" />
+              <div className="h-4 w-24 bg-accent animate-pulse rounded-full" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-4 bg-card rounded-lg">
+                  <div className="w-10 h-10 bg-accent animate-pulse rounded-lg" />
+                  <div className="flex-1">
+                    <div className="h-4 w-20 bg-accent animate-pulse rounded mb-2" />
+                    <div className="h-3 w-16 bg-accent animate-pulse rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Stats Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-card border border-border rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-accent animate-pulse rounded-xl" />
+                  <div className="w-4 h-4 bg-accent animate-pulse rounded" />
+                </div>
+                <div className="h-4 w-24 bg-accent animate-pulse rounded mb-2" />
+                <div className="h-8 w-16 bg-accent animate-pulse rounded mb-2" />
+                <div className="flex items-center gap-4">
+                  <div className="h-3 w-16 bg-accent animate-pulse rounded" />
+                  <div className="h-3 w-20 bg-accent animate-pulse rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Activity & Actions Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-card border border-border rounded-xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="h-6 w-32 bg-accent animate-pulse rounded" />
+                  <div className="w-5 h-5 bg-accent animate-pulse rounded" />
+                </div>
+                <div className="space-y-4">
+                  {[1, 2, 3].map((j) => (
+                    <div key={j} className="flex items-start gap-3 p-3 bg-card rounded-lg">
+                      <div className="w-8 h-8 bg-accent animate-pulse rounded-lg" />
+                      <div className="flex-1">
+                        <div className="h-4 w-32 bg-accent animate-pulse rounded mb-2" />
+                        <div className="h-3 w-48 bg-accent animate-pulse rounded mb-1" />
+                        <div className="h-3 w-20 bg-accent animate-pulse rounded" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -350,7 +448,45 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-full bg-background overflow-auto">
+    <div className="h-full bg-background overflow-auto relative">
+      {/* Sync Status Toast */}
+      <AnimatePresence>
+        {syncStatus !== 'idle' && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-50"
+          >
+            <div className={cn(
+              "flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg border",
+              syncStatus === 'syncing' && "bg-blue-500/20 border-blue-500/30",
+              syncStatus === 'success' && "bg-green-500/20 border-green-500/30",
+              syncStatus === 'error' && "bg-red-500/20 border-red-500/30"
+            )}>
+              {syncStatus === 'syncing' && (
+                <>
+                  <RefreshCw className="w-4 h-4 text-blue-400 animate-spin" />
+                  <span className="text-blue-400 text-sm font-medium">Syncing data...</span>
+                </>
+              )}
+              {syncStatus === 'success' && (
+                <>
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <span className="text-green-400 text-sm font-medium">Data synced!</span>
+                </>
+              )}
+              {syncStatus === 'error' && (
+                <>
+                  <XCircle className="w-4 h-4 text-red-400" />
+                  <span className="text-red-400 text-sm font-medium">Sync failed</span>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="border-b border-border p-6">
         <div className="flex items-center justify-between">
@@ -389,13 +525,28 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-2 bg-accent rounded-lg">
+              <div className={cn(
+                "w-2 h-2 rounded-full transition-colors",
+                autoRefresh ? "bg-green-400 animate-pulse" : "bg-gray-400"
+              )} />
+              <span className="text-muted-foreground text-xs">
+                {autoRefresh ? "Auto-sync" : "Manual"}
+              </span>
+              <button
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className="text-muted-foreground hover:text-foreground text-xs underline"
+              >
+                {autoRefresh ? "Disable" : "Enable"}
+              </button>
+            </div>
             <button
-              onClick={fetchDashboardData}
-              disabled={loading}
+              onClick={() => fetchDashboardData(true)}
+              disabled={refreshing}
               className="flex items-center gap-2 bg-accent hover:bg-accent/80 disabled:opacity-50 text-foreground px-4 py-2 rounded-lg font-medium transition-colors"
             >
-              <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-              Refresh
+              <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
+              {refreshing ? "Syncing..." : "Refresh"}
             </button>
             <button
               onClick={() => router.push('/dashboard/chat')}
@@ -481,10 +632,10 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-card border border-border rounded-xl p-6"
+            className="bg-gradient-to-br from-card to-card/50 border border-border rounded-xl p-6 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 group"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
                 <Bot className="w-6 h-6 text-white" />
               </div>
               <button
@@ -494,11 +645,17 @@ export default function DashboardPage() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-foreground font-semibold mb-1">AI Agents</h3>
-            <p className="text-2xl font-bold text-foreground mb-2">{stats?.agents?.total ?? 0}</p>
+            <h3 className="text-muted-foreground font-medium mb-1 text-sm">AI Agents</h3>
+            <p className="text-3xl font-bold text-foreground mb-2">{stats?.agents?.total ?? 0}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-green-400">{stats?.agents?.active ?? 0} active</span>
-              <span className="text-primary">{stats?.agents?.learning ?? 0} learning</span>
+              <span className="text-green-400 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                {stats?.agents?.active ?? 0} active
+              </span>
+              <span className="text-primary flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                {stats?.agents?.learning ?? 0} learning
+              </span>
             </div>
           </motion.div>
 
@@ -507,10 +664,10 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-card border border-border rounded-xl p-6"
+            className="bg-gradient-to-br from-card to-card/50 border border-border rounded-xl p-6 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300 group"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform">
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <button
@@ -520,11 +677,17 @@ export default function DashboardPage() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-foreground font-semibold mb-1">Skills</h3>
-            <p className="text-2xl font-bold text-foreground mb-2">{stats?.skills?.total ?? 0}</p>
+            <h3 className="text-muted-foreground font-medium mb-1 text-sm">Skills</h3>
+            <p className="text-3xl font-bold text-foreground mb-2">{stats?.skills?.total ?? 0}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-green-400">{stats?.skills?.installed ?? 0} installed</span>
-              <span className="text-primary">{stats?.skills?.categories ?? 0} categories</span>
+              <span className="text-green-400 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                {stats?.skills?.installed ?? 0} installed
+              </span>
+              <span className="text-primary flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                {stats?.skills?.categories ?? 0} categories
+              </span>
             </div>
           </motion.div>
 
@@ -533,10 +696,10 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-card border border-border rounded-xl p-6"
+            className="bg-gradient-to-br from-card to-card/50 border border-border rounded-xl p-6 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 group"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30 group-hover:scale-110 transition-transform">
                 <MessageSquare className="w-6 h-6 text-white" />
               </div>
               <button
@@ -546,11 +709,17 @@ export default function DashboardPage() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-foreground font-semibold mb-1">Chat Sessions</h3>
-            <p className="text-2xl font-bold text-foreground mb-2">{stats?.sessions?.total ?? 0}</p>
+            <h3 className="text-muted-foreground font-medium mb-1 text-sm">Chat Sessions</h3>
+            <p className="text-3xl font-bold text-foreground mb-2">{stats?.sessions?.total ?? 0}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-green-400">{stats?.sessions?.today ?? 0} today</span>
-              <span className="text-primary">{stats?.sessions?.thisWeek ?? 0} this week</span>
+              <span className="text-green-400 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                {stats?.sessions?.today ?? 0} today
+              </span>
+              <span className="text-primary flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                {stats?.sessions?.thisWeek ?? 0} this week
+              </span>
             </div>
           </motion.div>
 
@@ -559,10 +728,10 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-card border border-border rounded-xl p-6"
+            className="bg-gradient-to-br from-card to-card/50 border border-border rounded-xl p-6 hover:shadow-lg hover:shadow-pink-500/10 transition-all duration-300 group"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/30 group-hover:scale-110 transition-transform">
                 <Globe className="w-6 h-6 text-white" />
               </div>
               <button
@@ -572,14 +741,21 @@ export default function DashboardPage() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-foreground font-semibold mb-1">Gateway</h3>
-            <p className="text-2xl font-bold text-foreground mb-2">{stats?.gateway?.platforms ?? 0}</p>
+            <h3 className="text-muted-foreground font-medium mb-1 text-sm">Gateway</h3>
+            <p className="text-3xl font-bold text-foreground mb-2">{stats?.gateway?.platforms ?? 0}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-green-400">{stats?.gateway?.connections ?? 0} connected</span>
+              <span className="text-green-400 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                {stats?.gateway?.connections ?? 0} connected
+              </span>
               <span className={cn(
-                "capitalize",
+                "capitalize flex items-center gap-1",
                 stats?.gateway?.status === 'running' ? "text-green-400" : "text-orange-400"
               )}>
+                <div className={cn(
+                  "w-1.5 h-1.5 rounded-full",
+                  stats?.gateway?.status === 'running' ? "bg-green-400" : "bg-orange-400"
+                )} />
                 {stats?.gateway?.status ?? 'stopped'}
               </span>
             </div>
