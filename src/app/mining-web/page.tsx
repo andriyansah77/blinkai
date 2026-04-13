@@ -424,9 +424,36 @@ export default function MiningWebPage() {
           });
 
           console.log('Transaction hash received:', txHash);
-          toast.success('Transaction submitted!');
+          toast.dismiss();
+          toast.loading('Submitting transaction to backend...');
 
-          // Transaction hash is returned directly from eth_sendTransaction
+          // Step 4: Submit signed transaction to backend for monitoring
+          try {
+            const submitResponse = await fetch('/api/mining/submit-signed', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                inscriptionId: data.inscriptionId,
+                txHash: txHash,
+              }),
+            });
+
+            const submitData = await submitResponse.json();
+            console.log('Submit response:', submitData);
+
+            if (!submitData.success) {
+              console.error('Failed to submit to backend:', submitData.error);
+              // Still show success to user since blockchain tx was submitted
+            }
+          } catch (submitError) {
+            console.error('Error submitting to backend:', submitError);
+            // Still show success to user since blockchain tx was submitted
+          }
+
+          toast.dismiss();
+          toast.success('Transaction submitted to blockchain!');
+
+          // Display result
           setResult({
             amount: '10000',
             txHash: txHash,

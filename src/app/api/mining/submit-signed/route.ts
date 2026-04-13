@@ -8,7 +8,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { inscriptionEngine } from '@/lib/mining/inscription-engine';
 import { prisma } from '@/lib/prisma';
-import { ethers } from 'ethers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,15 +24,15 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse request body
     const body = await request.json();
-    const { inscriptionId, signedTransaction } = body;
+    const { inscriptionId, txHash } = body;
 
-    if (!inscriptionId || !signedTransaction) {
+    if (!inscriptionId || !txHash) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'MISSING_PARAMETERS',
-            message: 'inscriptionId and signedTransaction are required'
+            message: 'inscriptionId and txHash are required'
           }
         },
         { status: 400 }
@@ -71,14 +70,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Submit signed transaction to blockchain
-    const provider = new ethers.JsonRpcProvider(
-      process.env.TEMPO_RPC_URL || 'https://rpc.tempo.xyz'
-    );
-
-    const txResponse = await provider.broadcastTransaction(signedTransaction);
-    const txHash = txResponse.hash;
-
+    // 4. Transaction already submitted to blockchain by MetaMask
+    // Just update inscription with tx hash and start monitoring
+    
     // 5. Update inscription with tx hash
     await prisma.inscription.update({
       where: { id: inscriptionId },
