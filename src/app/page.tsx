@@ -63,14 +63,7 @@ export default function LandingPage() {
         "Multi-provider AI support (OpenAI, Groq, Together AI)",
         "Learning from interactions over time"
       ],
-      codeExample: `// Chat with your AI agent
-const response = await fetch('/api/hermes/chat', {
-  method: 'POST',
-  body: JSON.stringify({
-    message: 'Help me mint REAGENT tokens',
-    sessionId: 'user-session-123'
-  })
-});`
+      codeExample: "// Chat with your AI agent\nconst response = await fetch('/api/hermes/chat', {\n  method: 'POST',\n  body: JSON.stringify({\n    message: 'Help me mint REAGENT tokens',\n    sessionId: 'user-session-123'\n  })\n});"
     },
     {
       id: "token-mining",
@@ -87,14 +80,7 @@ const response = await fetch('/api/hermes/chat', {
         "Low gas fees (~$0.01-0.05 per mint)",
         "Real-time balance updates"
       ],
-      codeExample: `// Mint REAGENT tokens
-const mint = await fetch('/api/mining/inscribe', {
-  method: 'POST',
-  body: JSON.stringify({
-    walletId: 'wallet-123',
-    amount: 10000
-  })
-});`
+      codeExample: "// Mint REAGENT tokens\nconst mint = await fetch('/api/mining/inscribe', {\n  method: 'POST',\n  body: JSON.stringify({\n    walletId: 'wallet-123',\n    amount: 10000\n  })\n});"
     },
     {
       id: "secure-wallet",
@@ -111,12 +97,7 @@ const mint = await fetch('/api/mining/inscribe', {
         "Send/receive tokens",
         "Export private key (encrypted)"
       ],
-      codeExample: `// Get wallet balance
-const wallet = await fetch('/api/wallet');
-const data = await wallet.json();
-
-console.log(data.ethBalance); // ETH balance
-console.log(data.reagentBalance); // REAGENT balance`
+      codeExample: "// Get wallet balance\nconst wallet = await fetch('/api/wallet');\nconst data = await wallet.json();\n\nconsole.log(data.ethBalance); // ETH balance\nconsole.log(data.reagentBalance); // REAGENT balance"
     },
     {
       id: "gateway",
@@ -133,15 +114,7 @@ console.log(data.reagentBalance); // REAGENT balance`
         "Multi-platform support",
         "Easy configuration via dashboard"
       ],
-      codeExample: `// Configure Discord bot
-const gateway = await fetch('/api/hermes/gateway', {
-  method: 'POST',
-  body: JSON.stringify({
-    platform: 'discord',
-    token: 'your-bot-token',
-    enabled: true
-  })
-});`
+      codeExample: "// Configure Discord bot\nconst gateway = await fetch('/api/hermes/gateway', {\n  method: 'POST',\n  body: JSON.stringify({\n    platform: 'discord',\n    token: 'your-bot-token',\n    enabled: true\n  })\n});"
     },
     {
       id: "skills",
@@ -158,18 +131,7 @@ const gateway = await fetch('/api/hermes/gateway', {
         "Custom skill creation",
         "Skill marketplace (coming soon)"
       ],
-      codeExample: `// List available skills
-const skills = await fetch('/api/hermes/skills');
-const data = await skills.json();
-
-// Install a custom skill
-await fetch('/api/hermes/skills', {
-  method: 'POST',
-  body: JSON.stringify({
-    name: 'my-custom-skill',
-    code: skillCode
-  })
-});`
+      codeExample: "// List available skills\nconst skills = await fetch('/api/hermes/skills');\nconst data = await skills.json();\n\n// Install a custom skill\nawait fetch('/api/hermes/skills', {\n  method: 'POST',\n  body: JSON.stringify({\n    name: 'my-custom-skill',\n    code: skillCode\n  })\n});"
     },
     {
       id: "security",
@@ -186,14 +148,7 @@ await fetch('/api/hermes/skills', {
         "Audit logging",
         "Regular security updates"
       ],
-      codeExample: `// All sensitive data is encrypted
-const encryptedKey = encrypt(privateKey, {
-  algorithm: 'aes-256-gcm',
-  key: process.env.WALLET_ENCRYPTION_KEY
-});
-
-// Secure authentication
-const session = await getServerSession(authOptions);`
+      codeExample: "// All sensitive data is encrypted\nconst encryptedKey = encrypt(privateKey, {\n  algorithm: 'aes-256-gcm',\n  key: process.env.WALLET_ENCRYPTION_KEY\n});\n\n// Secure authentication\nconst session = await getServerSession(authOptions);"
     }
   ];
 
@@ -884,6 +839,216 @@ const session = await getServerSession(authOptions);`
                 Your wallet is secured with AES-256 encryption. Private keys are encrypted at rest and never exposed. Export your keys anytime with full ownership and control.
               </div>
             </motion.details>
+          </div>
+        </div>
+      </section>
+
+      {/* Developer Guide */}
+      <section className="py-20 border-t border-white/10 bg-white/[0.02]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full mb-4">
+              <Code className="w-3.5 h-3.5 text-orange-400" />
+              <span className="text-xs font-medium text-orange-400 uppercase tracking-wider">Developer Guide</span>
+            </div>
+            <h2 className="text-3xl font-bold mb-4">Mint tokens from anywhere</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Use our CLI tool or API to mint REAGENT tokens from command line, scripts, or your own applications</p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-8 hover:border-orange-500/30 transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
+                  <Terminal className="w-6 h-6 text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">NPX CLI Tool</h3>
+                  <p className="text-sm text-gray-400">No installation required</p>
+                </div>
+              </div>
+
+              <p className="text-gray-300 mb-6">
+                Mint tokens directly from your terminal using npx. Perfect for automation, scripts, and CI/CD pipelines.
+              </p>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Quick Start</p>
+                  <div className="bg-black/40 border border-white/5 rounded-lg p-4 font-mono text-sm">
+                    <div className="text-gray-400 mb-1"># Check balance</div>
+                    <div className="text-orange-400">npx @reagent/cli balance</div>
+                    <div className="text-gray-400 mt-3 mb-1"># Mint 10K REAGENT</div>
+                    <div className="text-orange-400">npx @reagent/cli mint</div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Available Commands</p>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded">balance</code>
+                      <span className="text-gray-400">Check USD, ETH, REAGENT balance</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded">estimate</code>
+                      <span className="text-gray-400">Estimate minting cost</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded">mint</code>
+                      <span className="text-gray-400">Mint 10,000 REAGENT tokens</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded">history</code>
+                      <span className="text-gray-400">View minting history</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded">stats</code>
+                      <span className="text-gray-400">Global mining statistics</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => window.open('https://github.com/andriyansah77/blinkai/tree/main/packages/reagent-cli', '_blank')}
+                className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <Github className="w-4 h-4" />
+                View CLI Documentation
+                <ExternalLink className="w-3 h-3 opacity-50" />
+              </button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-8 hover:border-orange-500/30 transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
+                  <Code className="w-6 h-6 text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">REST API</h3>
+                  <p className="text-sm text-gray-400">Direct HTTP access</p>
+                </div>
+              </div>
+
+              <p className="text-gray-300 mb-6">
+                Use our REST API with cURL or any HTTP client. Integrate minting into your applications with simple POST requests.
+              </p>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Example Request</p>
+                  <div className="bg-black/40 border border-white/5 rounded-lg p-4 font-mono text-xs overflow-x-auto">
+                    <div className="text-orange-400">curl -X POST \</div>
+                    <div className="text-gray-300 ml-2">&quot;https://reagent.eu.cc/api/hermes/skills/minting&quot; \</div>
+                    <div className="text-gray-300 ml-2">-H &quot;Content-Type: application/json&quot; \</div>
+                    <div className="text-gray-300 ml-2">-H &quot;X-User-ID: YOUR_USER_ID&quot; \</div>
+                    <div className="text-gray-300 ml-2">-d &apos;{'{"action":"mint_tokens"}'}&apos;</div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Available Actions</p>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded text-xs">check_balance</code>
+                      <span className="text-gray-400">Get wallet balances</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded text-xs">estimate_cost</code>
+                      <span className="text-gray-400">Estimate gas cost</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded text-xs">mint_tokens</code>
+                      <span className="text-gray-400">Execute minting</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded text-xs">get_history</code>
+                      <span className="text-gray-400">Fetch mint history</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <code className="text-orange-400 font-mono bg-orange-500/10 px-2 py-0.5 rounded text-xs">get_stats</code>
+                      <span className="text-gray-400">Global statistics</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => window.open('https://github.com/andriyansah77/blinkai/blob/main/packages/reagent-cli/CURL_EXAMPLES.md', '_blank')}
+                className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <Github className="w-4 h-4" />
+                View API Documentation
+                <ExternalLink className="w-3 h-3 opacity-50" />
+              </button>
+            </motion.div>
+          </div>
+
+          <div className="mt-12 max-w-6xl mx-auto">
+            <div className="bg-gradient-to-br from-orange-500/5 to-transparent border border-orange-500/20 rounded-xl p-8">
+              <div className="flex items-start gap-4 mb-6">
+                <Sparkles className="w-6 h-6 text-orange-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="text-lg font-semibold mb-2">Automation Examples</h4>
+                  <p className="text-gray-400 text-sm">Integrate minting into your workflows with these examples</p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="bg-black/20 border border-white/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Terminal className="w-4 h-4 text-orange-400" />
+                    <h5 className="font-semibold text-sm">Bash Script</h5>
+                  </div>
+                  <div className="bg-black/40 rounded p-3 font-mono text-xs text-gray-300 overflow-x-auto">
+                    <div className="text-gray-500">#!/bin/bash</div>
+                    <div className="text-orange-400">npx @reagent/cli mint</div>
+                  </div>
+                </div>
+
+                <div className="bg-black/20 border border-white/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Code className="w-4 h-4 text-orange-400" />
+                    <h5 className="font-semibold text-sm">Node.js</h5>
+                  </div>
+                  <div className="bg-black/40 rounded p-3 font-mono text-xs text-gray-300 overflow-x-auto">
+                    <div className="text-blue-400">const</div> <div className="text-gray-300">res = await</div>
+                    <div className="text-gray-300">fetch(api)</div>
+                  </div>
+                </div>
+
+                <div className="bg-black/20 border border-white/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Database className="w-4 h-4 text-orange-400" />
+                    <h5 className="font-semibold text-sm">Cron Job</h5>
+                  </div>
+                  <div className="bg-black/40 rounded p-3 font-mono text-xs text-gray-300 overflow-x-auto">
+                    <div className="text-orange-400">0 10 * * *</div>
+                    <div className="text-gray-300">npx @reagent/cli mint</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-center gap-4">
+                <button
+                  onClick={() => window.open('https://github.com/andriyansah77/blinkai/blob/main/CLI_USAGE_EXAMPLES.md', '_blank')}
+                  className="text-sm text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-2"
+                >
+                  View More Examples
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
