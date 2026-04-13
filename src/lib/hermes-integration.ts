@@ -272,6 +272,13 @@ REAGENT_USER_ID=${userId}
         
         return { success: true, profile: profile || undefined };
       } catch (execError: any) {
+        // Check if profile already exists
+        if (execError.stdout?.includes('already exists') || execError.message?.includes('already exists')) {
+          console.log(`[Profile] Profile already exists for user ${userId}, returning existing profile`);
+          const profile = await this.getProfile(userId);
+          return { success: true, profile: profile || undefined };
+        }
+        
         console.error(`[Profile] Failed to create profile for user ${userId}:`, execError);
         return { 
           success: false, 
