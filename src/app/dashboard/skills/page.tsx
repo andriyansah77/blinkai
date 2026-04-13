@@ -39,6 +39,8 @@ export default function SkillsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSource, setSelectedSource] = useState("all");
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -326,8 +328,11 @@ export default function SkillsPage() {
                     </button>
                   )}
                   <button 
+                    onClick={() => {
+                      setSelectedSkill(skill);
+                      setShowDetailModal(true);
+                    }}
                     className="flex-1 bg-accent hover:bg-accent/80 text-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                    title="View details"
                   >
                     <Settings className="w-4 h-4" />
                     Details
@@ -338,6 +343,146 @@ export default function SkillsPage() {
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedSkill && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-card border border-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+                  {getCategoryIcon(selectedSkill.description)}
+                </div>
+                <div>
+                  <h2 className="text-foreground font-semibold text-xl">{selectedSkill.name}</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    {getSourceIcon(selectedSkill.source)}
+                    <span className="text-sm text-muted-foreground">{selectedSkill.source}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDetailModal(false);
+                  setSelectedSkill(null);
+                }}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-center gap-3 mb-6">
+              {selectedSkill.installed && (
+                <span className="text-sm bg-green-500/20 text-green-400 px-3 py-1.5 rounded-full flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Installed
+                </span>
+              )}
+              {selectedSkill.enabled ? (
+                <span className="text-sm bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-full flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  Enabled
+                </span>
+              ) : (
+                <span className="text-sm bg-gray-500/20 text-gray-400 px-3 py-1.5 rounded-full flex items-center gap-2">
+                  <XCircle className="w-4 h-4" />
+                  Disabled
+                </span>
+              )}
+            </div>
+
+            {/* Description */}
+            <div className="mb-6">
+              <h3 className="text-foreground font-semibold mb-2">Description</h3>
+              <p className="text-muted-foreground">
+                {selectedSkill.description || 'No description available'}
+              </p>
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-accent/50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Source</span>
+                </div>
+                <p className="text-foreground font-medium">{selectedSkill.source}</p>
+              </div>
+              <div className="bg-accent/50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Status</span>
+                </div>
+                <p className="text-foreground font-medium">
+                  {selectedSkill.enabled ? 'Enabled' : 'Disabled'}
+                </p>
+              </div>
+            </div>
+
+            {/* Installation Info */}
+            <div className="bg-accent/30 border border-border rounded-lg p-4 mb-6">
+              <h3 className="text-foreground font-semibold mb-3 flex items-center gap-2">
+                <Code className="w-4 h-4" />
+                Installation
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground text-sm">•</span>
+                  <p className="text-muted-foreground text-sm">
+                    This skill is managed by Hermes CLI
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground text-sm">•</span>
+                  <p className="text-muted-foreground text-sm">
+                    To use this skill, reference it in your agent configuration
+                  </p>
+                </div>
+                {selectedSkill.source === 'local' && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-muted-foreground text-sm">•</span>
+                    <p className="text-muted-foreground text-sm">
+                      Local skills can be uninstalled from this interface
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              {selectedSkill.source === 'local' && (
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleUninstall(selectedSkill.name);
+                  }}
+                  className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Uninstall Skill
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setShowDetailModal(false);
+                  setSelectedSkill(null);
+                }}
+                className="flex-1 bg-accent hover:bg-accent/80 text-foreground py-2.5 px-4 rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
