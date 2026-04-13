@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -30,6 +30,22 @@ export default function LandingPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [selectedFeature, setSelectedFeature] = useState<any>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const navbar = document.querySelector('.navbar-scroll');
+      if (navbar) {
+        if (window.scrollY > 50) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const features = [
     {
@@ -184,19 +200,19 @@ const session = await getServerSession(authOptions);`
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Navigation */}
-      <nav className="border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-50">
+      <nav className="fixed top-0 left-0 right-0 z-50 navbar-scroll">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => router.push("/")}>
               <Image src="/logo.jpg" alt="ReAgent" width={32} height={32} className="rounded-lg" />
-              <span className="font-semibold text-lg">ReAgent</span>
+              <span className="font-bold text-lg">ReAgent</span>
             </div>
             
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm">Features</a>
-              <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors text-sm">How it works</a>
-              <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm">Pricing</a>
-              <a href="https://explore.tempo.xyz" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-1">
+              <a href="#features" className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium">Features</a>
+              <a href="#how-it-works" className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium">How it works</a>
+              <a href="#pricing" className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium">Pricing</a>
+              <a href="https://explore.tempo.xyz" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium flex items-center gap-1">
                 Explorer <ExternalLink className="w-3 h-3" />
               </a>
             </div>
@@ -205,7 +221,7 @@ const session = await getServerSession(authOptions);`
               {session ? (
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg shadow-orange-500/20"
+                  className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 hover:scale-105 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40"
                 >
                   Dashboard
                 </button>
@@ -219,7 +235,7 @@ const session = await getServerSession(authOptions);`
                   </button>
                   <button
                     onClick={() => router.push("/sign-up")}
-                    className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg shadow-orange-500/20"
+                    className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 hover:scale-105 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40"
                   >
                     Get Started
                   </button>
@@ -231,22 +247,21 @@ const session = await getServerSession(authOptions);`
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Code Pattern Background */}
+      <section className="relative overflow-hidden pt-32 fade-in-section">{/* Code Pattern Background */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-10 left-10 text-orange-500">
+          <div className="absolute top-10 left-10 text-orange-500 float-animation">
             <Code className="w-16 h-16" />
           </div>
-          <div className="absolute top-32 right-20 text-orange-500">
+          <div className="absolute top-32 right-20 text-orange-500 float-animation" style={{ animationDelay: '0.5s' }}>
             <Terminal className="w-12 h-12" />
           </div>
-          <div className="absolute bottom-20 left-1/4 text-orange-500">
+          <div className="absolute bottom-20 left-1/4 text-orange-500 float-animation" style={{ animationDelay: '1s' }}>
             <Database className="w-14 h-14" />
           </div>
-          <div className="absolute top-1/2 right-1/3 text-orange-500">
+          <div className="absolute top-1/2 right-1/3 text-orange-500 float-animation" style={{ animationDelay: '1.5s' }}>
             <Code className="w-10 h-10" />
           </div>
-          <div className="absolute bottom-32 right-10 text-orange-500">
+          <div className="absolute bottom-32 right-10 text-orange-500 float-animation" style={{ animationDelay: '2s' }}>
             <Terminal className="w-16 h-16" />
           </div>
         </div>
