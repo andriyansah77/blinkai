@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -27,6 +27,11 @@ import { useUserAgent } from "@/hooks/useUserAgent";
 interface SidebarProps {
   credits?: number;
   planType?: string;
+}
+
+interface SkillsData {
+  total: number;
+  installed: number;
 }
 
 const MAIN_ITEMS = [
@@ -89,6 +94,34 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
   const pathname = usePathname();
   const [isAccountExpanded, setIsAccountExpanded] = useState(false);
   const { agent, hasAgent, loading } = useUserAgent();
+  const [skillsData, setSkillsData] = useState<SkillsData>({ total: 0, installed: 0 });
+  const [loadingSkills, setLoadingSkills] = useState(true);
+
+  // Fetch skills data
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const response = await fetch('/api/hermes/skills');
+        if (response.ok) {
+          const data = await response.json();
+          setSkillsData({
+            total: data.skills?.length || 0,
+            installed: data.skills?.filter((s: any) => s.installed).length || 0
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch skills:', error);
+      } finally {
+        setLoadingSkills(false);
+      }
+    };
+
+    fetchSkills();
+    
+    // Refresh skills every 30 seconds
+    const interval = setInterval(fetchSkills, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="w-64 h-screen bg-card border-r border-border flex flex-col">
@@ -165,6 +198,8 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
           <nav className="space-y-1">
             {AUTOMATION_ITEMS.map((item) => {
               const isActive = pathname === item.href;
+              const isSkills = item.label === "Skills";
+              
               return (
                 <Link
                   key={item.href}
@@ -178,6 +213,11 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
                 >
                   <item.icon className="w-4 h-4" />
                   <span>{item.label}</span>
+                  {isSkills && !loadingSkills && skillsData.installed > 0 && (
+                    <span className="ml-auto text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-medium">
+                      {skillsData.installed}
+                    </span>
+                  )}
                 </Link>
               );
             })}
