@@ -495,10 +495,10 @@ export default function DashboardPage() {
               </button>
             </div>
             <h3 className="text-foreground font-semibold mb-1">AI Agents</h3>
-            <p className="text-2xl font-bold text-foreground mb-2">{stats?.agents.total || 0}</p>
+            <p className="text-2xl font-bold text-foreground mb-2">{stats?.agents?.total ?? 0}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-green-400">{stats?.agents.active || 0} active</span>
-              <span className="text-primary">{stats?.agents.learning || 0} learning</span>
+              <span className="text-green-400">{stats?.agents?.active ?? 0} active</span>
+              <span className="text-primary">{stats?.agents?.learning ?? 0} learning</span>
             </div>
           </motion.div>
 
@@ -521,10 +521,10 @@ export default function DashboardPage() {
               </button>
             </div>
             <h3 className="text-foreground font-semibold mb-1">Skills</h3>
-            <p className="text-2xl font-bold text-foreground mb-2">{stats?.skills.total || 0}</p>
+            <p className="text-2xl font-bold text-foreground mb-2">{stats?.skills?.total ?? 0}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-green-400">{stats?.skills.installed || 0} installed</span>
-              <span className="text-primary">{stats?.skills.categories || 0} categories</span>
+              <span className="text-green-400">{stats?.skills?.installed ?? 0} installed</span>
+              <span className="text-primary">{stats?.skills?.categories ?? 0} categories</span>
             </div>
           </motion.div>
 
@@ -547,10 +547,10 @@ export default function DashboardPage() {
               </button>
             </div>
             <h3 className="text-foreground font-semibold mb-1">Chat Sessions</h3>
-            <p className="text-2xl font-bold text-foreground mb-2">{stats?.sessions.total || 0}</p>
+            <p className="text-2xl font-bold text-foreground mb-2">{stats?.sessions?.total ?? 0}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-green-400">{stats?.sessions.today || 0} today</span>
-              <span className="text-primary">{stats?.sessions.thisWeek || 0} this week</span>
+              <span className="text-green-400">{stats?.sessions?.today ?? 0} today</span>
+              <span className="text-primary">{stats?.sessions?.thisWeek ?? 0} this week</span>
             </div>
           </motion.div>
 
@@ -573,14 +573,14 @@ export default function DashboardPage() {
               </button>
             </div>
             <h3 className="text-foreground font-semibold mb-1">Gateway</h3>
-            <p className="text-2xl font-bold text-foreground mb-2">{stats?.gateway.platforms || 0}</p>
+            <p className="text-2xl font-bold text-foreground mb-2">{stats?.gateway?.platforms ?? 0}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-green-400">{stats?.gateway.connections || 0} connected</span>
+              <span className="text-green-400">{stats?.gateway?.connections ?? 0} connected</span>
               <span className={cn(
                 "capitalize",
-                stats?.gateway.status === 'running' ? "text-green-400" : "text-orange-400"
+                stats?.gateway?.status === 'running' ? "text-green-400" : "text-orange-400"
               )}>
-                {stats?.gateway.status || 'stopped'}
+                {stats?.gateway?.status ?? 'stopped'}
               </span>
             </div>
           </motion.div>
@@ -709,27 +709,27 @@ export default function DashboardPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <MessageSquare className="w-8 h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-foreground mb-1">{stats?.sessions.total || 0}</p>
+              <p className="text-2xl font-bold text-foreground mb-1">{stats?.sessions?.total ?? 0}</p>
               <p className="text-muted-foreground text-sm">Total Conversations</p>
-              <p className="text-green-400 text-xs mt-1">+{stats?.sessions.thisWeek || 0} this week</p>
+              <p className="text-green-400 text-xs mt-1">+{stats?.sessions?.thisWeek ?? 0} this week</p>
             </div>
 
             <div className="text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Brain className="w-8 h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-foreground mb-1">{stats?.memory.total || 0}</p>
+              <p className="text-2xl font-bold text-foreground mb-1">{stats?.memory?.total ?? 0}</p>
               <p className="text-muted-foreground text-sm">Memories Stored</p>
-              <p className="text-primary text-xs mt-1 capitalize">{stats?.memory.type} system</p>
+              <p className="text-primary text-xs mt-1 capitalize">{stats?.memory?.type ?? 'built-in'} system</p>
             </div>
 
             <div className="text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Zap className="w-8 h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-foreground mb-1">{stats?.skills.installed || 0}</p>
+              <p className="text-2xl font-bold text-foreground mb-1">{stats?.skills?.installed ?? 0}</p>
               <p className="text-muted-foreground text-sm">Active Skills</p>
-              <p className="text-purple-400 text-xs mt-1">{stats?.skills.total || 0} available</p>
+              <p className="text-purple-400 text-xs mt-1">{stats?.skills?.total ?? 0} available</p>
             </div>
           </div>
         </motion.div>
