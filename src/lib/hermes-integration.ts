@@ -816,22 +816,46 @@ REAGENT_USER_ID=${userId}
     const skills: HermesSkill[] = [];
     const lines = output.split('\n').filter(line => line.trim());
     
+    // Parse table format from Hermes CLI
+    // Format: │ skill-name │ category │ source │ trust │
+    let inTable = false;
+    
     for (const line of lines) {
-      // Parse skill line format
-      if (line.includes('✓') || line.includes('✗')) {
-        const parts = line.split(/\s+/);
-        if (parts.length >= 2) {
+      // Skip header and separator lines
+      if (line.includes('┏') || line.includes('┃ Name') || line.includes('┡') || line.includes('└')) {
+        inTable = true;
+        continue;
+      }
+      
+      // Parse skill rows (lines starting with │)
+      if (inTable && line.startsWith('│')) {
+        // Split by │ and clean up
+        const parts = line.split('│')
+          .map(p => p.trim())
+          .filter(p => p.length > 0);
+        
+        if (parts.length >= 3) {
+          const name = parts[0];
+          const category = parts[1] || '';
+          const source = parts[2] || 'unknown';
+          
+          // Skip if it's a summary line (contains numbers like "0 hub-installed")
+          if (name.match(/^\d+\s+/)) {
+            continue;
+          }
+          
           skills.push({
-            name: parts[1],
-            source: 'installed',
-            description: parts.slice(2).join(' '),
-            installed: line.includes('✓'),
-            enabled: line.includes('✓')
+            name: name,
+            source: source,
+            description: category,
+            installed: true, // All listed skills are installed
+            enabled: true
           });
         }
       }
     }
     
+    console.log(`[HermesIntegration] Parsed ${skills.length} skills from output`);
     return skills;
   }
 
