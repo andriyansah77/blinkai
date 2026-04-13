@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
         let outputBuffer = "";
         let qrCodeDetected = false;
         let choicePromptSent = false;
+        let allowPromptSent = false;
         let streamClosed = false;
 
         // Helper function to safely enqueue data
@@ -89,6 +90,24 @@ export async function GET(request: NextRequest) {
             return;
           }
 
+          // Auto-respond to "Who should be allowed" prompt
+          if (!allowPromptSent && data.includes("Who should be allowed to message the bot?")) {
+            console.log(`[WhatsApp QR] Detected allow prompt, sending option 1 (Public)`);
+            allowPromptSent = true;
+            // Send "1" + Enter to choose "Public - anyone can message"
+            setTimeout(() => {
+              ptyProcess.write("1\r");
+            }, 500);
+            
+            safeEnqueue(
+              encoder.encode(`data: ${JSON.stringify({ 
+                type: "status",
+                message: "Setting bot to public access..."
+              })}\n\n`)
+            );
+            return;
+          }
+
           // Detect QR code in output
           if (!qrCodeDetected && (data.includes("█") || data.includes("▄") || data.includes("▀") || data.includes("▓") || data.includes("▒"))) {
             qrCodeDetected = true;
@@ -101,7 +120,7 @@ export async function GET(request: NextRequest) {
                 data: data 
               })}\n\n`)
             );
-          } else if (data.includes("Successfully connected") || data.includes("Connected to WhatsApp") || data.includes("✓")) {
+          } else if (data.includes("WhatsApp connected successfully") || data.includes("Connection established") || (data.includes("✓") && data.includes("Connected"))) {
             console.log(`[WhatsApp QR] Connection successful for user ${userId}`);
             
             safeEnqueue(
