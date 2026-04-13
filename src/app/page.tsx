@@ -782,103 +782,203 @@ const session = await getServerSession(authOptions);`
       <section className="py-20 border-t border-white/10">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Got questions?</h2>
-            <p className="text-gray-400">Everything you need to know about ReAgent</p>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full mb-4">
+              <MessageSquare className="w-3.5 h-3.5 text-orange-400" />
+              <span className="text-xs font-medium text-orange-400 uppercase tracking-wider">FAQ</span>
+            </div>
+            <h2 className="text-3xl font-bold mb-4">Frequently asked questions</h2>
+            <p className="text-gray-400">Everything you need to know about deploying AI agents on blockchain</p>
           </div>
 
-          <div className="space-y-4">
-            <details className="group bg-white/5 border border-white/10 rounded-lg">
-              <summary className="flex items-center justify-between p-4 cursor-pointer">
-                <span className="font-medium">What is ReAgent?</span>
-                <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+          <div className="space-y-3">
+            <motion.details 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="group bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl hover:border-orange-500/30 transition-all duration-300"
+            >
+              <summary className="flex items-center justify-between p-5 cursor-pointer">
+                <span className="font-semibold text-white">What is ReAgent?</span>
+                <ChevronDown className="w-5 h-5 text-orange-400 group-open:rotate-180 transition-transform duration-300" />
               </summary>
-              <div className="px-4 pb-4 text-gray-400 text-sm">
-                ReAgent is an AI agent deployment platform with blockchain integration. We host and manage your Hermes AI agent with token mining capabilities on Tempo Network.
+              <div className="px-5 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">
+                ReAgent is a production-ready AI agent deployment platform with native blockchain integration. Built on Hermes AI framework with 73+ skills, secure wallet management, and TIP-20 token mining on Tempo Network.
               </div>
-            </details>
+            </motion.details>
 
-            <details className="group bg-white/5 border border-white/10 rounded-lg">
-              <summary className="flex items-center justify-between p-4 cursor-pointer">
-                <span className="font-medium">Is it really free?</span>
-                <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+            <motion.details 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.05 }}
+              className="group bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl hover:border-orange-500/30 transition-all duration-300"
+            >
+              <summary className="flex items-center justify-between p-5 cursor-pointer">
+                <span className="font-semibold text-white">Is it really free?</span>
+                <ChevronDown className="w-5 h-5 text-orange-400 group-open:rotate-180 transition-transform duration-300" />
               </summary>
-              <div className="px-4 pb-4 text-gray-400 text-sm">
-                Yes. Free tier includes 1,000 credits per month. Bring your own API key and it costs nothing. No credit card needed.
+              <div className="px-5 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">
+                Yes. Free tier includes 2,000 AI credits per month with no credit card required. Bring your own OpenAI-compatible API key for unlimited usage at cost.
               </div>
-            </details>
+            </motion.details>
 
-            <details className="group bg-white/5 border border-white/10 rounded-lg">
-              <summary className="flex items-center justify-between p-4 cursor-pointer">
-                <span className="font-medium">What is REAGENT token?</span>
-                <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+            <motion.details 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="group bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl hover:border-orange-500/30 transition-all duration-300"
+            >
+              <summary className="flex items-center justify-between p-5 cursor-pointer">
+                <span className="font-semibold text-white">What is REAGENT token?</span>
+                <ChevronDown className="w-5 h-5 text-orange-400 group-open:rotate-180 transition-transform duration-300" />
               </summary>
-              <div className="px-4 pb-4 text-gray-400 text-sm">
-                REAGENT is a TIP-20 token on Tempo Network. You can mine 10,000 REAGENT per inscription through your AI agent or manually via dashboard.
+              <div className="px-5 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">
+                REAGENT is a TIP-20 token on Tempo Network (Chain ID: 4217). Mine 10,000 REAGENT per inscription via AI agent commands or manual dashboard operations. Low gas fees (~$0.01-0.05 per mint).
               </div>
-            </details>
+            </motion.details>
 
-            <details className="group bg-white/5 border border-white/10 rounded-lg">
-              <summary className="flex items-center justify-between p-4 cursor-pointer">
-                <span className="font-medium">Can I use my own API keys?</span>
-                <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+            <motion.details 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.15 }}
+              className="group bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl hover:border-orange-500/30 transition-all duration-300"
+            >
+              <summary className="flex items-center justify-between p-5 cursor-pointer">
+                <span className="font-semibold text-white">Can I use my own API keys?</span>
+                <ChevronDown className="w-5 h-5 text-orange-400 group-open:rotate-180 transition-transform duration-300" />
               </summary>
-              <div className="px-4 pb-4 text-gray-400 text-sm">
-                Yes. Bring your own OpenAI-compatible API key, zero markup. Or use our included credits.
+              <div className="px-5 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">
+                Absolutely. Configure your own OpenAI, Groq, or Together AI API keys with zero markup. Full control over your AI provider and costs.
               </div>
-            </details>
+            </motion.details>
 
-            <details className="group bg-white/5 border border-white/10 rounded-lg">
-              <summary className="flex items-center justify-between p-4 cursor-pointer">
-                <span className="font-medium">What about my data?</span>
-                <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+            <motion.details 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="group bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl hover:border-orange-500/30 transition-all duration-300"
+            >
+              <summary className="flex items-center justify-between p-5 cursor-pointer">
+                <span className="font-semibold text-white">How secure is my wallet?</span>
+                <ChevronDown className="w-5 h-5 text-orange-400 group-open:rotate-180 transition-transform duration-300" />
               </summary>
-              <div className="px-4 pb-4 text-gray-400 text-sm">
-                It's yours. Export everything with one click, anytime. No lock-in. Your wallet private keys are encrypted with AES-256.
+              <div className="px-5 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">
+                Your wallet is secured with AES-256 encryption. Private keys are encrypted at rest and never exposed. Export your keys anytime with full ownership and control.
               </div>
-            </details>
+            </motion.details>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 border-t border-white/10">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold mb-4">Your agent should be running right now.</h2>
-          <p className="text-gray-400 mb-8">Deploy your AI agent in minutes with blockchain integration.</p>
-          <button
-            onClick={() => router.push(session ? "/dashboard" : "/sign-up")}
-            className="group px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 inline-flex items-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105"
+      <section className="py-20 border-t border-white/10 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 via-transparent to-transparent"></div>
+        
+        <div className="max-w-4xl mx-auto px-6 text-center relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
           >
-            Deploy Your Agent
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full mb-6">
+              <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+              <span className="text-xs font-medium text-orange-400 uppercase tracking-wider">Ready to Deploy</span>
+            </div>
+            
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Build the future of
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">AI × Blockchain</span>
+            </h2>
+            
+            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+              Deploy production-ready AI agents with native blockchain integration. 
+              Start mining tokens, connect channels, and scale in minutes—not months.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => router.push(session ? "/dashboard" : "/sign-up")}
+                className="group px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105"
+              >
+                <span>Start Building Now</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+              
+              <button
+                onClick={() => window.open("https://github.com/andriyansah77/blinkai", "_blank")}
+                className="group px-8 py-4 bg-white/5 border border-white/10 rounded-lg font-semibold hover:bg-white/10 hover:border-white/20 transition-all duration-200 inline-flex items-center justify-center gap-2 backdrop-blur-sm"
+              >
+                <Github className="w-4 h-4" />
+                <span>View Documentation</span>
+                <ExternalLink className="w-3 h-3 opacity-50" />
+              </button>
+            </div>
+            
+            <p className="mt-8 text-sm text-gray-500">
+              2,000 free credits • No credit card required • Deploy in under 5 minutes
+            </p>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-12">
+      <footer className="border-t border-white/10 py-12 bg-white/[0.02]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="grid md:grid-cols-3 gap-8 items-center">
+            {/* Logo & Info */}
             <div className="flex items-center gap-3">
-              <Image src="/logo.jpg" alt="ReAgent" width={32} height={32} className="rounded-lg" />
+              <Image src="/logo.jpg" alt="ReAgent" width={40} height={40} className="rounded-lg" />
               <div>
-                <span className="font-semibold">ReAgent</span>
-                <p className="text-gray-500 text-xs">© 2026 MIT License</p>
+                <span className="font-bold text-lg">ReAgent</span>
+                <p className="text-gray-500 text-xs">AI Agents on Blockchain</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-6">
-              <a href="https://github.com/andriyansah77/blinkai" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                <Github className="w-5 h-5" />
-              </a>
-              <a href="https://explore.tempo.xyz" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                <ExternalLink className="w-5 h-5" />
-              </a>
+            {/* Powered By */}
+            <div className="text-center">
+              <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Powered by</p>
+              <div className="flex items-center justify-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-orange-400" />
+                  <span className="text-sm font-medium text-gray-300">Hermes AI</span>
+                </div>
+                <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-orange-400" />
+                  <span className="text-sm font-medium text-gray-300">Tempo Network</span>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div className="mt-8 pt-8 border-t border-white/10 text-center text-sm text-gray-500">
-            Powered by Hermes & Tempo Network
+
+            {/* Social & License */}
+            <div className="flex flex-col items-end gap-3">
+              <div className="flex items-center gap-4">
+                <a 
+                  href="https://github.com/andriyansah77/blinkai" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-orange-400 transition-colors"
+                  aria-label="GitHub"
+                >
+                  <Github className="w-5 h-5" />
+                </a>
+                <a 
+                  href="https://explore.tempo.xyz" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-orange-400 transition-colors"
+                  aria-label="Tempo Explorer"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                </a>
+              </div>
+              <p className="text-xs text-gray-500">© 2026 MIT License</p>
+            </div>
           </div>
         </div>
       </footer>
