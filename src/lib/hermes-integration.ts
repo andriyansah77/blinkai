@@ -832,13 +832,13 @@ REAGENT_USER_ID=${userId}
           continue;
         }
         
-        // Skip header and separator lines
-        if (line.includes('┃ Name') || line.includes('┡') || line.includes('└') || line.includes('━')) {
+        // Skip header and separator lines (┃ for header, ┡ for separator)
+        if (line.includes('┃') || line.includes('┡') || line.includes('└') || line.includes('━')) {
           continue;
         }
         
-        // Parse skill rows (lines starting with │)
-        if (inTable && line.trim().startsWith('│')) {
+        // Parse skill rows (lines containing │)
+        if (inTable && line.includes('│')) {
           try {
             // Split by │ and clean up
             const parts = line.split('│')
@@ -850,8 +850,8 @@ REAGENT_USER_ID=${userId}
               const category = parts[1] || '';
               const source = parts[2] || 'unknown';
               
-              // Skip if it's a summary line (contains numbers like "0 hub-installed")
-              if (!name || name.match(/^\d+\s+/) || name.includes('hub-installed') || name.includes('builtin') || name.includes('local')) {
+              // Skip if name is empty or contains summary text
+              if (!name || name.match(/^\d+\s+/) || name.includes('hub-installed')) {
                 continue;
               }
               
