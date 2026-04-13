@@ -814,48 +814,67 @@ REAGENT_USER_ID=${userId}
 
   private parseSkillsList(output: string): HermesSkill[] {
     const skills: HermesSkill[] = [];
-    const lines = output.split('\n').filter(line => line.trim());
     
-    // Parse table format from Hermes CLI
-    // Format: │ skill-name │ category │ source │ trust │
-    let inTable = false;
-    
-    for (const line of lines) {
-      // Skip header and separator lines
-      if (line.includes('┏') || line.includes('┃ Name') || line.includes('┡') || line.includes('└')) {
-        inTable = true;
-        continue;
-      }
+    try {
+      const lines = output.split('\n');
       
-      // Parse skill rows (lines starting with │)
-      if (inTable && line.startsWith('│')) {
-        // Split by │ and clean up
-        const parts = line.split('│')
-          .map(p => p.trim())
-          .filter(p => p.length > 0);
+      // Parse table format from Hermes CLI
+      // Format: │ skill-name │ category │ source │ trust │
+      let inTable = false;
+      
+      for (const line of lines) {
+        // Skip empty lines
+        if (!line || !line.trim()) continue;
         
-        if (parts.length >= 3) {
-          const name = parts[0];
-          const category = parts[1] || '';
-          const source = parts[2] || 'unknown';
-          
-          // Skip if it's a summary line (contains numbers like "0 hub-installed")
-          if (name.match(/^\d+\s+/)) {
+        // Detect table start
+        if (line.includes('┏') || line.includes('Installed Skills')) {
+          inTable = true;
+          continue;
+        }
+        
+        // Skip header and separator lines
+        if (line.includes('┃ Name') || line.includes('┡') || line.includes('└') || line.includes('━')) {
+          continue;
+        }
+        
+        // Parse skill rows (lines starting with │)
+        if (inTable && line.trim().startsWith('│')) {
+          try {
+            // Split by │ and clean up
+            const parts = line.split('│')
+              .map(p => p ? p.trim() : '')
+              .filter(p => p.length > 0);
+            
+            if (parts.length >= 3) {
+              const name = parts[0];
+              const category = parts[1] || '';
+              const source = parts[2] || 'unknown';
+              
+              // Skip if it's a summary line (contains numbers like "0 hub-installed")
+              if (!name || name.match(/^\d+\s+/) || name.includes('hub-installed') || name.includes('builtin') || name.includes('local')) {
+                continue;
+              }
+              
+              skills.push({
+                name: name,
+                source: source,
+                description: category,
+                installed: true, // All listed skills are installed
+                enabled: true
+              });
+            }
+          } catch (parseError) {
+            console.error('[HermesIntegration] Error parsing skill line:', line, parseError);
             continue;
           }
-          
-          skills.push({
-            name: name,
-            source: source,
-            description: category,
-            installed: true, // All listed skills are installed
-            enabled: true
-          });
         }
       }
+      
+      console.log(`[HermesIntegration] Parsed ${skills.length} skills from output`);
+    } catch (error) {
+      console.error('[HermesIntegration] Error parsing skills list:', error);
     }
     
-    console.log(`[HermesIntegration] Parsed ${skills.length} skills from output`);
     return skills;
   }
 
