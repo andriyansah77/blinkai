@@ -403,7 +403,8 @@ export class InscriptionEngine {
     try {
       // Get inscription to calculate actual gas
       const inscription = await prisma.inscription.findUnique({
-        where: { id: inscriptionId }
+        where: { id: inscriptionId },
+        include: { wallet: true }
       });
 
       if (!inscription) {
@@ -416,15 +417,21 @@ export class InscriptionEngine {
       const gasPrice = feeData.gasPrice || ethers.parseUnits('20', 'gwei');
       const actualGasFee = new Decimal(gasUsed).mul(gasPrice.toString()).div(new Decimal(10).pow(18));
 
-      // Deduct actual gas fee
-      await usdBalanceManager.deduct(
-        userId,
-        actualGasFee.toString(),
-        'gas_fee',
-        'Gas fee for inscription',
-        'inscription',
-        inscriptionId
-      );
+      // Only deduct pathUSD for managed wallets (wallets with encrypted private keys)
+      // External wallets pay gas directly from their own wallet
+      const isExternalWallet = !inscription.wallet?.encryptedPrivateKey;
+      
+      if (!isExternalWallet) {
+        // Deduct actual gas fee for managed wallets only
+        await usdBalanceManager.deduct(
+          userId,
+          actualGasFee.toString(),
+          'gas_fee',
+          'Gas fee for inscription',
+          'inscription',
+          inscriptionId
+        );
+      }
 
       // Update inscription status
       await prisma.inscription.update({
