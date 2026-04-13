@@ -86,6 +86,30 @@ export async function POST(request: NextRequest) {
         async start(controller) {
           let fullResponse = '';
           let hasReceivedContent = false;
+          let isClosed = false;
+          
+          const safeEnqueue = (data: Uint8Array) => {
+            if (!isClosed) {
+              try {
+                controller.enqueue(data);
+              } catch (e) {
+                console.error("[Chat] Failed to enqueue:", e);
+                isClosed = true;
+              }
+            }
+          };
+          
+          const safeClose = () => {
+            if (!isClosed) {
+              try {
+                controller.close();
+                isClosed = true;
+              } catch (e) {
+                console.error("[Chat] Failed to close:", e);
+                isClosed = true;
+              }
+            }
+          };
           
           try {
             console.log(`[Chat] Starting chat for user ${session.user.id}, messages count: ${messages.length}`);
@@ -116,7 +140,7 @@ export async function POST(request: NextRequest) {
             // Iterate through the async generator
             try {
               for await (const chunk of responseGenerator) {
-                if (chunk && chunk.length > 0) {
+                if (chunk && chunk.length > 0 && !isClosed) {
                   fullResponse += chunk;
                   hasReceivedContent = true;
                   
@@ -129,7 +153,7 @@ export async function POST(request: NextRequest) {
                     }]
                   });
                   
-                  controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+                  safeEnqueue(encoder.encode(`data: ${data}\n\n`));
                 }
               }
             } catch (genError) {
@@ -151,17 +175,18 @@ export async function POST(request: NextRequest) {
             console.log(`[Chat] Completed successfully. Response length: ${fullResponse.length}`);
 
             // Send completion signal
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
+            safeEnqueue(encoder.encode('data: [DONE]\n\n'));
+            safeClose();
           } catch (error) {
             console.error("[Chat] Error during streaming:", error);
             
             // If we haven't sent any content yet, send a fallback message
-            if (!hasReceivedContent) {
+            if (!hasReceivedContent && !isClosed) {
               const fallbackMessage = "I'm here to help! I'm experiencing some technical difficulties at the moment, but I'm ready to assist you. Could you please tell me what you'd like to know or discuss?";
               const words = fallbackMessage.split(' ');
               
               for (let i = 0; i < words.length; i++) {
+                if (isClosed) break;
                 const word = words[i] + (i < words.length - 1 ? ' ' : '');
                 const data = JSON.stringify({
                   choices: [{
@@ -170,13 +195,13 @@ export async function POST(request: NextRequest) {
                     }
                   }]
                 });
-                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+                safeEnqueue(encoder.encode(`data: ${data}\n\n`));
                 await new Promise(resolve => setTimeout(resolve, 50));
               }
             }
             
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
+            safeEnqueue(encoder.encode('data: [DONE]\n\n'));
+            safeClose();
           }
         }
       });
