@@ -358,7 +358,7 @@ export default function MiningWebPage() {
     setResult(null);
 
     try {
-      // Call inscribe API with confirm flag
+      // Step 1: Call inscribe API to get unsigned transaction
       const response = await fetch('/api/mining/inscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -382,22 +382,68 @@ export default function MiningWebPage() {
         return;
       }
       
-      if (response.status === 400) {
-        // Show specific error from API
+      if (response.status === 400 && !data.requiresClientSigning) {
         const errorMsg = data.error?.message || data.error?.code || JSON.stringify(data.error) || 'Bad request';
         console.error('400 Error details:', data.error);
+        setError(errorMsg);
+        toast.error(errorMsg);
+        return;
+      }
+      
+      // Step 2: Check if client-side signing is required
+      if (data.requiresClientSigning && data.unsignedTransaction) {
+        toast.loading('Please sign the transaction in MetaMask...');
         
-        // Check if it's a client signing requirement
-        if (data.requiresClientSigning) {
-          setError('⚠️ MetaMask wallets require client-side signing, which is not yet implemented. Please use the Dashboard Mining interface (/mining) instead, which uses managed wallets.');
-          toast.error('Please use Dashboard Mining (/mining) for now');
-        } else {
-          setError(errorMsg);
-          toast.error(errorMsg);
+        try {
+          // Step 3: Request user to sign transaction with MetaMask
+          if (typeof window.ethereum === 'undefined') {
+            throw new Error('MetaMask not found');
+          }
+          
+          const tx = data.unsignedTransaction;
+          
+          const signedTx = await window.ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [{
+              from: tx.from,
+              to: tx.to,
+              data: tx.data,
+              value: tx.value || '0x0',
+              gas: tx.gasLimit ? `0x${parseInt(tx.gasLimit).toString(16)}` : undefined,
+              gasPrice: tx.gasPrice ? `0x${parseInt(tx.gasPrice).toString(16)}` : undefined,
+            }],
+          });
+
+          console.log('Transaction signed:', signedTx);
+          toast.success('Transaction submitted!');
+
+          // Transaction hash is returned directly from eth_sendTransaction
+          setResult({
+            amount: '10000',
+            txHash: signedTx,
+            gasPaid: '~0.0001',
+            explorerUrl: `https://explore.tempo.xyz/tx/${signedTx}`,
+          });
+          
+          toast.success('Successfully minted 10,000 REAGENT!');
+          
+          // Refresh balances
+          await checkConnection();
+          
+        } catch (signError: any) {
+          console.error('Signing error:', signError);
+          if (signError.code === 4001) {
+            setError('Transaction rejected by user');
+            toast.error('You rejected the transaction');
+          } else {
+            setError(`Failed to sign transaction: ${signError.message}`);
+            toast.error('Failed to sign transaction');
+          }
         }
         return;
       }
       
+      // For managed wallets (server-side signing)
       if (!data.success || data.error) {
         const errorMsg = data.error?.message || data.error || 'Minting failed';
         setError(errorMsg);
@@ -627,25 +673,18 @@ export default function MiningWebPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-6"
+              className="bg-green-500/10 border border-green-500/30 rounded-xl p-6"
             >
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-6 h-6 text-orange-400 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-6 h-6 text-green-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <h3 className="text-orange-400 font-semibold mb-2">⚠️ Feature Under Development</h3>
-                  <p className="text-orange-400/90 text-sm mb-3">
-                    MetaMask wallet minting requires client-side transaction signing, which is currently under development.
+                  <h3 className="text-green-400 font-semibold mb-2">✅ Ready to Mint!</h3>
+                  <p className="text-green-400/90 text-sm mb-2">
+                    Your MetaMask wallet is connected and ready. When you click Mint, you'll be asked to sign the transaction in MetaMask.
                   </p>
-                  <p className="text-orange-400/90 text-sm mb-3">
-                    For now, please use the <strong>Dashboard Mining</strong> interface which uses managed wallets and works fully.
+                  <p className="text-green-400/80 text-xs">
+                    💡 Gas fees will be paid directly from your wallet in PATH tokens.
                   </p>
-                  <button
-                    onClick={() => router.push('/mining')}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm font-medium"
-                  >
-                    Go to Dashboard Mining
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             </motion.div>

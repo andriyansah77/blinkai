@@ -34,7 +34,17 @@ export interface InscriptionResult {
   gasUsed?: string;
   error?: string;
   requiresClientSigning?: boolean;
-  transactionData?: any;
+  unsignedTransaction?: {
+    to?: string;
+    from?: string;
+    data?: string;
+    value?: string;
+    gasLimit?: string;
+    gasPrice?: string;
+    nonce?: number;
+    chainId?: number;
+  };
+  message?: string;
 }
 
 export interface TransactionStatus {
@@ -112,8 +122,7 @@ export class InscriptionEngine {
         const isExternalWallet = !dbWallet?.encryptedPrivateKey || dbWallet.encryptedPrivateKey === '';
         
         if (isExternalWallet) {
-          // For external wallets, we cannot sign server-side
-          // Return transaction data for client-side signing
+          // For external wallets, return unsigned transaction for client-side signing
           const tx = await this.constructInscriptionTransaction(wallet.address);
           
           await prisma.inscription.update({
@@ -125,11 +134,20 @@ export class InscriptionEngine {
           });
           
           return {
-            success: false,
-            error: 'Client-side signing required. This feature is not yet implemented. Please use the dashboard mining interface (/mining) which uses managed wallets.',
+            success: true,
             inscriptionId: inscription.id,
             requiresClientSigning: true,
-            transactionData: tx
+            unsignedTransaction: {
+              to: tx.to?.toString(),
+              from: tx.from?.toString(),
+              data: tx.data?.toString(),
+              value: tx.value?.toString() || '0',
+              gasLimit: tx.gasLimit?.toString(),
+              gasPrice: tx.gasPrice?.toString(),
+              nonce: tx.nonce != null ? Number(tx.nonce) : undefined,
+              chainId: tx.chainId != null ? Number(tx.chainId) : undefined
+            },
+            message: 'Please sign the transaction with your wallet'
           };
         }
         
@@ -280,12 +298,12 @@ export class InscriptionEngine {
   }
 
   /**
-   * Monitor transaction status and update inscription
+   * Monitor transaction status and update inscription (PUBLIC)
    * @param txHash - Transaction hash
    * @param inscriptionId - Inscription ID
    * @param userId - User ID
    */
-  private async monitorTransaction(
+  async monitorTransaction(
     txHash: string,
     inscriptionId: string,
     userId: string
