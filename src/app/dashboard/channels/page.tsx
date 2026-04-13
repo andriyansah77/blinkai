@@ -450,11 +450,89 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
     bot_token: ""
   });
   const [loading, setLoading] = useState(false);
+  const [showWhatsAppQR, setShowWhatsAppQR] = useState(false);
+  const [qrCode, setQrCode] = useState("");
+  const [whatsappStatus, setWhatsappStatus] = useState("");
 
   const selectedChannel = channelTypes.find(t => t.id === selectedType);
 
+  // WhatsApp QR Code SSE
+  useEffect(() => {
+    if (!showWhatsAppQR) return;
+
+    console.log('[WhatsApp] Starting SSE connection...');
+    const eventSource = new EventSource('/api/hermes/whatsapp-qr');
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('[WhatsApp] SSE message:', data.type);
+
+        switch (data.type) {
+          case 'connected':
+            setWhatsappStatus('Connecting to WhatsApp...');
+            break;
+          
+          case 'qr_code':
+            console.log('[WhatsApp] QR code received');
+            setQrCode(data.data);
+            setWhatsappStatus('Scan QR code with WhatsApp mobile app');
+            break;
+          
+          case 'connected_success':
+            setWhatsappStatus('✅ Connected successfully!');
+            setTimeout(() => {
+              eventSource.close();
+              setShowWhatsAppQR(false);
+              onSuccess('WhatsApp connected successfully!');
+            }, 2000);
+            break;
+          
+          case 'error':
+            setWhatsappStatus('❌ Error: ' + data.message);
+            break;
+          
+          case 'exit':
+            if (data.exitCode !== 0) {
+              setWhatsappStatus('❌ Connection failed');
+            }
+            eventSource.close();
+            break;
+          
+          case 'output':
+            // Log other output for debugging
+            console.log('[WhatsApp] Output:', data.data.substring(0, 50));
+            break;
+        }
+      } catch (error) {
+        console.error('[WhatsApp] Failed to parse SSE data:', error);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('[WhatsApp] SSE error:', error);
+      setWhatsappStatus('❌ Connection error');
+      eventSource.close();
+    };
+
+    return () => {
+      console.log('[WhatsApp] Cleaning up SSE connection');
+      eventSource.close();
+      
+      // Cleanup server-side session
+      fetch('/api/hermes/whatsapp-qr', { method: 'DELETE' }).catch(console.error);
+    };
+  }, [showWhatsAppQR, onSuccess]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Special handling for WhatsApp
+    if (selectedType === 'whatsapp') {
+      setShowWhatsAppQR(true);
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -471,7 +549,6 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
         }
         config.bot_token = formData.bot_token;
       }
-      // WhatsApp uses QR code, no token needed
 
       const response = await fetch('/api/hermes/gateway', {
         method: 'POST',
@@ -481,15 +558,7 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
 
       if (response.ok) {
         const result = await response.json();
-        
-        // Check if WhatsApp requires manual setup
-        if (result.requiresManualSetup && result.instructions) {
-          // Show instructions in alert or modal
-          alert(result.instructions);
-          onSuccess(`${selectedChannel?.name} setup instructions provided. Please follow the terminal instructions.`);
-        } else {
-          onSuccess(`${selectedChannel?.name} gateway configured successfully!`);
-        }
+        onSuccess(`${selectedChannel?.name} gateway configured successfully!`);
       } else {
         const error = await response.json();
         onError(error.error || 'Failed to configure channel');
@@ -525,11 +594,10 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
       whatsapp: {
         title: "Setup WhatsApp",
         steps: [
-          "⚠️ WhatsApp requires SSH terminal access",
-          "1. SSH into your server: ssh root@159.65.141.68",
-          "2. Run: hermes --profile user-[your-id] whatsapp",
-          "3. A QR code will appear in the terminal",
-          "4. Open WhatsApp on your phone > Settings > Linked Devices",
+          "1. Click 'Show QR Code' button below",
+          "2. A QR code will be displayed in the modal",
+          "3. Open WhatsApp on your phone",
+          "4. Go to Settings → Linked Devices",
           "5. Tap 'Link a Device' and scan the QR code"
         ]
       },
@@ -555,17 +623,63 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-foreground font-semibold text-lg">
-            Configure {selectedChannel?.name || 'Channel'}
+            {showWhatsAppQR ? 'WhatsApp QR Code' : `Configure ${selectedChannel?.name || 'Channel'}`}
           </h2>
           <button
-            onClick={onClose}
+            onClick={() => {
+              if (showWhatsAppQR) {
+                setShowWhatsAppQR(false);
+              } else {
+                onClose();
+              }
+            }}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <XCircle className="w-6 h-6" />
           </button>
         </div>
         
-        {!selectedType ? (
+        {showWhatsAppQR ? (
+          // WhatsApp QR Code Display
+          <div className="space-y-4">
+            <div className="bg-accent/30 border border-border rounded-lg p-6 text-center">
+              <h3 className="text-foreground font-medium mb-4">{whatsappStatus}</h3>
+              
+              {qrCode ? (
+                <div className="bg-white p-4 rounded-lg inline-block">
+                  <pre className="text-xs font-mono leading-tight text-black whitespace-pre">
+                    {qrCode}
+                  </pre>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+                  <p className="text-muted-foreground text-sm">Generating QR code...</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+              <h4 className="text-blue-400 font-medium mb-2 flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                How to scan:
+              </h4>
+              <ol className="text-muted-foreground text-sm space-y-1 list-decimal list-inside">
+                <li>Open WhatsApp on your phone</li>
+                <li>Go to Settings → Linked Devices</li>
+                <li>Tap "Link a Device"</li>
+                <li>Scan the QR code above</li>
+              </ol>
+            </div>
+            
+            <button
+              onClick={() => setShowWhatsAppQR(false)}
+              className="w-full bg-accent hover:bg-accent/80 text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : !selectedType ? (
           <div>
             <p className="text-muted-foreground text-sm mb-6">Choose a platform to configure:</p>
             <div className="grid grid-cols-2 gap-4">
@@ -619,7 +733,7 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
                     <p className="text-green-400 text-sm mb-3">
                       {selectedType === 'whatsapp' 
-                        ? '⚠️ WhatsApp requires SSH terminal access to display QR code. Click below to see instructions.'
+                        ? '✅ QR code will be displayed in your browser. No SSH access needed!'
                         : 'No additional configuration needed. Click Configure to start the gateway.'}
                     </p>
                   </div>
@@ -641,10 +755,10 @@ function ConfigureChannelModal({ onClose, onSuccess, onError, channelTypes, sele
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        {selectedType === 'whatsapp' ? 'Getting Instructions...' : 'Configuring...'}
+                        Configuring...
                       </>
                     ) : (
-                      selectedType === 'whatsapp' ? 'Get Setup Instructions' : `Configure ${selectedChannel?.name}`
+                      selectedType === 'whatsapp' ? 'Show QR Code' : `Configure ${selectedChannel?.name}`
                     )}
                   </button>
                 </div>
