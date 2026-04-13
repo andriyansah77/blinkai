@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Bot, 
   Coins, 
@@ -14,12 +16,167 @@ import {
   Github,
   ExternalLink,
   Check,
-  ChevronDown
+  ChevronDown,
+  X,
+  Code,
+  Terminal,
+  Database
 } from "lucide-react";
 
 export default function LandingPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const [selectedFeature, setSelectedFeature] = useState<any>(null);
+
+  const features = [
+    {
+      id: "ai-agent",
+      icon: Bot,
+      bgColor: "bg-blue-500/20",
+      iconColor: "text-blue-400",
+      title: "AI Agent Framework",
+      description: "Built on Hermes with memory, learning, and 73+ pre-installed skills",
+      details: [
+        "Conversational AI with context awareness",
+        "Persistent memory across sessions",
+        "73+ pre-installed skills (minting, wallet, web search, etc.)",
+        "Custom skill creation and installation",
+        "Multi-provider AI support (OpenAI, Groq, Together AI)",
+        "Learning from interactions over time"
+      ],
+      codeExample: `// Chat with your AI agent
+const response = await fetch('/api/hermes/chat', {
+  method: 'POST',
+  body: JSON.stringify({
+    message: 'Help me mint REAGENT tokens',
+    sessionId: 'user-session-123'
+  })
+});`
+    },
+    {
+      id: "token-mining",
+      icon: Coins,
+      bgColor: "bg-green-500/20",
+      iconColor: "text-green-400",
+      title: "Token Mining",
+      description: "Mine 10K REAGENT tokens on Tempo Network with auto or manual mining",
+      details: [
+        "10,000 REAGENT per successful mint",
+        "Auto mining via AI agent commands",
+        "Manual mining through dashboard",
+        "TIP-20 token standard on Tempo Network",
+        "Low gas fees (~$0.01-0.05 per mint)",
+        "Real-time balance updates"
+      ],
+      codeExample: `// Mint REAGENT tokens
+const mint = await fetch('/api/mining/inscribe', {
+  method: 'POST',
+  body: JSON.stringify({
+    walletId: 'wallet-123',
+    amount: 10000
+  })
+});`
+    },
+    {
+      id: "secure-wallet",
+      icon: Wallet,
+      bgColor: "bg-purple-500/20",
+      iconColor: "text-purple-400",
+      title: "Secure Wallet",
+      description: "Auto-generated HD wallet with AES-256 encrypted private key storage",
+      details: [
+        "Auto-generated on signup",
+        "AES-256 encryption for private keys",
+        "HD wallet support",
+        "Real-time ETH and REAGENT balance",
+        "Send/receive tokens",
+        "Export private key (encrypted)"
+      ],
+      codeExample: `// Get wallet balance
+const wallet = await fetch('/api/wallet');
+const data = await wallet.json();
+
+console.log(data.ethBalance); // ETH balance
+console.log(data.reagentBalance); // REAGENT balance`
+    },
+    {
+      id: "gateway",
+      icon: MessageSquare,
+      bgColor: "bg-cyan-500/20",
+      iconColor: "text-cyan-400",
+      title: "Multi-Channel Gateway",
+      description: "Connect your agent to Telegram, Discord, and Slack platforms",
+      details: [
+        "Telegram bot integration",
+        "Discord bot with slash commands",
+        "Slack workspace integration",
+        "Real-time message sync",
+        "Multi-platform support",
+        "Easy configuration via dashboard"
+      ],
+      codeExample: `// Configure Discord bot
+const gateway = await fetch('/api/hermes/gateway', {
+  method: 'POST',
+  body: JSON.stringify({
+    platform: 'discord',
+    token: 'your-bot-token',
+    enabled: true
+  })
+});`
+    },
+    {
+      id: "skills",
+      icon: Zap,
+      bgColor: "bg-orange-500/20",
+      iconColor: "text-orange-400",
+      title: "Extensible Skills",
+      description: "73+ built-in skills with ability to install and create custom skills",
+      details: [
+        "73+ pre-installed skills",
+        "Minting and wallet management skills",
+        "Web search and browsing",
+        "File operations",
+        "Custom skill creation",
+        "Skill marketplace (coming soon)"
+      ],
+      codeExample: `// List available skills
+const skills = await fetch('/api/hermes/skills');
+const data = await skills.json();
+
+// Install a custom skill
+await fetch('/api/hermes/skills', {
+  method: 'POST',
+  body: JSON.stringify({
+    name: 'my-custom-skill',
+    code: skillCode
+  })
+});`
+    },
+    {
+      id: "security",
+      icon: Shield,
+      bgColor: "bg-red-500/20",
+      iconColor: "text-red-400",
+      title: "Enterprise Security",
+      description: "Bank-grade security with encrypted storage and secure authentication",
+      details: [
+        "AES-256 encryption for sensitive data",
+        "Secure JWT authentication",
+        "Rate limiting and DDoS protection",
+        "Encrypted database storage",
+        "Audit logging",
+        "Regular security updates"
+      ],
+      codeExample: `// All sensitive data is encrypted
+const encryptedKey = encrypt(privateKey, {
+  algorithm: 'aes-256-gcm',
+  key: process.env.WALLET_ENCRYPTION_KEY
+});
+
+// Secure authentication
+const session = await getServerSession(authOptions);`
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
@@ -72,7 +229,25 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
+        {/* Code Pattern Background */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-10 left-10 text-orange-500">
+            <Code className="w-16 h-16" />
+          </div>
+          <div className="absolute top-32 right-20 text-orange-500">
+            <Terminal className="w-12 h-12" />
+          </div>
+          <div className="absolute bottom-20 left-1/4 text-orange-500">
+            <Database className="w-14 h-14" />
+          </div>
+          <div className="absolute top-1/2 right-1/3 text-orange-500">
+            <Code className="w-10 h-10" />
+          </div>
+          <div className="absolute bottom-32 right-10 text-orange-500">
+            <Terminal className="w-16 h-16" />
+          </div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-6 py-20 relative">
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full mb-6">
@@ -156,63 +331,116 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-20 border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="features" className="py-20 border-t border-white/10 relative overflow-hidden">
+        {/* Code Pattern Background */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-20 left-1/4 text-orange-500">
+            <Code className="w-12 h-12" />
+          </div>
+          <div className="absolute bottom-20 right-1/4 text-orange-500">
+            <Terminal className="w-14 h-14" />
+          </div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-6 relative">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Core Features</h2>
             <p className="text-gray-400">We handle everything. You just use your agent.</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4">
-                <Bot className="w-5 h-5 text-blue-400" />
-              </div>
-              <h3 className="font-semibold mb-2">AI Agent Framework</h3>
-              <p className="text-gray-400 text-sm">Built on Hermes with memory, learning, and 73+ pre-installed skills</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mb-4">
-                <Coins className="w-5 h-5 text-green-400" />
-              </div>
-              <h3 className="font-semibold mb-2">Token Mining</h3>
-              <p className="text-gray-400 text-sm">Mine 10K REAGENT tokens on Tempo Network with auto or manual mining</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
-                <Wallet className="w-5 h-5 text-purple-400" />
-              </div>
-              <h3 className="font-semibold mb-2">Secure Wallet</h3>
-              <p className="text-gray-400 text-sm">Auto-generated HD wallet with AES-256 encrypted private key storage</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-4">
-                <MessageSquare className="w-5 h-5 text-cyan-400" />
-              </div>
-              <h3 className="font-semibold mb-2">Multi-Channel Gateway</h3>
-              <p className="text-gray-400 text-sm">Connect your agent to Telegram, Discord, and Slack platforms</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center mb-4">
-                <Zap className="w-5 h-5 text-orange-400" />
-              </div>
-              <h3 className="font-semibold mb-2">Extensible Skills</h3>
-              <p className="text-gray-400 text-sm">73+ built-in skills with ability to install and create custom skills</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center mb-4">
-                <Shield className="w-5 h-5 text-red-400" />
-              </div>
-              <h3 className="font-semibold mb-2">Enterprise Security</h3>
-              <p className="text-gray-400 text-sm">Bank-grade security with encrypted storage and secure authentication</p>
-            </div>
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => setSelectedFeature(feature)}
+                className="bg-white/5 border border-white/10 rounded-xl p-6 cursor-pointer hover:bg-white/10 transition-all group"
+              >
+                <div className={`w-10 h-10 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                  <feature.icon className={`w-5 h-5 ${feature.iconColor}`} />
+                </div>
+                <h3 className="font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-400 text-sm">{feature.description}</p>
+                <div className="mt-4 text-orange-400 text-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Learn more <ArrowRight className="w-3 h-3" />
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
+
+        {/* Feature Modal */}
+        <AnimatePresence>
+          {selectedFeature && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setSelectedFeature(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+              >
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-lg ${selectedFeature.bgColor} flex items-center justify-center`}>
+                      <selectedFeature.icon className={`w-6 h-6 ${selectedFeature.iconColor}`} />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold">{selectedFeature.title}</h3>
+                      <p className="text-gray-400">{selectedFeature.description}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedFeature(null)}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-3">Key Features</h4>
+                    <ul className="space-y-2">
+                      {selectedFeature.details.map((detail: string, index: number) => (
+                        <li key={index} className="flex items-start gap-2 text-gray-300">
+                          <Check className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                          <span>{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {selectedFeature.codeExample && (
+                    <div>
+                      <h4 className="font-semibold mb-3">Example Usage</h4>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                        <pre className="text-gray-300">{selectedFeature.codeExample}</pre>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => router.push("/sign-up")}
+                    className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Get Started
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
       {/* Stats */}
