@@ -88,7 +88,7 @@ export default function OnboardingPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
@@ -97,18 +97,18 @@ export default function OnboardingPage() {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-sm border-b border-white/[0.06]">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-sm border-b border-white/10">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">R</span>
               </div>
               <span className="font-semibold">ReAgent Setup</span>
             </div>
-            <span className="text-sm text-white/60">
+            <span className="text-sm text-gray-500">
               Step {currentStep + 1} of {steps.length}
             </span>
           </div>
@@ -118,8 +118,8 @@ export default function OnboardingPage() {
               <div key={step.id} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
                   index <= currentStep 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white/[0.06] text-white/40'
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/10 text-gray-500'
                 }`}>
                   {index < currentStep ? (
                     <Check className="w-4 h-4" />
@@ -129,7 +129,7 @@ export default function OnboardingPage() {
                 </div>
                 {index < steps.length - 1 && (
                   <div className={`w-12 h-0.5 mx-2 transition-colors ${
-                    index < currentStep ? 'bg-blue-600' : 'bg-white/[0.06]'
+                    index < currentStep ? 'bg-blue-500' : 'bg-white/10'
                   }`} />
                 )}
               </div>
@@ -151,7 +151,7 @@ export default function OnboardingPage() {
             >
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold mb-2">{steps[currentStep].title}</h1>
-                <p className="text-white/60">{steps[currentStep].description}</p>
+                <p className="text-gray-400">{steps[currentStep].description}</p>
               </div>
 
               <CurrentStepComponent
@@ -184,7 +184,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-8">
+      <div className="bg-white/5 border border-white/10 rounded-xl p-8">
         <div className="space-y-6">
           <div>
             <label className="block text-white font-medium mb-3">Agent Name</label>
@@ -193,7 +193,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
               value={agentName}
               onChange={(e) => setAgentName(e.target.value)}
               placeholder="e.g., Alex, Maya, or your custom name"
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
             />
           </div>
 
@@ -204,7 +204,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
               onChange={(e) => setAgentPersonality(e.target.value)}
               placeholder="Describe your agent's personality... e.g., 'Friendly and helpful assistant who loves to help with coding projects'"
               rows={4}
-              className="w-full bg-white/[0.06] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none"
             />
           </div>
 
@@ -215,7 +215,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
                 onClick={() => setAgentPersonality((prev: string) => 
                   prev ? `${prev}, ${trait.toLowerCase()}` : trait.toLowerCase()
                 )}
-                className="bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg px-4 py-2 text-sm transition-colors"
+                className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-sm transition-colors"
               >
                 {trait}
               </button>
@@ -228,7 +228,7 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
         <button
           onClick={handleNext}
           disabled={!agentName.trim()}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          className="flex items-center gap-2 bg-white text-black hover:bg-gray-200 disabled:bg-gray-500 px-6 py-3 rounded-lg font-medium transition-colors"
         >
           Continue
           <ArrowRight className="w-4 h-4" />
@@ -288,7 +288,7 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-8">
+      <div className="bg-white/5 border border-white/10 rounded-xl p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {channels.map((channel) => {
             const IconComponent = channel.icon;
@@ -299,10 +299,10 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
                 disabled={channel.disabled}
                 className={`p-4 rounded-lg border transition-all text-left ${
                   channel.disabled
-                    ? 'bg-white/[0.02] border-white/[0.05] opacity-50 cursor-not-allowed'
+                    ? 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
                     : selectedChannels.includes(channel.id)
-                    ? 'bg-blue-600/20 border-blue-500/50'
-                    : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]'
+                    ? 'bg-blue-500/20 border-blue-500/50'
+                    : 'bg-white/5 border-white/10 hover:bg-white/10'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -311,7 +311,7 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium text-white">{channel.name}</h3>
-                    <p className="text-sm text-white/60 mt-1">{channel.description}</p>
+                    <p className="text-sm text-gray-400 mt-1">{channel.description}</p>
                   </div>
                   {selectedChannels.includes(channel.id) && !channel.disabled && (
                     <Check className="w-5 h-5 text-blue-400 flex-shrink-0" />
@@ -322,7 +322,7 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
           })}
         </div>
 
-        <div className="mt-6 p-4 bg-blue-600/10 border border-blue-500/20 rounded-lg flex items-start gap-3">
+        <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-start gap-3">
           <Sparkles className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-300">
             You can always add more channels later from your dashboard
@@ -333,14 +333,14 @@ function ChannelsStep({ data, updateData, nextStep, prevStep }: any) {
       <div className="flex justify-between">
         <button
           onClick={prevStep}
-          className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg font-medium transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
         <button
           onClick={handleNext}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          className="flex items-center gap-2 bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-lg font-medium transition-colors"
         >
           Continue
           <ArrowRight className="w-4 h-4" />
@@ -356,33 +356,31 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
   const plans = [
     {
       id: "free",
-      name: "Free Plan",
+      name: "Free",
       price: "$0",
-      period: "/month",
+      period: "/mo",
       credits: "1,000",
       features: [
-        "1,000 message credits",
+        "1,000 credits/mo",
         "Basic AI models",
         "2 connected channels",
         "Community support"
       ],
       badge: "Perfect for getting started",
-      badgeIcon: Gift,
-      popular: false
+      badgeIcon: Gift
     },
     {
       id: "pro",
-      name: "Pro Plan",
+      name: "Pro",
       price: "$19",
-      period: "/month",
+      period: "/mo",
       credits: "10,000",
       features: [
-        "10,000 message credits",
-        "Advanced AI models (GPT-4)",
+        "10,000 credits/mo",
+        "Advanced AI models",
         "Unlimited channels",
         "Priority support",
-        "Custom skills",
-        "Analytics dashboard"
+        "Custom skills"
       ],
       badge: "Most Popular",
       badgeIcon: Crown,
@@ -392,19 +390,17 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
       id: "enterprise",
       name: "Enterprise",
       price: "$99",
-      period: "/month",
+      period: "/mo",
       credits: "100,000",
       features: [
-        "100,000 message credits",
+        "100,000 credits/mo",
         "All AI models",
         "White-label solution",
         "Dedicated support",
-        "Custom integrations",
         "SLA guarantee"
       ],
       badge: "For teams",
-      badgeIcon: Zap,
-      popular: false
+      badgeIcon: Zap
     }
   ];
 
@@ -422,44 +418,44 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
             onClick={() => setSelectedPlan(plan.id)}
             className={`p-6 rounded-xl border transition-all text-left relative ${
               selectedPlan === plan.id
-                ? 'bg-blue-600/20 border-blue-500/50 ring-2 ring-blue-500/30'
-                : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]'
+                ? 'bg-blue-500/20 border-blue-500/50 ring-2 ring-blue-500/30'
+                : 'bg-white/5 border-white/10 hover:bg-white/10'
             }`}
           >
             {plan.popular && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-purple-500 to-blue-600 text-white text-xs font-medium px-3 py-1 rounded-full">
+                <span className="bg-blue-500 text-white text-xs font-medium px-3 py-1 rounded-full">
                   Most Popular
                 </span>
               </div>
             )}
 
             <div className="text-center mb-4">
-              <h3 className="font-semibold text-white text-lg">{plan.name}</h3>
+              <h3 className="font-semibold text-lg">{plan.name}</h3>
               <div className="mt-2">
-                <span className="text-3xl font-bold text-white">{plan.price}</span>
-                <span className="text-white/60">{plan.period}</span>
+                <span className="text-3xl font-bold">{plan.price}</span>
+                <span className="text-gray-400">{plan.period}</span>
               </div>
-              <p className="text-sm text-white/60 mt-1">{plan.credits} credits</p>
+              <p className="text-sm text-gray-400 mt-1">{plan.credits} credits</p>
             </div>
 
             <div className="space-y-2 mb-4">
               {plan.features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                  <span className="text-sm text-white/80">{feature}</span>
+                  <span className="text-sm text-gray-300">{feature}</span>
                 </div>
               ))}
             </div>
 
             <div className="flex items-center justify-center gap-2">
-              {plan.badgeIcon && <plan.badgeIcon className="w-4 h-4 text-white/60" />}
-              <span className="text-xs text-white/60">{plan.badge}</span>
+              {plan.badgeIcon && <plan.badgeIcon className="w-4 h-4 text-gray-400" />}
+              <span className="text-xs text-gray-400">{plan.badge}</span>
             </div>
 
             {selectedPlan === plan.id && (
               <div className="absolute top-4 right-4">
-                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                   <Check className="w-4 h-4 text-white" />
                 </div>
               </div>
@@ -471,14 +467,14 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
       <div className="flex justify-between">
         <button
           onClick={prevStep}
-          className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg font-medium transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
         <button
           onClick={handleNext}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          className="flex items-center gap-2 bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-lg font-medium transition-colors"
         >
           Continue
           <ArrowRight className="w-4 h-4" />
@@ -513,7 +509,6 @@ function DeployStep({ data }: any) {
 
   const deployAgent = async () => {
     try {
-      // Actually deploy the agent
       const response = await fetch('/api/onboarding/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -526,7 +521,6 @@ function DeployStep({ data }: any) {
 
       const result = await response.json();
       
-      // Get wallet info
       try {
         const walletResponse = await fetch('/api/wallet');
         if (walletResponse.ok) {
@@ -537,7 +531,6 @@ function DeployStep({ data }: any) {
         console.error('Failed to fetch wallet info:', error);
       }
       
-      // Simulate deployment process with real backend call
       for (let i = 0; i < deployTasks.length; i++) {
         setCurrentTask(deployTasks[i]);
         setProgress(((i + 1) / deployTasks.length) * 100);
@@ -546,7 +539,6 @@ function DeployStep({ data }: any) {
 
       setDeployStatus('success');
       
-      // Redirect to dashboard after 3 seconds
       setTimeout(() => {
         router.push('/dashboard');
       }, 3000);
@@ -559,63 +551,63 @@ function DeployStep({ data }: any) {
 
   return (
     <div className="space-y-8">
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-8 text-center">
+      <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
         {deployStatus === 'deploying' && (
           <>
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
             </div>
             
-            <h3 className="text-xl font-semibold text-white mb-2">Setting up your agent</h3>
-            <p className="text-white/60 mb-6">{currentTask}</p>
+            <h3 className="text-xl font-semibold mb-2">Setting up your agent</h3>
+            <p className="text-gray-400 mb-6">{currentTask}</p>
             
-            <div className="w-full bg-white/[0.06] rounded-full h-2 mb-4">
+            <div className="w-full bg-white/10 rounded-full h-2 mb-4">
               <div 
-                className="bg-gradient-to-r from-purple-500 to-blue-600 h-2 rounded-full transition-all duration-500"
+                className="bg-blue-500 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
             
-            <p className="text-sm text-white/40">{Math.round(progress)}% complete</p>
+            <p className="text-sm text-gray-500">{Math.round(progress)}% complete</p>
           </>
         )}
 
         {deployStatus === 'success' && (
           <>
-            <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Check className="w-8 h-8 text-green-400" />
             </div>
             
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-6 h-6 text-yellow-400" />
-              <h3 className="text-xl font-semibold text-white">Agent deployed successfully!</h3>
+              <Sparkles className="w-5 h-5 text-yellow-400" />
+              <h3 className="text-xl font-semibold">Agent deployed successfully!</h3>
             </div>
-            <p className="text-white/60 mb-6">
+            <p className="text-gray-400 mb-6">
               {data.agentName} is now live and ready to chat!
             </p>
             
             {walletInfo && (
-              <div className="bg-white/[0.06] border border-white/[0.08] rounded-lg p-6 mb-6 text-left">
-                <h4 className="font-semibold text-white mb-4 flex items-center gap-2">
-                  <Wallet className="w-6 h-6 text-green-400" />
+              <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6 text-left">
+                <h4 className="font-semibold mb-4 flex items-center gap-2">
+                  <Wallet className="w-5 h-5 text-green-400" />
                   Your Wallet is Ready
                 </h4>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-white/60">Wallet Address</p>
+                    <p className="text-sm text-gray-400">Wallet Address</p>
                     <p className="text-white font-mono text-sm break-all">{walletInfo.address}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-white/60">ETH Balance</p>
+                      <p className="text-sm text-gray-400">ETH Balance</p>
                       <p className="text-white font-semibold">{walletInfo.ethBalance || '0'} ETH</p>
                     </div>
                     <div>
-                      <p className="text-sm text-white/60">REAGENT Balance</p>
+                      <p className="text-sm text-gray-400">REAGENT Balance</p>
                       <p className="text-white font-semibold">{walletInfo.reagentBalance || '0'} REAGENT</p>
                     </div>
                   </div>
-                  <div className="pt-3 border-t border-white/[0.08] flex items-start gap-2">
+                  <div className="pt-3 border-t border-white/10 flex items-start gap-2">
                     <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-blue-300">
                       Your AI agent can help you manage your wallet and mint REAGENT tokens!
@@ -630,24 +622,24 @@ function DeployStep({ data }: any) {
               <span className="text-sm">Welcome to ReAgent!</span>
             </div>
             
-            <p className="text-sm text-white/60">Redirecting to your dashboard...</p>
+            <p className="text-sm text-gray-400">Redirecting to your dashboard...</p>
           </>
         )}
 
         {deployStatus === 'error' && (
           <>
-            <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-white text-2xl">✕</span>
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-red-400 text-2xl">✕</span>
             </div>
             
-            <h3 className="text-xl font-semibold text-white mb-2">Deployment failed</h3>
-            <p className="text-white/60 mb-6">
+            <h3 className="text-xl font-semibold mb-2">Deployment failed</h3>
+            <p className="text-gray-400 mb-6">
               Something went wrong. Please try again or contact support.
             </p>
             
             <button
               onClick={deployAgent}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Try Again
             </button>
@@ -656,7 +648,7 @@ function DeployStep({ data }: any) {
       </div>
 
       {deployStatus === 'deploying' && (
-        <div className="bg-blue-600/10 border border-blue-500/20 rounded-lg p-4 flex items-start gap-3">
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 flex items-start gap-3">
           <Loader2 className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5 animate-spin" />
           <p className="text-sm text-blue-300">
             This usually takes 1-2 minutes. Please don't close this page.
