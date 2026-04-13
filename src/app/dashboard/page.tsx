@@ -437,7 +437,7 @@ export default function DashboardPage() {
           <h3 className="text-foreground font-semibold text-lg mb-2">Failed to Load Dashboard</h3>
           <p className="text-muted-foreground mb-6">{error}</p>
           <button
-            onClick={fetchDashboardData}
+            onClick={() => fetchDashboardData()}
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Retry
