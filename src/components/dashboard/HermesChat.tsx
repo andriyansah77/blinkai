@@ -720,13 +720,20 @@ export default function HermesChat({ className }: ChatProps) {
     setIsLoading(true);
 
     try {
+      // Limit conversation history to last 6 messages to prevent timeout
+      // Backend will also limit, but we reduce payload size here
+      const allMessages = [...messages, userMessage];
+      const recentMessages = allMessages.slice(-7); // Last 6 + current message
+      
+      console.log(`[Chat] Sending ${recentMessages.length} messages (limited from ${allMessages.length} total)`);
+      
       const response = await fetch("/api/hermes/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map(msg => ({
+          messages: recentMessages.map(msg => ({
             role: msg.role,
             content: msg.content,
           })),
