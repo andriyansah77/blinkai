@@ -164,11 +164,11 @@ export default function ChannelsPage() {
       id: "whatsapp", 
       name: "WhatsApp", 
       icon: WhatsAppIcon,
-      description: "QR code pairing via Hermes",
+      description: "Coming Soon - QR code pairing",
       color: "from-green-600 to-green-700",
       iconColor: "text-[#25D366]",
       bgColor: "bg-[#25D366]/20",
-      enabled: true,
+      enabled: false,
       fields: [] // QR code based, no manual fields
     },
     { 
@@ -283,19 +283,31 @@ export default function ChannelsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-card border border-border rounded-xl p-6 hover:border-purple-500/50 transition-all group cursor-pointer"
+                  className={cn(
+                    "bg-card border border-border rounded-xl p-6 transition-all group",
+                    type.enabled ? "hover:border-purple-500/50 cursor-pointer" : "opacity-60 cursor-not-allowed"
+                  )}
                   onClick={() => {
-                    setSelectedType(type.id);
-                    setShowAddModal(true);
+                    if (type.enabled) {
+                      setSelectedType(type.id);
+                      setShowAddModal(true);
+                    }
                   }}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", type.bgColor)}>
                       <Icon className={cn("w-6 h-6", type.iconColor)} />
                     </div>
-                    {isConnected && (
-                      <CheckCircle2 className="w-5 h-5 text-green-400" />
-                    )}
+                    <div className="flex flex-col items-end gap-2">
+                      {!type.enabled && (
+                        <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">
+                          Coming Soon
+                        </span>
+                      )}
+                      {isConnected && type.enabled && (
+                        <CheckCircle2 className="w-5 h-5 text-green-400" />
+                      )}
+                    </div>
                   </div>
                   
                   <h3 className="font-semibold text-foreground mb-2">{type.name}</h3>
@@ -304,12 +316,20 @@ export default function ChannelsPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedType(type.id);
-                      setShowAddModal(true);
+                      if (type.enabled) {
+                        setSelectedType(type.id);
+                        setShowAddModal(true);
+                      }
                     }}
-                    className="w-full bg-accent hover:bg-accent/80 text-foreground py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    disabled={!type.enabled}
+                    className={cn(
+                      "w-full py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2",
+                      type.enabled 
+                        ? "bg-accent hover:bg-accent/80 text-foreground"
+                        : "bg-accent/30 text-muted-foreground cursor-not-allowed"
+                    )}
                   >
-                    {isConnected ? 'Reconfigure' : 'Configure'}
+                    {!type.enabled ? 'Coming Soon' : isConnected ? 'Reconfigure' : 'Configure'}
                   </button>
                 </motion.div>
               );
