@@ -366,7 +366,8 @@ export default function MiningWebPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          confirm: true
+          confirm: true,
+          forceClientSigning: true // Force client-side signing for mining-web
         }),
       });
 

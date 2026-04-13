@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Parse request body
     const body = await request.json();
-    const { confirm } = body;
+    const { confirm, forceClientSigning } = body;
 
     if (!confirm) {
       return NextResponse.json(
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Execute inscription
-    const result = await inscriptionEngine.executeInscription(userId, 'manual');
+    const result = await inscriptionEngine.executeInscription(userId, 'manual', forceClientSigning || false);
 
     if (!result.success) {
       return NextResponse.json(

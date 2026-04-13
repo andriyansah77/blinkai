@@ -70,11 +70,13 @@ export class InscriptionEngine {
    * Execute inscription for a user
    * @param userId - User ID
    * @param type - Inscription type (auto or manual)
+   * @param forceClientSigning - Force client-side signing even if wallet has private key
    * @returns Inscription result
    */
   async executeInscription(
     userId: string,
-    type: 'auto' | 'manual'
+    type: 'auto' | 'manual',
+    forceClientSigning: boolean = false
   ): Promise<InscriptionResult> {
     try {
       // 1. Validate user and wallet
@@ -119,7 +121,7 @@ export class InscriptionEngine {
           where: { id: wallet.id }
         });
         
-        const isExternalWallet = !dbWallet?.encryptedPrivateKey || dbWallet.encryptedPrivateKey === '';
+        const isExternalWallet = forceClientSigning || !dbWallet?.encryptedPrivateKey || dbWallet.encryptedPrivateKey === '';
         
         if (isExternalWallet) {
           // For external wallets, return unsigned transaction for client-side signing
