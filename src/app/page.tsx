@@ -622,10 +622,10 @@ const session = await getServerSession(authOptions);`
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
               whileHover={{ y: -8 }}
-              className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-2 border-orange-500/30 rounded-xl p-8 relative overflow-hidden group"
+              className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-2 border-orange-500/30 rounded-xl p-8 pt-12 relative overflow-visible group"
             >
               {/* Popular badge */}
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                 <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-orange-500/50">
                   COMING SOON
                 </div>
