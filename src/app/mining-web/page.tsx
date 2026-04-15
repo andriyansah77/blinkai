@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { usePrivy } from '@privy-io/react-auth';
 import { 
   Coins, 
   Wallet, 
@@ -54,7 +54,7 @@ interface MiningStats {
 
 export default function MiningWebPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { ready, authenticated, user } = usePrivy();
   const [wallet, setWallet] = useState<WalletState>({
     address: null,
     balance: '0',
@@ -78,10 +78,10 @@ export default function MiningWebPage() {
   useEffect(() => {
     checkConnection();
     fetchStats();
-    if (session) {
+    if (authenticated) {
       fetchUserStatus();
     }
-  }, [session]);
+  }, [authenticated]);
 
   const fetchUserStatus = async () => {
     try {
@@ -121,7 +121,7 @@ export default function MiningWebPage() {
           });
 
           // Link wallet to user account if signed in
-          if (session && !walletLinked) {
+          if (authenticated && !walletLinked) {
             try {
               const linkResponse = await fetch('/api/mining/wallet/link', {
                 method: 'POST',
@@ -258,7 +258,7 @@ export default function MiningWebPage() {
       });
 
       // Link wallet to user account if signed in
-      if (session) {
+      if (authenticated) {
         try {
           const linkResponse = await fetch('/api/mining/wallet/link', {
             method: 'POST',
@@ -524,9 +524,9 @@ export default function MiningWebPage() {
             </div>
             <div className="flex items-center space-x-4">
               {/* Session Status */}
-              {status === 'loading' ? (
+              {!ready ? (
                 <div className="text-muted-foreground text-sm">Loading...</div>
-              ) : status === 'unauthenticated' ? (
+              ) : !authenticated ? (
                 <button
                   onClick={() => router.push('/sign-in?callbackUrl=/mining-web')}
                   className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/80 text-foreground rounded-lg transition-colors text-sm font-medium"
@@ -536,7 +536,7 @@ export default function MiningWebPage() {
                 </button>
               ) : (
                 <div className="hidden md:block text-right mr-4">
-                  <p className="text-foreground text-sm font-medium">{session?.user?.name || session?.user?.email}</p>
+                  <p className="text-foreground text-sm font-medium">{user?.email?.address || user?.wallet?.address?.slice(0, 10) || "User"}</p>
                   <p className="text-muted-foreground text-xs">Signed in</p>
                 </div>
               )}
@@ -659,7 +659,7 @@ export default function MiningWebPage() {
                 Connect your Web3 wallet to start minting REAGENT tokens on Tempo Network
               </p>
               
-              {status === 'unauthenticated' && (
+              {!authenticated && (
                 <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
                   <div className="flex items-start gap-2 text-left">
                     <AlertCircle className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
@@ -674,7 +674,7 @@ export default function MiningWebPage() {
               )}
               
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                {status === 'unauthenticated' && (
+                {!authenticated && (
                   <button
                     onClick={() => router.push('/sign-in?callbackUrl=/mining-web')}
                     className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-accent hover:bg-accent/80 text-foreground rounded-lg transition-all font-medium"
@@ -705,7 +705,7 @@ export default function MiningWebPage() {
           )}
 
           {/* User Status Info - Show if wallet connected and ready */}
-          {wallet.connected && session && userStatus && userStatus.canMint && (
+          {wallet.connected && authenticated && userStatus && userStatus.canMint && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

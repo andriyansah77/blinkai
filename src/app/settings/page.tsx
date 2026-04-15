@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -40,7 +40,7 @@ interface AISettings {
 }
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated, user, logout } = usePrivy();
   const router = useRouter();
 
   const [settings, setSettings] = useState<AISettings>(DEFAULTS);
@@ -48,8 +48,8 @@ export default function SettingsPage() {
   const [showKey, setShowKey] = useState(false);
 
   useEffect(() => {
-    if (status === "unauthenticated") router.push("/sign-in");
-  }, [status, router]);
+    if (ready && !authenticated) router.push("/sign-in");
+  }, [ready, authenticated, router]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -81,7 +81,7 @@ export default function SettingsPage() {
     toast.success("Settings reset to defaults");
   }
 
-  if (status === "loading") {
+  if (!ready) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -89,7 +89,7 @@ export default function SettingsPage() {
     );
   }
 
-  if (status === "unauthenticated") return null;
+  if (!authenticated) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -145,19 +145,19 @@ export default function SettingsPage() {
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                value={session?.user?.name || ""}
+                value={user?.email?.address?.split('@')[0] || user?.wallet?.address?.slice(0, 8) || ""}
                 readOnly
                 className="bg-background/50"
               />
               <p className="text-xs text-muted-foreground">
-                Name is set during registration
+                Name is derived from your login method
               </p>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email / Wallet</Label>
               <Input
                 id="email"
-                value={session?.user?.email || ""}
+                value={user?.email?.address || user?.wallet?.address || ""}
                 readOnly
                 className="bg-background/50"
               />
@@ -168,7 +168,7 @@ export default function SettingsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={() => logout()}
               className="text-red-400 hover:text-red-300 hover:border-red-400/30 hover:bg-red-400/5"
             >
               Sign Out

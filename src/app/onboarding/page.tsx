@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -54,7 +54,7 @@ const steps: OnboardingStep[] = [
 ];
 
 export default function OnboardingPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [onboardingData, setOnboardingData] = useState({
@@ -66,10 +66,10 @@ export default function OnboardingPage() {
   });
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
     }
-  }, [status, router]);
+  }, [ready, authenticated, router]);
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
@@ -87,7 +87,7 @@ export default function OnboardingPage() {
     setOnboardingData(prev => ({ ...prev, ...data }));
   };
 
-  if (status === "loading") {
+  if (!ready) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
