@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "@/components/shared/AuthProvider";
+import PrivyProviderWrapper from "@/providers/privy-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <AuthProvider>
+        <PrivyProviderWrapper>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
@@ -63,7 +63,7 @@ export default function RootLayout({
               }}
             />
           </ThemeProvider>
-        </AuthProvider>
+        </PrivyProviderWrapper>
       </body>
     </html>
   );
