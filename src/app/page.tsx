@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -28,7 +28,7 @@ import {
 
 export default function LandingPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { ready, authenticated } = usePrivy();
   const [selectedFeature, setSelectedFeature] = useState<any>(null);
 
   useEffect(() => {
@@ -173,7 +173,7 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {session ? (
+              {authenticated ? (
                 <button
                   onClick={() => router.push("/dashboard")}
                   className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 hover:scale-105 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40"
@@ -253,10 +253,10 @@ export default function LandingPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button
-                onClick={() => router.push(session ? "/dashboard" : "/sign-up")}
+                onClick={() => router.push(authenticated ? "/dashboard" : "/sign-up")}
                 className="group relative px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105"
               >
-                <span>{session ? "Go to Dashboard" : "Start Building"}</span>
+                <span>{authenticated ? "Go to Dashboard" : "Start Building"}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <button

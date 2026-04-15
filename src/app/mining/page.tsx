@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -45,7 +45,7 @@ interface MiningStats {
 }
 
 export default function MiningPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const router = useRouter();
   
   const [wallet, setWallet] = useState<WalletData | null>(null);
@@ -83,16 +83,16 @@ export default function MiningPage() {
   }, []);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
-    } else if (status === "authenticated") {
+    } else if (authenticated) {
       fetchData();
       
       // Auto-refresh every 30 seconds
       const interval = setInterval(fetchData, 30000);
       return () => clearInterval(interval);
     }
-  }, [status, router, fetchData]);
+  }, [ready, authenticated, router, fetchData]);
 
   const handleCopyAddress = () => {
     if (wallet?.address) {
@@ -129,7 +129,7 @@ export default function MiningPage() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (!ready || loading) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -140,7 +140,7 @@ export default function MiningPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 

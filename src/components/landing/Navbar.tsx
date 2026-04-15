@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { Zap, Menu, X } from "lucide-react";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 
 export function Navbar() {
-  const { data: session } = useSession();
+  const { ready, authenticated } = usePrivy();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -73,7 +73,7 @@ export function Navbar() {
           {/* Actions */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            {session ? (
+            {authenticated ? (
               <Button variant="gradient" size="sm" asChild>
                 <Link href="/dashboard">Dashboard</Link>
               </Button>
@@ -131,7 +131,7 @@ export function Navbar() {
                 </a>
               ))}
               <div className="flex gap-3 pt-3">
-                {session ? (
+                {authenticated ? (
                   <Button variant="gradient" size="sm" className="flex-1" asChild>
                     <Link href="/dashboard">Dashboard</Link>
                   </Button>
