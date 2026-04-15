@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import HermesSidebar from "@/components/dashboard/HermesSidebar";
@@ -10,21 +10,21 @@ interface MiningLayoutProps {
 }
 
 export default function MiningLayout({ children }: MiningLayoutProps) {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const router = useRouter();
   const [credits, setCredits] = useState<number>(10000);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
     }
-  }, [status, router]);
+  }, [ready, authenticated, router]);
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (authenticated) {
       fetchCredits();
     }
-  }, [status]);
+  }, [authenticated]);
 
   async function fetchCredits() {
     try {
@@ -37,7 +37,7 @@ export default function MiningLayout({ children }: MiningLayoutProps) {
     }
   }
 
-  if (status === "loading") {
+  if (!ready) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -45,7 +45,7 @@ export default function MiningLayout({ children }: MiningLayoutProps) {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 
