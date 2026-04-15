@@ -157,7 +157,7 @@ git commit -m "Migrate to Privy authentication"
 git push
 
 # Deploy to VPS
-ssh root@159.65.141.68 "cd /root/reagent && git pull && rm -rf .next && npm install && npm run build && pm2 restart reagent --update-env"
+ssh root@188.166.247.252 "cd /root/reagent && git pull && rm -rf .next && npm install && npm run build && pm2 restart reagent --update-env"
 ```
 
 ## Benefits of Privy
