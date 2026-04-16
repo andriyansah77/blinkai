@@ -1,21 +1,21 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import HermesChat from "@/components/dashboard/HermesChat";
 
 export default function ChatPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
     }
-  }, [status, router]);
+  }, [ready, authenticated, router]);
 
-  if (status === "loading") {
+  if (!ready) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -23,7 +23,7 @@ export default function ChatPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 

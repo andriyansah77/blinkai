@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -82,7 +82,7 @@ interface HermesSession {
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated, user } = usePrivy();
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
@@ -95,8 +95,8 @@ export default function DashboardPage() {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
 
   const handleCopyUserId = () => {
-    if (session?.user?.id) {
-      navigator.clipboard.writeText(session.user.id);
+    if (user?.id) {
+      navigator.clipboard.writeText(user.id);
       setCopiedUserId(true);
       setTimeout(() => setCopiedUserId(false), 2000);
     }
@@ -226,9 +226,9 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
-    } else if (status === "authenticated") {
+    } else if (authenticated) {
       fetchDashboardData();
       
       // Auto-refresh every 30 seconds if enabled
@@ -237,7 +237,7 @@ export default function DashboardPage() {
         return () => clearInterval(interval);
       }
     }
-  }, [status, router, fetchDashboardData, autoRefresh]);
+  }, [ready, authenticated, router, fetchDashboardData, autoRefresh]);
 
   // Generate real activities based on system state
   const generateRealActivities = (statusData: any, stats: DashboardStats): RecentActivity[] => {
@@ -334,7 +334,7 @@ export default function DashboardPage() {
     return `${minutes}m`;
   };
 
-  if (status === "loading" || loading) {
+  if (!ready || loading) {
     return (
       <div className="h-full bg-background overflow-auto">
         {/* Header Skeleton */}
@@ -423,7 +423,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 
@@ -492,7 +492,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground mb-2">
-              Welcome back, {session?.user?.name || 'User'}
+              Welcome back, {user?.email?.address?.split('@')[0] || user?.wallet?.address?.slice(0, 6) || 'User'}
             </h1>
             <p className="text-muted-foreground">
               Your ReAgent dashboard with Hermes integration
@@ -501,12 +501,12 @@ export default function DashboardPage() {
               <p className="text-muted-foreground text-xs">
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </p>
-              {session?.user?.id && (
+              {user?.id && (
                 <>
                   <span className="text-muted-foreground text-xs">•</span>
                   <div className="flex items-center gap-2">
                     <p className="text-muted-foreground text-xs">
-                      User ID: {session.user.id.slice(0, 8)}...{session.user.id.slice(-4)}
+                      User ID: {user.id.slice(0, 8)}...{user.id.slice(-4)}
                     </p>
                     <button
                       onClick={handleCopyUserId}

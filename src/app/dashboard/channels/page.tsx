@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { 
@@ -58,7 +58,7 @@ interface Channel {
 }
 
 export default function ChannelsPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated, user } = usePrivy();
   const router = useRouter();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,22 +68,22 @@ export default function ChannelsPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
-    } else if (status === "authenticated") {
+    } else if (authenticated) {
       fetchChannels();
     }
-  }, [status, router]);
+  }, [ready, authenticated, router]);
 
   // Auto-refresh every 10 seconds for realtime sync
   useEffect(() => {
-    if (status === "authenticated") {
+    if (authenticated) {
       const interval = setInterval(() => {
         fetchChannels(true);
       }, 10000); // 10 seconds for realtime feel
       return () => clearInterval(interval);
     }
-  }, [status]);
+  }, [authenticated]);
 
   const fetchChannels = async (silent = false) => {
     try {
@@ -122,7 +122,7 @@ export default function ChannelsPage() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (!ready || loading) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -133,7 +133,7 @@ export default function ChannelsPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 
@@ -425,7 +425,7 @@ export default function ChannelsPage() {
           }}
           channelTypes={CHANNEL_TYPES}
           selectedType={selectedType}
-          userId={session?.user?.id}
+          userId={user?.id}
         />
       )}
 

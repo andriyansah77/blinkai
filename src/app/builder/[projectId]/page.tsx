@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter, useParams } from "next/navigation";
 import { Loader2, MessageSquare, Code2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { ChatPanel, Message } from "@/components/builder/ChatPanel";
@@ -21,7 +21,7 @@ interface Project {
 }
 
 export default function BuilderPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const router = useRouter();
   const params = useParams();
   const projectId = params.projectId as string;
@@ -37,12 +37,12 @@ export default function BuilderPage() {
   const savedRecentlyTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") router.push("/sign-in");
-  }, [status, router]);
+    if (ready && !authenticated) router.push("/sign-in");
+  }, [ready, authenticated, router]);
 
   useEffect(() => {
-    if (status === "authenticated" && projectId) fetchProject();
-  }, [status, projectId]);
+    if (authenticated && projectId) fetchProject();
+  }, [authenticated, projectId]);
 
   async function fetchProject() {
     try {
@@ -138,7 +138,7 @@ export default function BuilderPage() {
     };
   }, [messages, code]);
 
-  if (status === "loading" || loading) {
+  if (!ready || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

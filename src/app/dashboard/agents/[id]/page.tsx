@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -94,7 +94,7 @@ const tabContentVariants = {
 export default function AgentDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { status } = useSession();
+  const { ready, authenticated } = usePrivy();
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [sessions, setSessions] = useState<AgentSession[]>([]);
@@ -136,12 +136,12 @@ export default function AgentDetailPage() {
   const [embedCopied, setEmbedCopied] = useState(false);
 
   useEffect(() => {
-    if (status === "unauthenticated") router.push("/sign-in");
-  }, [status, router]);
+    if (ready && !authenticated) router.push("/sign-in");
+  }, [ready, authenticated, router]);
 
   useEffect(() => {
-    if (status === "authenticated") fetchAll();
-  }, [status, params.id]);
+    if (authenticated) fetchAll();
+  }, [authenticated, params.id]);
 
   useEffect(() => {
     if (editingName && nameInputRef.current) {
@@ -294,7 +294,7 @@ export default function AgentDetailPage() {
     });
   }
 
-  if (loading || status === "loading") {
+  if (loading || !ready) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-amber-400" />

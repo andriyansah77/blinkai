@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { Terminal as TerminalIcon, Play, Square, Trash2, Settings, Send } from "lucide-react";
@@ -14,7 +14,7 @@ interface TerminalLine {
 }
 
 export default function TerminalPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated, user } = usePrivy();
   const router = useRouter();
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [currentCommand, setCurrentCommand] = useState("");
@@ -25,14 +25,14 @@ export default function TerminalPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
-    } else if (status === "authenticated") {
+    } else if (authenticated) {
       // Add welcome message
       addLine("system", "ReAgent Hermes Terminal initialized");
       addLine("system", "Type 'help' for available Hermes commands");
     }
-  }, [status, router]);
+  }, [ready, authenticated, router]);
 
   useEffect(() => {
     // Auto-scroll to bottom when new lines are added
@@ -183,7 +183,7 @@ export default function TerminalPage() {
     }
   };
 
-  if (status === "loading") {
+  if (!ready) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -191,7 +191,7 @@ export default function TerminalPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 
@@ -249,7 +249,7 @@ export default function TerminalPage() {
                 <div>Connected to Hermes CLI with user isolation</div>
                 <div>Type 'help' for available commands</div>
                 <div className="mt-2 text-gray-500">
-                  User: {session?.user?.email}
+                  User: {user?.email?.address || user?.wallet?.address || 'Unknown'}
                 </div>
               </div>
             )}

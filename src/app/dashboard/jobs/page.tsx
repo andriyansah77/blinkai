@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Calendar, Plus, Play, Pause, Settings, Clock, CheckCircle, AlertCircle, Trash2, Edit } from "lucide-react";
@@ -21,7 +21,7 @@ interface HermesCronJob {
 }
 
 export default function JobsPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const router = useRouter();
   const [jobs, setJobs] = useState<HermesCronJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,12 +34,12 @@ export default function JobsPage() {
   });
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
-    } else if (status === "authenticated") {
+    } else if (authenticated) {
       fetchCronJobs();
     }
-  }, [status, router]);
+  }, [ready, authenticated, router]);
 
   const fetchCronJobs = async () => {
     try {
@@ -145,7 +145,7 @@ export default function JobsPage() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (!ready || loading) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -153,7 +153,7 @@ export default function JobsPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 
