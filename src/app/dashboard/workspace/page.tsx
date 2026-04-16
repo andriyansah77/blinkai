@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Folder, File, Plus, Upload, Download, Settings, Search, Grid, List, FileText, Code, Database, Calendar } from "lucide-react";
@@ -18,7 +18,7 @@ interface WorkspaceItem {
 }
 
 export default function WorkspacePage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const router = useRouter();
   const [items, setItems] = useState<WorkspaceItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,12 +27,12 @@ export default function WorkspacePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
-    } else if (status === "authenticated") {
+    } else if (ready && authenticated) {
       fetchWorkspaceData();
     }
-  }, [status, router]);
+  }, [ready, authenticated, router]);
 
   const fetchWorkspaceData = async () => {
     try {
@@ -275,7 +275,7 @@ export default function WorkspacePage() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (!ready || loading) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -283,7 +283,7 @@ export default function WorkspacePage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 

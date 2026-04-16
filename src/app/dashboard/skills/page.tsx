@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { 
@@ -32,7 +32,7 @@ interface Skill {
 }
 
 export default function SkillsPage() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const router = useRouter();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,22 +43,22 @@ export default function SkillsPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (ready && !authenticated) {
       router.push("/sign-in");
-    } else if (status === "authenticated") {
+    } else if (ready && authenticated) {
       fetchSkills();
     }
-  }, [status, router]);
+  }, [ready, authenticated, router]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
-    if (status === "authenticated") {
+    if (ready && authenticated) {
       const interval = setInterval(() => {
         fetchSkills(true); // Silent refresh
       }, 30000);
       return () => clearInterval(interval);
     }
-  }, [status]);
+  }, [ready, authenticated]);
 
   const fetchSkills = async (silent = false) => {
     try {
@@ -108,7 +108,7 @@ export default function SkillsPage() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (!ready || loading) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -119,7 +119,7 @@ export default function SkillsPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authenticated) {
     return null;
   }
 
