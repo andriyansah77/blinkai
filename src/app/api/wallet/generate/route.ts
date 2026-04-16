@@ -1,6 +1,6 @@
 /**
- * POST /api/wallet/import
- * Import external wallet using private key
+ * POST /api/wallet/generate
+ * Generate new wallet for user (Privy embedded wallet or fallback to ethers)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -56,53 +56,38 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             code: 'WALLET_EXISTS',
-            message: 'User already has a wallet. Cannot import another wallet.'
+            message: 'User already has a wallet'
           }
         },
         { status: 400 }
       );
     }
 
-    // 3. Get private key from request
-    const body = await request.json();
-    const { privateKey } = body;
-
-    if (!privateKey || typeof privateKey !== 'string') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'INVALID_INPUT',
-            message: 'Private key is required'
-          }
-        },
-        { status: 400 }
-      );
-    }
-
-    // 4. Validate private key format
+    // 3. Try to get Privy embedded wallet first
     let wallet: ethers.Wallet;
+    let walletSource = 'ethers'; // Default fallback
+    
     try {
-      // Remove 0x prefix if present
-      const cleanPrivateKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
-      wallet = new ethers.Wallet(cleanPrivateKey);
-    } catch (error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'INVALID_PRIVATE_KEY',
-            message: 'Invalid private key format'
-          }
-        },
-        { status: 400 }
-      );
+      // TODO: Implement Privy embedded wallet creation
+      // For now, we'll use ethers as fallback
+      // const privyWallet = await createPrivyEmbeddedWallet(userId);
+      // if (privyWallet) {
+      //   wallet = new ethers.Wallet(privyWallet.privateKey);
+      //   walletSource = 'privy';
+      // }
+      
+      // Fallback to ethers wallet generation
+      wallet = ethers.Wallet.createRandom();
+      console.log(`[Wallet] Generated new ethers wallet for user ${userId}`);
+    } catch (privyError) {
+      console.warn('[Wallet] Privy wallet creation failed, using ethers fallback:', privyError);
+      wallet = ethers.Wallet.createRandom();
     }
 
-    // 5. Encrypt private key
+    // 4. Encrypt private key
     const { encrypted, iv } = encryptPrivateKey(wallet.privateKey);
 
-    // 6. Create wallet record
+    // 5. Create wallet record
     const newWallet = await prisma.wallet.create({
       data: {
         userId,
@@ -110,14 +95,14 @@ export async function POST(request: NextRequest) {
         encryptedPrivateKey: encrypted,
         keyIv: iv,
         network: 'tempo',
-        imported: true,
+        imported: false,
         reagentBalance: '0',
         pathusdBalance: '0',
         lastBalanceUpdate: new Date()
       }
     });
 
-    // 7. Create USD balance record
+    // 6. Create USD balance record
     await prisma.usdBalance.create({
       data: {
         userId,
@@ -127,24 +112,24 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log(`[Wallet] External wallet imported for user ${userId}: ${wallet.address}`);
+    console.log(`[Wallet] New wallet created for user ${userId}: ${wallet.address} (source: ${walletSource})`);
 
-    // 8. Return success
+    // 7. Return success with wallet info
     return NextResponse.json({
       success: true,
       address: wallet.address,
-      imported: true,
-      message: 'External wallet imported successfully'
+      source: walletSource,
+      message: 'Wallet generated successfully'
     });
 
   } catch (error: any) {
-    console.error('Wallet import error:', error);
+    console.error('Wallet generation error:', error);
     return NextResponse.json(
       {
         success: false,
         error: {
           code: 'INTERNAL_ERROR',
-          message: 'Failed to import wallet',
+          message: 'Failed to generate wallet',
           details: process.env.NODE_ENV === 'development' ? error.message : undefined
         }
       },

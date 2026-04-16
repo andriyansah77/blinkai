@@ -34,6 +34,12 @@ const steps: OnboardingStep[] = [
     component: AgentSetupStep
   },
   {
+    id: "wallet",
+    title: "Setup Your Wallet",
+    description: "Generate or import your blockchain wallet",
+    component: WalletSetupStep
+  },
+  {
     id: "channels",
     title: "Connect Channels",
     description: "Connect Discord, Telegram, or other platforms",
@@ -233,6 +239,291 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
+    </div>
+  );
+}
+
+function WalletSetupStep({ data, updateData, nextStep, prevStep }: any) {
+  const { getAccessToken } = usePrivy();
+  const [walletMode, setWalletMode] = useState<'generate' | 'import' | null>(null);
+  const [privateKey, setPrivateKey] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
+
+  const handleGenerateWallet = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const token = await getAccessToken();
+      const response = await fetch('/api/wallet/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setWalletAddress(result.address);
+        updateData({ walletAddress: result.address, walletImported: false });
+        // Auto-proceed to next step after 2 seconds
+        setTimeout(() => nextStep(), 2000);
+      } else {
+        setError(result.error?.message || 'Failed to generate wallet');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImportWallet = async () => {
+    if (!privateKey.trim()) {
+      setError('Please enter your private key');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    
+    try {
+      const token = await getAccessToken();
+      const response = await fetch('/api/wallet/import', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ privateKey })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setWalletAddress(result.address);
+        updateData({ walletAddress: result.address, walletImported: true });
+        // Auto-proceed to next step after 2 seconds
+        setTimeout(() => nextStep(), 2000);
+      } else {
+        setError(result.error?.message || 'Failed to import wallet');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {!walletMode && !walletAddress && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-8">
+          <div className="text-center mb-6">
+            <Wallet className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Setup Your Wallet</h3>
+            <p className="text-gray-400">
+              Choose how you want to setup your blockchain wallet
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => setWalletMode('generate')}
+              className="p-6 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-left"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-white mb-1">Generate New Wallet</h3>
+                  <p className="text-sm text-gray-400">
+                    Create a new secure wallet automatically
+                  </p>
+                  <div className="mt-3 flex items-center gap-2 text-xs text-green-400">
+                    <Check className="w-4 h-4" />
+                    <span>Recommended for new users</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setWalletMode('import')}
+              className="p-6 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-left"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                  <Wallet className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-white mb-1">Import Existing Wallet</h3>
+                  <p className="text-sm text-gray-400">
+                    Use your existing wallet with private key
+                  </p>
+                  <div className="mt-3 flex items-center gap-2 text-xs text-blue-400">
+                    <Check className="w-4 h-4" />
+                    <span>For experienced users</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <div className="mt-6 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-orange-300">
+              Your wallet will be used for mining REAGENT tokens and managing your assets on Tempo Network
+            </p>
+          </div>
+        </div>
+      )}
+
+      {walletMode === 'generate' && !walletAddress && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-8">
+          <div className="text-center">
+            <Wallet className="w-16 h-16 text-green-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Generate New Wallet</h3>
+            <p className="text-gray-400 mb-6">
+              We'll create a secure wallet for you automatically
+            </p>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleGenerateWallet}
+              disabled={loading}
+              className="flex items-center gap-2 bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-500 px-6 py-3 rounded-lg font-medium transition-colors mx-auto"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Generate Wallet
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => setWalletMode(null)}
+              className="mt-4 text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              ← Back to options
+            </button>
+          </div>
+        </div>
+      )}
+
+      {walletMode === 'import' && !walletAddress && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-8">
+          <div className="text-center mb-6">
+            <Wallet className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Import Existing Wallet</h3>
+            <p className="text-gray-400">
+              Enter your private key to import your wallet
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-white font-medium mb-3">Private Key</label>
+              <input
+                type="password"
+                value={privateKey}
+                onChange={(e) => setPrivateKey(e.target.value)}
+                placeholder="0x..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 font-mono text-sm"
+              />
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex items-start gap-3">
+              <span className="text-yellow-400 text-xl flex-shrink-0">⚠️</span>
+              <p className="text-sm text-yellow-300">
+                Never share your private key with anyone. We encrypt and store it securely.
+              </p>
+            </div>
+
+            <button
+              onClick={handleImportWallet}
+              disabled={loading || !privateKey.trim()}
+              className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-500 px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <Wallet className="w-4 h-4" />
+                  Import Wallet
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => setWalletMode(null)}
+              className="w-full text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              ← Back to options
+            </button>
+          </div>
+        </div>
+      )}
+
+      {walletAddress && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-8">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="w-8 h-8 text-green-400" />
+            </div>
+            
+            <h3 className="text-xl font-semibold mb-2">Wallet Setup Complete!</h3>
+            <p className="text-gray-400 mb-6">Your wallet is ready to use</p>
+            
+            <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-400 mb-2">Wallet Address</p>
+              <p className="text-white font-mono text-sm break-all">{walletAddress}</p>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-green-400 mb-4">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm">Proceeding to next step...</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!walletAddress && (
+        <div className="flex justify-between">
+          <button
+            onClick={prevStep}
+            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -490,12 +781,14 @@ function DeployStep({ data }: any) {
   const [progress, setProgress] = useState(0);
   const [currentTask, setCurrentTask] = useState('');
   const [walletInfo, setWalletInfo] = useState<any>(null);
+  const [gatewayInfo, setGatewayInfo] = useState<any>({ installed: false, running: false, error: null });
 
   const deployTasks = [
     'Creating your AI agent...',
     'Setting up personality and skills...',
-    'Generating your blockchain wallet...',
-    'Initializing mining balance...',
+    'Configuring AI model and provider...',
+    'Installing gateway service...',
+    'Starting gateway for messaging platforms...',
     'Connecting channels...',
     'Configuring plan and credits...',
     'Deploying to cloud infrastructure...',
@@ -530,6 +823,11 @@ function DeployStep({ data }: any) {
       }
 
       const result = await response.json();
+      
+      // Store gateway status
+      if (result.gateway) {
+        setGatewayInfo(result.gateway);
+      }
       
       try {
         const walletResponse = await fetch('/api/wallet', {
@@ -630,6 +928,60 @@ function DeployStep({ data }: any) {
                 </div>
               </div>
             )}
+            
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6 text-left">
+              <h4 className="font-semibold mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-blue-400" />
+                Gateway Service Status
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">Service Installed</span>
+                  <div className="flex items-center gap-2">
+                    {gatewayInfo.installed ? (
+                      <>
+                        <Check className="w-4 h-4 text-green-400" />
+                        <span className="text-sm text-green-400">Yes</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-red-400 text-xl">✕</span>
+                        <span className="text-sm text-red-400">No</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">Service Running</span>
+                  <div className="flex items-center gap-2">
+                    {gatewayInfo.running ? (
+                      <>
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-sm text-green-400">Active</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <span className="text-sm text-gray-400">Stopped</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {gatewayInfo.error && (
+                  <div className="pt-3 border-t border-white/10">
+                    <p className="text-xs text-yellow-400">
+                      Note: {gatewayInfo.error}
+                    </p>
+                  </div>
+                )}
+                <div className="pt-3 border-t border-white/10 flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-blue-300">
+                    Gateway allows your agent to connect with Telegram, Discord, and other messaging platforms
+                  </p>
+                </div>
+              </div>
+            </div>
             
             <div className="flex items-center justify-center gap-2 text-green-400 mb-4">
               <Sparkles className="w-4 h-4" />

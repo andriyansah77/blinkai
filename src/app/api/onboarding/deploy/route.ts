@@ -221,7 +221,40 @@ return helpGuide(params);`
       // Continue even if minting skill installation fails
     }
 
-    // 7. Create initial session
+    // 7. Auto-install and start gateway service
+    let gatewayStatus = { installed: false, running: false, error: null as string | null };
+    try {
+      console.log(`[Onboarding] Setting up gateway for user ${session.user.id}`);
+      
+      // Import hermesIntegration
+      const { hermesIntegration } = await import('@/lib/hermes-integration');
+      
+      // Setup gateway (non-interactive)
+      const setupResult = await hermesIntegration.setupGateway(session.user.id!);
+      if (setupResult.success) {
+        console.log(`[Onboarding] Gateway setup completed for user ${session.user.id}`);
+        gatewayStatus.installed = true;
+        
+        // Start gateway service
+        const startResult = await hermesIntegration.startGateway(session.user.id!);
+        if (startResult.success) {
+          console.log(`[Onboarding] ✅ Gateway started successfully for user ${session.user.id}`);
+          gatewayStatus.running = true;
+        } else {
+          console.warn(`[Onboarding] Gateway start warning: ${startResult.error}`);
+          gatewayStatus.error = startResult.error || 'Failed to start gateway';
+        }
+      } else {
+        console.warn(`[Onboarding] Gateway setup warning: ${setupResult.error}`);
+        gatewayStatus.error = setupResult.error || 'Failed to setup gateway';
+      }
+    } catch (gatewayError) {
+      console.error('[Onboarding] Gateway setup error:', gatewayError);
+      gatewayStatus.error = gatewayError instanceof Error ? gatewayError.message : 'Unknown gateway error';
+      // Continue anyway - gateway is optional
+    }
+
+    // 8. Create initial session
     const session_id = await HermesAgentDB.createSession(
       agent.id, 
       session.user.id!, 
@@ -240,6 +273,7 @@ return helpGuide(params);`
         instanceId: hermesInstanceId,
         cliAvailable: hermesInstanceId !== null
       },
+      gateway: gatewayStatus,
       credits: creditAmount,
       plan,
       sessionId: session_id.id,
