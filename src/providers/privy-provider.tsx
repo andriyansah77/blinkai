@@ -47,8 +47,8 @@ export default function PrivyProviderWrapper({ children }: { children: React.Rea
           logo: '/logo.jpg',
         },
         embeddedWallets: {
-          createOnLogin: 'all-users' as any,
-        },
+          createOnLogin: 'all-users',
+        } as any,
         defaultChain: tempoNetwork,
         supportedChains: [tempoNetwork],
       }}
