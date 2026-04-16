@@ -40,19 +40,24 @@ export default function PrivyProviderWrapper({ children }: { children: React.Rea
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
       config={{
-        loginMethods: ['email', 'wallet', 'google', 'twitter', 'discord'],
+        loginMethods: ['email', 'google', 'twitter', 'discord'],
         appearance: {
           theme: 'dark',
           accentColor: '#f97316', // Orange-500
           logo: '/logo.jpg',
         },
         embeddedWallets: {
-          ethereum: {
-            createOnLogin: 'users-without-wallets',
-          },
+          createOnLogin: 'all-users',
+          requireUserPasswordOnCreate: false,
         },
         defaultChain: tempoNetwork,
         supportedChains: [tempoNetwork],
+        // Disable external wallets to avoid conflicts with custom chain
+        externalWallets: {
+          coinbaseWallet: {
+            connectionOptions: 'eoaOnly',
+          },
+        },
       }}
     >
       <QueryClientProvider client={queryClient}>
