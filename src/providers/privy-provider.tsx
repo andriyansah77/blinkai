@@ -48,16 +48,9 @@ export default function PrivyProviderWrapper({ children }: { children: React.Rea
         },
         embeddedWallets: {
           createOnLogin: 'all-users',
-          requireUserPasswordOnCreate: false,
         },
         defaultChain: tempoNetwork,
         supportedChains: [tempoNetwork],
-        // Disable external wallets to avoid conflicts with custom chain
-        externalWallets: {
-          coinbaseWallet: {
-            connectionOptions: 'eoaOnly',
-          },
-        },
       }}
     >
       <QueryClientProvider client={queryClient}>
