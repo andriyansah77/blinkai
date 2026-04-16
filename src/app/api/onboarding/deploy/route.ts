@@ -21,6 +21,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Agent name is required" }, { status: 400 });
     }
 
+    // 0. Ensure user exists in database (upsert)
+    await prisma.user.upsert({
+      where: { id: session.user.id! },
+      update: {
+        email: session.user.email,
+        name: session.user.name,
+      },
+      create: {
+        id: session.user.id!,
+        email: session.user.email,
+        name: session.user.name || session.user.id!,
+      }
+    });
+
+    console.log(`[Onboarding] User ensured in database: ${session.user.id}`);
+
     // 1. Create the Hermes agent in database
     const systemPrompt = `You are ${agentName}, ${agentPersonality || 'a helpful AI assistant'}. 
 
