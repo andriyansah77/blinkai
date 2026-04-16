@@ -64,7 +64,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Try to get Privy embedded wallet first
-    let wallet: ethers.Wallet;
+    let walletAddress: string;
+    let walletPrivateKey: string;
     let walletSource = 'ethers'; // Default fallback
     
     try {
@@ -72,26 +73,31 @@ export async function POST(request: NextRequest) {
       // For now, we'll use ethers as fallback
       // const privyWallet = await createPrivyEmbeddedWallet(userId);
       // if (privyWallet) {
-      //   wallet = new ethers.Wallet(privyWallet.privateKey);
+      //   walletAddress = privyWallet.address;
+      //   walletPrivateKey = privyWallet.privateKey;
       //   walletSource = 'privy';
       // }
       
       // Fallback to ethers wallet generation
-      wallet = ethers.Wallet.createRandom();
+      const randomWallet = ethers.Wallet.createRandom();
+      walletAddress = randomWallet.address;
+      walletPrivateKey = randomWallet.privateKey;
       console.log(`[Wallet] Generated new ethers wallet for user ${userId}`);
     } catch (privyError) {
       console.warn('[Wallet] Privy wallet creation failed, using ethers fallback:', privyError);
-      wallet = ethers.Wallet.createRandom();
+      const randomWallet = ethers.Wallet.createRandom();
+      walletAddress = randomWallet.address;
+      walletPrivateKey = randomWallet.privateKey;
     }
 
     // 4. Encrypt private key
-    const { encrypted, iv } = encryptPrivateKey(wallet.privateKey);
+    const { encrypted, iv } = encryptPrivateKey(walletPrivateKey);
 
     // 5. Create wallet record
     const newWallet = await prisma.wallet.create({
       data: {
         userId,
-        address: wallet.address,
+        address: walletAddress,
         encryptedPrivateKey: encrypted,
         keyIv: iv,
         network: 'tempo',
@@ -112,12 +118,12 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log(`[Wallet] New wallet created for user ${userId}: ${wallet.address} (source: ${walletSource})`);
+    console.log(`[Wallet] New wallet created for user ${userId}: ${walletAddress} (source: ${walletSource})`);
 
     // 7. Return success with wallet info
     return NextResponse.json({
       success: true,
-      address: wallet.address,
+      address: walletAddress,
       source: walletSource,
       message: 'Wallet generated successfully'
     });
