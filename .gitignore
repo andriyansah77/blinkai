@@ -80,7 +80,10 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public - Allow logo and favicon
+public/*
+!public/logo.jpg
+!public/favicon.jpg
 
 # Storybook build outputs
 .out
