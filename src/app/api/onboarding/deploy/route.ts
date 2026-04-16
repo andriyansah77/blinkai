@@ -30,8 +30,9 @@ export async function POST(request: NextRequest) {
       },
       create: {
         id: session.user.id!,
-        email: session.user.email,
+        email: session.user.email || `${session.user.id}@privy.user`,
         name: session.user.name || session.user.id!,
+        password: 'PRIVY_AUTH', // Privy users don't use password
       }
     });
 
