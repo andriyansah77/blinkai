@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Toaster } from "react-hot-toast";
 import PrivyProviderWrapper from "@/providers/privy-provider";
+import ErrorSuppressor from "@/components/ErrorSuppressor";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
+        <ErrorSuppressor />
         <PrivyProviderWrapper>
           <ThemeProvider
             attribute="class"
