@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getPrivySession } from "@/lib/privy-server";
 import { prisma } from "@/lib/prisma";
 import { setupUserGateway } from "@/lib/setup-user-gateway";
 
@@ -10,7 +9,7 @@ import { setupUserGateway } from "@/lib/setup-user-gateway";
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     
     // Only allow authenticated users (you might want to add admin check)
     if (!session?.user) {
@@ -105,7 +104,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

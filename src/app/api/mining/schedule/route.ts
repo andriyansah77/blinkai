@@ -4,14 +4,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getPrivySession } from "@/lib/privy-server";
 import { mintingScheduler } from '@/lib/mining/minting-scheduler';
 
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user?.id) {
       return NextResponse.json(
         {
@@ -116,7 +115,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user?.id) {
       return NextResponse.json(
         {

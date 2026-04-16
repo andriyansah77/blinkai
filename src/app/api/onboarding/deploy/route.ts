@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getPrivySession } from "@/lib/privy-server";
 import { HermesAgentDB } from "@/lib/hermes-db";
 import { hermesCliWrapper } from "@/lib/hermes-cli-wrapper";
 import { autoInstallMintingSkill } from "@/lib/hooks/auto-install-minting-skill";
@@ -10,7 +9,7 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -236,7 +235,7 @@ return helpGuide(params);`
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const hermesInstalled = await hermesCliWrapper.isHermesInstalled();
     const runningAgents = hermesCliWrapper.getAllAgents();

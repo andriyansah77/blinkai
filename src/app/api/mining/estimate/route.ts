@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getPrivySession } from "@/lib/privy-server";
 import { gasEstimator } from '@/lib/mining/gas-estimator';
 import Decimal from 'decimal.js';
 
@@ -16,7 +15,7 @@ const TOKENS_PER_INSCRIPTION = '10000';
 export async function GET(request: NextRequest) {
   try {
     // 1. Authenticate user (optional for estimate)
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
 
     // 2. Parse query parameters
     const { searchParams } = new URL(request.url);

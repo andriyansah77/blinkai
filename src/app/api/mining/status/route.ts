@@ -4,15 +4,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getPrivySession } from "@/lib/privy-server";
 import { walletManager } from '@/lib/mining/wallet-manager';
 import { usdBalanceManager } from '@/lib/mining/usd-balance-manager';
 
 export async function GET(request: NextRequest) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },

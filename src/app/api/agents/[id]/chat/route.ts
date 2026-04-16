@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getPrivySession } from "@/lib/privy-server";
 import { prisma } from "@/lib/prisma";
 import { getUserAIConfig } from "@/lib/platform";
 import { getUserCredits, deductCredits, estimateCreditCost } from "@/lib/credits";
@@ -19,7 +18,7 @@ interface StoredMessage {
 const ESTIMATED_TOKENS_PER_MESSAGE = 500;
 
 export async function POST(request: NextRequest, { params }: RouteContext) {
-  const session = await getServerSession(authOptions);
+  const session = await getPrivySession(request);
 
   const body = await request.json() as {
     message: string;

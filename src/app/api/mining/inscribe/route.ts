@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getPrivySession } from '@/lib/privy-server';
 import { inscriptionEngine } from '@/lib/mining/inscription-engine';
 import { prisma } from '@/lib/prisma';
 
@@ -58,7 +57,7 @@ function checkRateLimit(userId: string): { allowed: boolean; remaining: number; 
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },

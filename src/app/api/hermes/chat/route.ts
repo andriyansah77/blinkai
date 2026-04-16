@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getPrivySession } from "@/lib/privy-server";
 import { hermesIntegration } from "@/lib/hermes-integration";
 import { deductCredits, getUserCredits } from "@/lib/credits";
 import { getPlatformConfig } from "@/lib/platform";
@@ -9,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log("[Chat API] Received chat request");
     
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user) {
       console.log("[Chat API] Unauthorized request");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -223,7 +222,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     return NextResponse.json({ 
       message: "Hermes Agent Chat API",

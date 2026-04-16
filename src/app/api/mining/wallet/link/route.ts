@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getPrivySession } from "@/lib/privy-server";
 import { prisma } from '@/lib/prisma';
 import { ethers } from 'ethers';
 
@@ -69,7 +68,7 @@ async function grantIssuerRole(walletAddress: string): Promise<{ success: boolea
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },

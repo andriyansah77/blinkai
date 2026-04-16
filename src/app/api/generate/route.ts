@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getPrivySession } from "@/lib/privy-server";
 import { hermesStream, getHermesConfig, HermesMessage, HermesConfig } from "@/lib/hermes";
 
 export const runtime = "nodejs";
@@ -10,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

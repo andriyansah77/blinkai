@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getPrivySession } from "@/lib/privy-server";
 import { readFile } from "fs/promises";
 import path from "path";
 import { getUserAIConfig } from "@/lib/platform";
@@ -140,7 +139,7 @@ Please describe what you see in the image or what you'd like to do with it, and 
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

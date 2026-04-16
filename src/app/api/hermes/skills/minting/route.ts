@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getPrivySession } from "@/lib/privy-server";
 import { WalletManager } from "@/lib/mining/wallet-manager";
 import { InscriptionEngine } from "@/lib/mining/inscription-engine";
 import { GasEstimator } from "@/lib/mining/gas-estimator";
@@ -15,7 +14,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: NextRequest) {
   try {
     // Check for session-based auth first
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     
     // If no session, check for X-User-ID header (for Hermes CLI)
     let userId = session?.user?.id;

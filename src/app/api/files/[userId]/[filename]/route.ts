@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-
+import { getPrivySession } from "@/lib/privy-server";
 interface RouteContext {
   params: { userId: string; filename: string };
 }
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     
     // Only allow users to access their own files or public files
     if (!session?.user || session.user.id !== params.userId) {

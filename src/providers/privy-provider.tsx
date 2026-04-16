@@ -1,10 +1,12 @@
 'use client';
 
-import { PrivyProvider } from '@privy-io/react-auth';
+import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { http } from 'viem';
 import { createConfig } from '@privy-io/wagmi';
+import { useEffect } from 'react';
+import { setGlobalAccessTokenGetter } from '@/lib/api-client';
 
 // Tempo Network configuration
 const tempoNetwork = {
@@ -55,9 +57,23 @@ export default function PrivyProviderWrapper({ children }: { children: React.Rea
     >
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
-          {children}
+          <AuthInterceptor>
+            {children}
+          </AuthInterceptor>
         </WagmiProvider>
       </QueryClientProvider>
     </PrivyProvider>
   );
+}
+
+// Component to setup global auth interceptor
+function AuthInterceptor({ children }: { children: React.ReactNode }) {
+  const { getAccessToken } = usePrivy();
+
+  useEffect(() => {
+    // Set global access token getter for fetch interceptor
+    setGlobalAccessTokenGetter(getAccessToken);
+  }, [getAccessToken]);
+
+  return <>{children}</>;
 }

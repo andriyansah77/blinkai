@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getPrivySession } from "@/lib/privy-server";
 import { mintingScheduler } from '@/lib/mining/minting-scheduler';
 import { prisma } from '@/lib/prisma';
 
@@ -15,7 +14,7 @@ export async function PATCH(
 ) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user?.id) {
       return NextResponse.json(
         {
@@ -126,7 +125,7 @@ export async function DELETE(
 ) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const session = await getPrivySession(request);
     if (!session?.user?.id) {
       return NextResponse.json(
         {
