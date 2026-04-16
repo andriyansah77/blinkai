@@ -88,6 +88,22 @@ export class HermesIntegration {
   }
 
   /**
+   * Sanitize user ID to be compatible with Hermes profile naming rules
+   * Hermes only allows: [a-z0-9][a-z0-9_-]{0,63}
+   * Privy user IDs contain colons (did:privy:xxx) which must be replaced
+   */
+  private sanitizeUserId(userId: string): string {
+    return userId.replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
+  }
+
+  /**
+   * Get profile name for a user
+   */
+  private getProfileName(userId: string): string {
+    return `user-${this.sanitizeUserId(userId)}`;
+  }
+
+  /**
    * Execute Hermes command with user profile isolation
    */
   private async executeHermesCommand(
@@ -95,7 +111,7 @@ export class HermesIntegration {
     command: HermesCommand,
     options: { cwd?: string; timeout?: number } = {}
   ): Promise<{ success: boolean; output: string; error: string }> {
-    const profileName = `user-${userId}`;
+    const profileName = this.getProfileName(userId);
     const profileHome = path.join(this.profilesDir, profileName);
     
     // Ensure profile directory exists
@@ -165,7 +181,7 @@ export class HermesIntegration {
     try {
       console.log(`[Profile] Creating profile for user ${userId}`);
       
-      const profileName = `user-${userId}`;
+      const profileName = this.getProfileName(userId);
       
       // Build command WITHOUT --profile flag (profile doesn't exist yet!)
       const args = ['profile', 'create', profileName];
@@ -293,7 +309,7 @@ REAGENT_USER_ID=${userId}
 
   async getProfile(userId: string): Promise<HermesProfile | null> {
     try {
-      const profileName = `user-${userId}`;
+      const profileName = this.getProfileName(userId);
       
       // Check if profile exists in Hermes by listing profiles
       try {
@@ -347,7 +363,7 @@ REAGENT_USER_ID=${userId}
 
   async deleteProfile(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const profileName = `user-${userId}`;
+      const profileName = this.getProfileName(userId);
       const command: HermesCommand = {
         command: 'profile',
         subcommand: 'delete',
@@ -514,7 +530,7 @@ REAGENT_USER_ID=${userId}
       quiet?: boolean;
     } = {}
   ): AsyncGenerator<string> {
-    const profileName = `user-${userId}`;
+    const profileName = this.getProfileName(userId);
     const profileHome = path.join(this.profilesDir, profileName);
     
     const command: HermesCommand = {
@@ -927,7 +943,7 @@ REAGENT_USER_ID=${userId}
    */
   async getGatewayStatus(userId: string): Promise<HermesGateway> {
     try {
-      const profileName = `user-${userId}`;
+      const profileName = this.getProfileName(userId);
       
       // Check if gateway service is running
       try {
@@ -1021,7 +1037,7 @@ REAGENT_USER_ID=${userId}
     try {
       console.log(`[Gateway] Starting gateway for user ${userId}`);
       
-      const profileName = `user-${userId}`;
+      const profileName = this.getProfileName(userId);
       
       // First, check if gateway service is installed
       try {
@@ -1151,7 +1167,7 @@ REAGENT_USER_ID=${userId}
       console.log(`[Platform] Setting up Telegram for user ${userId}`);
       
       // Edit config.yaml directly instead of using config set
-      const profileName = `user-${userId}`;
+      const profileName = this.getProfileName(userId);
       const configPath = `/root/.hermes/profiles/${profileName}/config.yaml`;
       
       try {
@@ -1237,7 +1253,7 @@ REAGENT_USER_ID=${userId}
       console.log(`[Platform] Setting up Discord for user ${userId}`);
       
       // Edit config.yaml directly instead of using config set
-      const profileName = `user-${userId}`;
+      const profileName = this.getProfileName(userId);
       const configPath = `/root/.hermes/profiles/${profileName}/config.yaml`;
       
       try {
@@ -1322,7 +1338,7 @@ REAGENT_USER_ID=${userId}
     try {
       console.log(`[Platform] Setting up WhatsApp for user ${userId}`);
       
-      const profileName = `user-${userId}`;
+      const profileName = this.getProfileName(userId);
       
       // WhatsApp requires interactive terminal for QR code
       // We cannot run it through subprocess, so we provide instructions instead
