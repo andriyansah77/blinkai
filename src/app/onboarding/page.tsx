@@ -54,7 +54,7 @@ const steps: OnboardingStep[] = [
 ];
 
 export default function OnboardingPage() {
-  const { ready, authenticated } = usePrivy();
+  const { ready, authenticated, getAccessToken } = usePrivy();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [onboardingData, setOnboardingData] = useState({
@@ -485,6 +485,7 @@ function PlanStep({ data, updateData, nextStep, prevStep }: any) {
 
 function DeployStep({ data }: any) {
   const router = useRouter();
+  const { getAccessToken } = usePrivy();
   const [deployStatus, setDeployStatus] = useState<'deploying' | 'success' | 'error'>('deploying');
   const [progress, setProgress] = useState(0);
   const [currentTask, setCurrentTask] = useState('');
@@ -508,22 +509,34 @@ function DeployStep({ data }: any) {
 
   const deployAgent = async () => {
     try {
+      // Get Privy access token
+      const token = await getAccessToken();
+      
+      console.log('Deploying with token:', token ? 'Token present' : 'No token');
+      
       const response = await fetch('/api/onboarding/deploy', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify(data)
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Deploy error:', response.status, errorData);
         throw new Error('Failed to deploy agent');
       }
 
       const result = await response.json();
       
       try {
-        const walletResponse = await fetch('/api/wallet');
+        const walletResponse = await fetch('/api/wallet', {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        });
         if (walletResponse.ok) {
           const walletData = await walletResponse.json();
           setWalletInfo(walletData);
