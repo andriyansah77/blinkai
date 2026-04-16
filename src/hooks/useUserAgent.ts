@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { usePrivy } from '@privy-io/react-auth';
 
 interface UserAgent {
   id: string;
@@ -15,19 +15,19 @@ interface UserAgent {
 }
 
 export function useUserAgent() {
-  const { data: session, status } = useSession();
+  const { ready, authenticated } = usePrivy();
   const [agent, setAgent] = useState<UserAgent | null>(null);
   const [hasAgent, setHasAgent] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (ready && authenticated) {
       fetchUserAgent();
-    } else if (status === 'unauthenticated') {
+    } else if (ready && !authenticated) {
       setLoading(false);
     }
-  }, [status]);
+  }, [ready, authenticated]);
 
   const fetchUserAgent = async () => {
     try {
@@ -53,7 +53,7 @@ export function useUserAgent() {
   };
 
   const refetch = () => {
-    if (status === 'authenticated') {
+    if (ready && authenticated) {
       fetchUserAgent();
     }
   };
