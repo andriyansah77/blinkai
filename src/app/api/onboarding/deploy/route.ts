@@ -22,16 +22,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 0. Ensure user exists in database (upsert)
+    const userEmail = session.user.email || `${session.user.id}@privy.user`;
+    const userName = session.user.name || session.user.id!;
+    
     await prisma.user.upsert({
       where: { id: session.user.id! },
       update: {
-        email: session.user.email,
-        name: session.user.name,
+        email: userEmail,
+        name: userName,
       },
       create: {
         id: session.user.id!,
-        email: session.user.email || `${session.user.id}@privy.user`,
-        name: session.user.name || session.user.id!,
+        email: userEmail,
+        name: userName,
         password: 'PRIVY_AUTH', // Privy users don't use password
       }
     });
