@@ -19,31 +19,43 @@ export async function getPrivyUser(request: NextRequest) {
   try {
     // Get authorization header
     const authHeader = request.headers.get('authorization');
+    console.log('[Privy Auth] Authorization header:', authHeader ? 'Present' : 'Missing');
+    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('[Privy Auth] Invalid authorization header format');
       return null;
     }
 
     // Extract token
     const token = authHeader.substring(7);
     if (!token) {
+      console.log('[Privy Auth] Token is empty');
       return null;
     }
+
+    console.log('[Privy Auth] Token length:', token.length);
+    console.log('[Privy Auth] Token preview:', token.substring(0, 20) + '...');
 
     // Decode JWT to get user ID
     // The token is already verified by Privy on client side
     const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
     const userId = payload.sub;
     
+    console.log('[Privy Auth] Decoded user ID:', userId);
+    
     if (!userId) {
-      console.error('No userId found in token');
+      console.error('[Privy Auth] No userId found in token');
       return null;
     }
     
     // Get user from Privy
+    console.log('[Privy Auth] Fetching user from Privy...');
     const user = await privyClient.users().get(userId);
+    console.log('[Privy Auth] User fetched successfully:', user?.id);
+    
     return user;
   } catch (error) {
-    console.error('Privy auth error:', error);
+    console.error('[Privy Auth] Error:', error);
     return null;
   }
 }
