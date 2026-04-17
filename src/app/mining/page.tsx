@@ -195,7 +195,15 @@ export default function MiningPage() {
             </div>
             <h3 className="text-muted-foreground text-sm mb-1">PATHUSD Balance</h3>
             <p className="text-3xl font-bold text-foreground mb-2">
-              {typeof wallet?.pathusdBalance === 'number' ? wallet.pathusdBalance.toFixed(4) : parseFloat(wallet?.pathusdBalance || '0').toFixed(4)}
+              {(() => {
+                const balance = typeof wallet?.pathusdBalance === 'number' 
+                  ? wallet.pathusdBalance 
+                  : parseFloat(wallet?.pathusdBalance || '0');
+                return Number(balance.toFixed(4)).toLocaleString('en-US', { 
+                  minimumFractionDigits: 2, 
+                  maximumFractionDigits: 4 
+                });
+              })()}
             </p>
             <p className="text-muted-foreground text-xs">Available for minting</p>
           </motion.div>
@@ -214,7 +222,15 @@ export default function MiningPage() {
             </div>
             <h3 className="text-muted-foreground text-sm mb-1">REAGENT Balance</h3>
             <p className="text-3xl font-bold text-foreground mb-2">
-              {typeof wallet?.reagentBalance === 'number' ? wallet.reagentBalance.toLocaleString() : parseFloat(wallet?.reagentBalance || '0').toLocaleString()}
+              {(() => {
+                const balance = typeof wallet?.reagentBalance === 'number' 
+                  ? wallet.reagentBalance 
+                  : parseFloat(wallet?.reagentBalance || '0');
+                return Number(balance.toFixed(2)).toLocaleString('en-US', { 
+                  minimumFractionDigits: 0, 
+                  maximumFractionDigits: 2 
+                });
+              })()}
             </p>
             <p className="text-muted-foreground text-xs">TIP-20 tokens</p>
           </motion.div>

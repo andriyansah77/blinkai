@@ -76,6 +76,12 @@ export async function GET(request: NextRequest) {
         // Get PATHUSD balance (native token)
         const pathusdBalanceBN = await provider.getBalance(wallet.address);
         pathusdBalance = parseFloat(ethers.formatUnits(pathusdBalanceBN, 6)); // 6 decimals
+        
+        // Ensure it's a valid number
+        if (isNaN(pathusdBalance) || !isFinite(pathusdBalance)) {
+          console.error(`[Wallet API] Invalid PATHUSD balance: ${pathusdBalance}`);
+          pathusdBalance = 0;
+        }
 
         // Get REAGENT token balance
         const reagentTokenAddress = process.env.REAGENT_TOKEN_ADDRESS || '0x20C000000000000000000000a59277C0c1d65Bc5';
@@ -83,6 +89,12 @@ export async function GET(request: NextRequest) {
         const tokenContract = new ethers.Contract(reagentTokenAddress, tokenAbi, provider);
         const reagentBalanceBN = await tokenContract.balanceOf(wallet.address);
         reagentBalance = parseFloat(ethers.formatUnits(reagentBalanceBN, 6)); // 6 decimals
+        
+        // Ensure it's a valid number
+        if (isNaN(reagentBalance) || !isFinite(reagentBalance)) {
+          console.error(`[Wallet API] Invalid REAGENT balance: ${reagentBalance}`);
+          reagentBalance = 0;
+        }
 
         // Update database
         await prisma.wallet.update({
