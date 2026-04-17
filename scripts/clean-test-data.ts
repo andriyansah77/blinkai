@@ -58,27 +58,23 @@ async function cleanTestData() {
     const wallets = await prisma.wallet.deleteMany({});
     console.log(`✓ Deleted ${wallets.count} wallets`);
 
-    // 5. Delete mining schedules
-    const schedules = await prisma.miningSchedule.deleteMany({});
-    console.log(`✓ Deleted ${schedules.count} mining schedules`);
-
-    // 6. Delete sessions
+    // 5. Delete sessions
     const sessions = await prisma.session.deleteMany({});
     console.log(`✓ Deleted ${sessions.count} sessions`);
 
-    // 7. Delete agents
+    // 6. Delete agents
     const agents = await prisma.agent.deleteMany({});
     console.log(`✓ Deleted ${agents.count} agents`);
 
-    // 8. Delete credit ledgers
+    // 7. Delete credit ledgers
     const credits = await prisma.creditLedger.deleteMany({});
     console.log(`✓ Deleted ${credits.count} credit ledger entries`);
 
-    // 9. Delete API key configs
+    // 8. Delete API key configs
     const apiKeys = await prisma.apiKeyConfig.deleteMany({});
     console.log(`✓ Deleted ${apiKeys.count} API key configs`);
 
-    // 10. Delete users
+    // 9. Delete users
     const deletedUsers = await prisma.user.deleteMany({});
     console.log(`✓ Deleted ${deletedUsers.count} users`);
 
