@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
         address: true,
         reagentBalance: true,
         pathusdBalance: true,
-        lastBalanceUpdate: true
+        lastBalanceUpdate: true,
+        encryptedPrivateKey: true // Check if it's a new wallet
       }
     });
 
@@ -50,7 +51,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 3. Get USD balance
+    // 3. Check if this is an old wallet (has encrypted key) or new wallet (no encrypted key)
+    const isNewWallet = !wallet.encryptedPrivateKey || wallet.encryptedPrivateKey === '';
+
+    // 4. Get USD balance
     const usdBalance = await prisma.usdBalance.findUnique({
       where: { userId },
       select: {
@@ -58,14 +62,16 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // 4. Return wallet data
+    // 5. Return wallet data
     return NextResponse.json({
       success: true,
       address: wallet.address,
       reagentBalance: parseFloat(wallet.reagentBalance) || 0,
       pathusdBalance: parseFloat(wallet.pathusdBalance) || 0,
       usdBalance: parseFloat(wallet.pathusdBalance) || 0,  // Use pathusdBalance as usdBalance for compatibility
-      lastUpdate: wallet.lastBalanceUpdate.toISOString()
+      lastUpdate: wallet.lastBalanceUpdate.toISOString(),
+      isNewWallet, // Indicate if this is a new wallet (client-side keys)
+      needsSetup: !isNewWallet // Old wallets need migration to new system
     });
 
   } catch (error: any) {

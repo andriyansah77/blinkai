@@ -29,6 +29,8 @@ interface WalletData {
   reagentBalance: number;
   pathusdBalance: number;
   usdBalance: number;
+  isNewWallet?: boolean;
+  needsSetup?: boolean;
 }
 
 interface MiningStats {
@@ -57,6 +59,7 @@ export default function MiningPage() {
   const [copied, setCopied] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [needsWalletCreation, setNeedsWalletCreation] = useState(false);
+  const [hasOldWallet, setHasOldWallet] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -66,11 +69,23 @@ export default function MiningPage() {
       const walletRes = await fetch("/api/wallet");
       if (walletRes.ok) {
         const walletData = await walletRes.json();
-        setWallet(walletData);
-        setNeedsWalletCreation(false);
+        
+        // Check if wallet needs setup (old wallet with encrypted keys)
+        if (walletData.needsSetup) {
+          // Old wallet - show creation screen to migrate
+          setNeedsWalletCreation(true);
+          setHasOldWallet(true);
+          setWallet(null);
+        } else {
+          setWallet(walletData);
+          setNeedsWalletCreation(false);
+          setHasOldWallet(false);
+        }
       } else if (walletRes.status === 404) {
         // Wallet not found - user needs to create one
         setNeedsWalletCreation(true);
+        setHasOldWallet(false);
+        setWallet(null);
       }
 
       // Fetch mining stats
@@ -153,7 +168,7 @@ export default function MiningPage() {
 
   // Show wallet creation if user doesn't have a wallet yet
   if (needsWalletCreation) {
-    return <WalletCreation onWalletCreated={fetchData} />;
+    return <WalletCreation onWalletCreated={fetchData} hasOldWallet={hasOldWallet} />;
   }
 
   return (

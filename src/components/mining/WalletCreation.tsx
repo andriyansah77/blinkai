@@ -19,9 +19,10 @@ import toast from "react-hot-toast";
 
 interface WalletCreationProps {
   onWalletCreated: () => void;
+  hasOldWallet?: boolean;
 }
 
-export function WalletCreation({ onWalletCreated }: WalletCreationProps) {
+export function WalletCreation({ onWalletCreated, hasOldWallet = false }: WalletCreationProps) {
   const [step, setStep] = useState<'intro' | 'creating' | 'display' | 'verify' | 'complete'>('intro');
   const [walletData, setWalletData] = useState<{
     address: string;
@@ -33,10 +34,26 @@ export function WalletCreation({ onWalletCreated }: WalletCreationProps) {
   const [verificationInput, setVerificationInput] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [savedConfirmed, setSavedConfirmed] = useState(false);
+  const [deletingOld, setDeletingOld] = useState(false);
 
   const handleCreateWallet = async () => {
     try {
       setStep('creating');
+      
+      // If user has old wallet, delete it first
+      if (hasOldWallet) {
+        setDeletingOld(true);
+        const deleteRes = await fetch('/api/wallet/delete', {
+          method: 'DELETE',
+        });
+        
+        if (!deleteRes.ok) {
+          toast.error('Failed to remove old wallet');
+          setStep('intro');
+          return;
+        }
+        setDeletingOld(false);
+      }
       
       const response = await fetch('/api/wallet/create', {
         method: 'POST',
@@ -162,6 +179,20 @@ Generated: ${new Date().toISOString()}
               </div>
 
               <div className="space-y-4 mb-8">
+                {hasOldWallet && (
+                  <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <AlertTriangle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-semibold text-blue-500 mb-1">Wallet Migration Required</p>
+                      <p className="text-muted-foreground">
+                        You have an old wallet that needs to be migrated to the new secure system. 
+                        Creating a new wallet will <span className="font-semibold text-foreground">replace your old wallet</span>.
+                        Make sure to transfer any funds from your old wallet first if you have access to it via MetaMask.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                   <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                   <div className="text-sm">
@@ -209,9 +240,10 @@ Generated: ${new Date().toISOString()}
 
               <button
                 onClick={handleCreateWallet}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-4 rounded-lg transition-colors"
+                disabled={deletingOld}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Wallet
+                {deletingOld ? 'Removing old wallet...' : hasOldWallet ? 'Migrate to New Wallet' : 'Create Wallet'}
               </button>
             </div>
           </motion.div>
