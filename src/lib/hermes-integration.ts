@@ -828,19 +828,28 @@ REAGENT_USER_ID=${userId}
    */
   async getSkills(userId: string): Promise<HermesSkill[]> {
     try {
+      console.log(`[HermesIntegration] getSkills called for user: ${userId}`);
+      
       const command: HermesCommand = {
         command: 'skills',
         subcommand: 'list'
       };
 
+      console.log(`[HermesIntegration] Executing hermes command: skills list`);
       const result = await this.executeHermesCommand(userId, command);
       
+      console.log(`[HermesIntegration] Command result - success: ${result.success}, output length: ${result.output.length}, error: ${result.error}`);
+      
       if (result.success) {
-        return this.parseSkillsList(result.output);
+        const skills = this.parseSkillsList(result.output);
+        console.log(`[HermesIntegration] Parsed ${skills.length} skills`);
+        return skills;
       }
       
+      console.log(`[HermesIntegration] Command failed, returning empty array`);
       return [];
     } catch (error) {
+      console.error(`[HermesIntegration] getSkills exception:`, error);
       return [];
     }
   }
