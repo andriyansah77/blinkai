@@ -196,8 +196,8 @@ export function MintingHistory() {
               </thead>
               <tbody>
                 {inscriptions.map((inscription, index) => {
-                  const statusConfig = STATUS_CONFIG[inscription.status];
-                  const StatusIcon = statusConfig.icon;
+                  const statusConfig = STATUS_CONFIG[inscription.status] || STATUS_CONFIG.pending;
+                  const StatusIcon = statusConfig?.icon || Clock;
 
                   return (
                     <tr
