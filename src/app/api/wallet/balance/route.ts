@@ -56,8 +56,8 @@ export async function GET(request: NextRequest) {
 
     // 4. Get PATHUSD balance (native token)
     const pathusdBalance = await provider.getBalance(wallet.address);
-    // PATHUSD uses 18 decimals (like ETH)
-    const pathusdBalanceFormatted = parseFloat(ethers.formatEther(pathusdBalance));
+    // PATHUSD uses 6 decimals
+    const pathusdBalanceFormatted = parseFloat(ethers.formatUnits(pathusdBalance, 6));
 
     // 5. Get REAGENT token balance
     const reagentTokenAddress = process.env.REAGENT_TOKEN_ADDRESS || '0x20C000000000000000000000a59277C0c1d65Bc5';

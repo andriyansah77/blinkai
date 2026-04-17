@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
 
         // Get PATHUSD balance (native token)
         const pathusdBalanceBN = await provider.getBalance(wallet.address);
-        // PATHUSD uses 18 decimals (like ETH), not 6
-        pathusdBalance = parseFloat(ethers.formatEther(pathusdBalanceBN));
+        // PATHUSD uses 6 decimals
+        pathusdBalance = parseFloat(ethers.formatUnits(pathusdBalanceBN, 6));
         
         // Ensure it's a valid number
         if (isNaN(pathusdBalance) || !isFinite(pathusdBalance)) {
