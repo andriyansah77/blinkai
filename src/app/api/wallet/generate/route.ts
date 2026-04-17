@@ -83,24 +83,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Check if user already has a wallet
-    const existingWallet = await prisma.wallet.findUnique({
-      where: { userId }
-    });
-
-    if (existingWallet) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'WALLET_EXISTS',
-            message: 'User already has a wallet'
-          }
-        },
-        { status: 400 }
-      );
-    }
-
     // 4. Try to get Privy embedded wallet first
     let walletAddress: string;
     let walletPrivateKey: string;
