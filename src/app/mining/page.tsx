@@ -21,7 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { MintingHistory } from "@/components/mining/MintingHistory";
-import { DepositInstructions } from "@/components/mining/DepositInstructions";
+import { WalletCreation } from "@/components/mining/WalletCreation";
 
 interface WalletData {
   address: string;
@@ -55,6 +55,7 @@ export default function MiningPage() {
   const [minting, setMinting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [needsWalletCreation, setNeedsWalletCreation] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -65,6 +66,10 @@ export default function MiningPage() {
       if (walletRes.ok) {
         const walletData = await walletRes.json();
         setWallet(walletData);
+        setNeedsWalletCreation(false);
+      } else if (walletRes.status === 404) {
+        // Wallet not found - user needs to create one
+        setNeedsWalletCreation(true);
       }
 
       // Fetch mining stats
@@ -143,6 +148,11 @@ export default function MiningPage() {
 
   if (!authenticated) {
     return null;
+  }
+
+  // Show wallet creation if user doesn't have a wallet yet
+  if (needsWalletCreation) {
+    return <WalletCreation onWalletCreated={fetchData} />;
   }
 
   return (

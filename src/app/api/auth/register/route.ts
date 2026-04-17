@@ -71,36 +71,10 @@ export async function POST(request: NextRequest) {
       return newUser;
     });
 
-    // Generate wallet for mining feature (after user is committed)
-    console.log(`[Registration] Generating wallet for user ${user.id}`);
-    try {
-      const walletManager = new WalletManager();
-      const wallet = await walletManager.generateWallet(user.id);
-      
-      console.log(`[Registration] ✅ Wallet generated: ${wallet.address}`);
-
-      // Initialize USD balance
-      console.log(`[Registration] Initializing USD balance for user ${user.id}`);
-      const balanceManager = new UsdBalanceManager();
-      await balanceManager.initializeBalance(user.id, wallet.id);
-      console.log(`[Registration] ✅ USD balance initialized`);
-      
-      // Also create file-based wallet for AI agent operations
-      console.log(`[Registration] Creating file-based wallet for user ${user.id}`);
-      try {
-        const { fileWalletManager } = await import('@/lib/wallet/file-wallet-manager');
-        const privateKey = await walletManager.exportPrivateKey(user.id);
-        await fileWalletManager.importWallet(user.id, privateKey);
-        console.log(`[Registration] ✅ File-based wallet created`);
-      } catch (fileWalletError: any) {
-        console.error(`[Registration] ⚠️ File-based wallet creation failed:`, fileWalletError.message);
-        // Don't fail if file wallet creation fails
-      }
-    } catch (walletError: any) {
-      console.error(`[Registration] ⚠️ Wallet generation failed for user ${user.id}:`, walletError.message);
-      // Don't fail registration if wallet generation fails
-      // User can generate wallet later from mining page
-    }
+    // Don't auto-generate wallet during registration
+    // User will create wallet manually and save their mnemonic/private key
+    console.log(`[Registration] User ${user.id} registered successfully`);
+    console.log(`[Registration] Wallet creation will be done manually by user`);
 
     // Setup Hermes profile and gateway for new user (async, don't block registration)
     console.log(`[Registration] Starting auto-setup for user ${user.id}`);

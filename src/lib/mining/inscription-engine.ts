@@ -115,78 +115,36 @@ export class InscriptionEngine {
       // User pays gas directly from their MetaMask wallet
 
       try {
-        // 5. Check if this is an external wallet (no private key stored)
-        // Query database directly to check encrypted key
-        const dbWallet = await prisma.wallet.findUnique({
-          where: { id: wallet.id }
-        });
+        // Always use client-side signing for security
+        // No private keys stored on server
+        console.log('[InscriptionEngine] Using client-side signing');
         
-        console.log('[InscriptionEngine] Wallet check:', {
-          walletId: wallet.id,
-          address: wallet.address,
-          hasEncryptedKey: !!dbWallet?.encryptedPrivateKey,
-          forceClientSigning
-        });
-        
-        const isExternalWallet = forceClientSigning || !dbWallet?.encryptedPrivateKey || dbWallet.encryptedPrivateKey === '';
-        
-        console.log('[InscriptionEngine] isExternalWallet:', isExternalWallet);
-        
-        if (isExternalWallet) {
-          // For external wallets, return unsigned transaction for client-side signing
-          const tx = await this.constructInscriptionTransaction(wallet.address);
-          
-          await prisma.inscription.update({
-            where: { id: inscription.id },
-            data: { 
-              status: 'pending_signature',
-              errorMessage: 'Awaiting client-side signature'
-            }
-          });
-          
-          return {
-            success: true,
-            inscriptionId: inscription.id,
-            requiresClientSigning: true,
-            unsignedTransaction: {
-              to: tx.to?.toString(),
-              from: tx.from?.toString(),
-              data: tx.data?.toString(),
-              value: tx.value?.toString() || '0',
-              gasLimit: tx.gasLimit?.toString(),
-              gasPrice: tx.gasPrice?.toString(),
-              nonce: tx.nonce != null ? Number(tx.nonce) : undefined,
-              chainId: tx.chainId != null ? Number(tx.chainId) : undefined
-            },
-            message: 'Please sign the transaction with your wallet'
-          };
-        }
-        
-        // 6. For managed wallets, sign transaction server-side
+        // Return unsigned transaction for client-side signing
         const tx = await this.constructInscriptionTransaction(wallet.address);
-        const privateKey = await walletManager.exportPrivateKey(userId);
-        const signedTx = await this.signTransaction(tx, privateKey);
-
-        // 7. Submit to blockchain
-        const txHash = await this.submitTransaction(signedTx);
-
-        // 8. Update inscription with tx hash
+        
         await prisma.inscription.update({
           where: { id: inscription.id },
-          data: { txHash }
+          data: { 
+            status: 'pending_signature',
+            errorMessage: 'Awaiting client-side signature'
+          }
         });
-
-        // 9. Monitor transaction (async, don't wait)
-        this.monitorTransaction(txHash, inscription.id, userId).catch(error => {
-          console.error('Transaction monitoring failed:', error);
-        });
-
+        
         return {
           success: true,
           inscriptionId: inscription.id,
-          txHash,
-          tokensEarned: TOKENS_PER_INSCRIPTION,
-          feePaid: '0' // No fee for external wallet
+          requiresClientSigning: true,
+          unsignedTransaction: {
+            to: tx.to?.toString(),
+            from: tx.from?.toString(),
+            data: tx.data?.toString(),
+            value: tx.value?.toString() || '0',
+            gasLimit: tx.gasLimit?.toString(),
+            gasPrice: tx.gasPrice?.toString(),
+            nonce: tx.nonce != null ? Number(tx.nonce) : undefined,
+            chainId: tx.chainId != null ? Number(tx.chainId) : undefined
+          },
+          message: 'Please sign the transaction with your wallet'
         };
 
       } catch (blockchainError: any) {

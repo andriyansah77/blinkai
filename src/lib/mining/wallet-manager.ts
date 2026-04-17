@@ -48,9 +48,9 @@ export class WalletManager {
   /**
    * Generate a new HD wallet for a user
    * @param userId - User ID
-   * @returns Wallet information
+   * @returns Wallet information with mnemonic and private key (user must save these!)
    */
-  async generateWallet(userId: string): Promise<WalletInfo> {
+  async generateWallet(userId: string): Promise<WalletInfo & { mnemonic: string; privateKey: string }> {
     // Check if wallet already exists
     const existing = await prisma.wallet.findUnique({
       where: { userId }
@@ -60,21 +60,20 @@ export class WalletManager {
       throw new Error('Wallet already exists for this user');
     }
 
-    // Generate new wallet
+    // Generate new wallet with mnemonic
     const wallet = ethers.Wallet.createRandom();
     const address = wallet.address;
     const privateKey = wallet.privateKey;
+    const mnemonic = wallet.mnemonic?.phrase || '';
 
-    // Encrypt private key
-    const { encrypted, iv, authTag } = this.encryptPrivateKey(privateKey);
-
-    // Store in database
+    // Store in database WITHOUT encrypted private key
+    // User is responsible for storing their own keys
     const dbWallet = await prisma.wallet.create({
       data: {
         userId,
         address,
-        encryptedPrivateKey: encrypted,
-        keyIv: iv,
+        encryptedPrivateKey: '', // Empty - no server-side storage
+        keyIv: '', // Empty - not needed
         network: 'tempo',
         imported: false,
         reagentBalance: '0',
@@ -82,7 +81,11 @@ export class WalletManager {
       }
     });
 
-    return this.toWalletInfo(dbWallet);
+    return {
+      ...this.toWalletInfo(dbWallet),
+      mnemonic,
+      privateKey
+    };
   }
 
   /**
@@ -110,16 +113,14 @@ export class WalletManager {
     const wallet = new ethers.Wallet(privateKey);
     const address = wallet.address;
 
-    // Encrypt private key
-    const { encrypted, iv, authTag } = this.encryptPrivateKey(privateKey);
-
-    // Store in database
+    // Store in database WITHOUT encrypted private key
+    // User is responsible for storing their own keys
     const dbWallet = await prisma.wallet.create({
       data: {
         userId,
         address,
-        encryptedPrivateKey: encrypted,
-        keyIv: iv,
+        encryptedPrivateKey: '', // Empty - no server-side storage
+        keyIv: '', // Empty - not needed
         network: 'tempo',
         imported: true,
         reagentBalance: '0',
@@ -255,6 +256,36 @@ export class WalletManager {
       // Try to create a wallet from the private key
       new ethers.Wallet(privateKey);
       return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Verify mnemonic phrase matches wallet address
+   * @param mnemonic - Mnemonic phrase to verify
+   * @param expectedAddress - Expected wallet address
+   * @returns True if mnemonic generates the expected address
+   */
+  verifyMnemonic(mnemonic: string, expectedAddress: string): boolean {
+    try {
+      const wallet = ethers.Wallet.fromPhrase(mnemonic);
+      return wallet.address.toLowerCase() === expectedAddress.toLowerCase();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Verify private key matches wallet address
+   * @param privateKey - Private key to verify
+   * @param expectedAddress - Expected wallet address
+   * @returns True if private key generates the expected address
+   */
+  verifyPrivateKey(privateKey: string, expectedAddress: string): boolean {
+    try {
+      const wallet = new ethers.Wallet(privateKey);
+      return wallet.address.toLowerCase() === expectedAddress.toLowerCase();
     } catch {
       return false;
     }
