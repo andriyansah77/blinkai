@@ -98,6 +98,22 @@ Remember: You grow smarter with each interaction. Use your memory and learning c
       // Continue without Hermes CLI - will fallback to regular AI
     }
 
+    // 2.5. Create Hermes profile for gateway and chat (CRITICAL for gateway)
+    try {
+      console.log(`[Onboarding] Creating Hermes profile for user ${session.user.id}`);
+      const { hermesIntegration } = await import('@/lib/hermes-integration');
+      
+      const profileResult = await hermesIntegration.createProfile(session.user.id!);
+      if (profileResult.success) {
+        console.log(`[Onboarding] ✅ Hermes profile created successfully for user ${session.user.id}`);
+      } else {
+        console.warn(`[Onboarding] Failed to create Hermes profile: ${profileResult.error}`);
+      }
+    } catch (profileError) {
+      console.error('[Onboarding] Profile creation error:', profileError);
+      // Continue anyway - will try again during gateway setup
+    }
+
     // 3. Set up user plan and credits
     const creditAmount = plan === 'free' ? 1000 : plan === 'pro' ? 10000 : 100000;
     
@@ -226,27 +242,40 @@ return helpGuide(params);`
     try {
       console.log(`[Onboarding] Setting up gateway for user ${session.user.id}`);
       
-      // Import hermesIntegration
+      // Import hermesIntegration and ensureHermesProfile
       const { hermesIntegration } = await import('@/lib/hermes-integration');
+      const { ensureHermesProfile } = await import('@/lib/ensure-hermes-profile');
       
-      // Setup gateway (non-interactive)
-      const setupResult = await hermesIntegration.setupGateway(session.user.id!);
-      if (setupResult.success) {
-        console.log(`[Onboarding] Gateway setup completed for user ${session.user.id}`);
-        gatewayStatus.installed = true;
-        
-        // Start gateway service
-        const startResult = await hermesIntegration.startGateway(session.user.id!);
-        if (startResult.success) {
-          console.log(`[Onboarding] ✅ Gateway started successfully for user ${session.user.id}`);
-          gatewayStatus.running = true;
-        } else {
-          console.warn(`[Onboarding] Gateway start warning: ${startResult.error}`);
-          gatewayStatus.error = startResult.error || 'Failed to start gateway';
-        }
+      // CRITICAL: Ensure Hermes profile exists before starting gateway
+      console.log(`[Onboarding] Ensuring Hermes profile exists for user ${session.user.id}`);
+      const profileResult = await ensureHermesProfile(session.user.id!);
+      
+      if (!profileResult.success) {
+        console.error(`[Onboarding] Failed to ensure profile: ${profileResult.error}`);
+        gatewayStatus.error = `Profile creation failed: ${profileResult.error}`;
+        // Don't attempt gateway start if profile doesn't exist
       } else {
-        console.warn(`[Onboarding] Gateway setup warning: ${setupResult.error}`);
-        gatewayStatus.error = setupResult.error || 'Failed to setup gateway';
+        console.log(`[Onboarding] ✅ Profile verified/created for user ${session.user.id}`);
+        
+        // Setup gateway (non-interactive)
+        const setupResult = await hermesIntegration.setupGateway(session.user.id!);
+        if (setupResult.success) {
+          console.log(`[Onboarding] Gateway setup completed for user ${session.user.id}`);
+          gatewayStatus.installed = true;
+          
+          // Start gateway service
+          const startResult = await hermesIntegration.startGateway(session.user.id!);
+          if (startResult.success) {
+            console.log(`[Onboarding] ✅ Gateway started successfully for user ${session.user.id}`);
+            gatewayStatus.running = true;
+          } else {
+            console.warn(`[Onboarding] Gateway start warning: ${startResult.error}`);
+            gatewayStatus.error = startResult.error || 'Failed to start gateway';
+          }
+        } else {
+          console.warn(`[Onboarding] Gateway setup warning: ${setupResult.error}`);
+          gatewayStatus.error = setupResult.error || 'Failed to setup gateway';
+        }
       }
     } catch (gatewayError) {
       console.error('[Onboarding] Gateway setup error:', gatewayError);
