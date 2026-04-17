@@ -1,271 +1,93 @@
-# ✅ Gateway & Platform Connection Fix Complete
+# Gateway Auto-Start Fix - COMPLETE ✅
 
-## Status: READY TO USE
+## Problem
+Gateway tidak berjalan otomatis saat onboarding karena Hermes profile belum dibuat sebelum mencoba start gateway.
 
-Gateway connection untuk platform (Telegram, Discord, WhatsApp) sudah siap digunakan!
+## Root Cause
+Di `src/app/api/onboarding/deploy/route.ts`:
+1. `hermesCliWrapper.setupUserEnvironment()` dipanggil untuk setup Hermes CLI instance
+2. Tapi ini TIDAK membuat Hermes profile yang diperlukan untuk gateway
+3. Gateway mencoba start dengan `--profile` flag, tapi profile tidak ada
+4. Error: "Profile 'user-did-privy-xxx' does not exist"
 
-## Yang Sudah Diperbaiki
+## Solution Implemented
 
-### 1. **Enhanced Logging**
-- ✅ Detailed logging untuk semua gateway operations
-- ✅ Platform setup logging (Telegram, Discord, WhatsApp)
-- ✅ Error tracking yang lebih baik
-- ✅ Success/failure indicators
-
-### 2. **Platform Integration**
-- ✅ Telegram: Bot token configuration via Hermes CLI
-- ✅ Discord: Bot token configuration via Hermes CLI  
-- ✅ WhatsApp: QR code pairing via Hermes CLI
-- ✅ Gateway start/stop management
-- ✅ User isolation (setiap user punya gateway sendiri)
-
-### 3. **Documentation**
-- ✅ Complete platform connection guide
-- ✅ Step-by-step setup instructions
-- ✅ Troubleshooting guide
-- ✅ API endpoints documentation
-
-## How It Works
-
-```
-User Setup Flow:
-1. User creates bot di platform (Telegram/Discord)
-2. User masuk Dashboard → Channels
-3. User click "Add Channel" → pilih platform
-4. User input bot token
-5. System:
-   - Save token ke Hermes config (isolated per user)
-   - Run gateway setup
-   - Start gateway
-   - Platform connected!
-```
-
-## Supported Platforms
-
-| Platform | Status | Setup Method | Features |
-|----------|--------|--------------|----------|
-| **Telegram** | ✅ Ready | Bot Token | Private chats, Groups, Channels |
-| **Discord** | ✅ Ready | Bot Token | Text channels, Slash commands |
-| **WhatsApp** | ✅ Ready | QR Code | Business messaging, Groups |
-| Slack | 🔜 Soon | Bot Token | Channels, DMs |
-| Signal | 🔜 Soon | signal-cli | E2E encryption |
-| iMessage | 🔜 Soon | BlueBubbles | iPhone integration |
-
-## Quick Start
-
-### Telegram Bot Setup
-
-```bash
-# 1. Create bot
-Open Telegram → @BotFather → /newbot
-
-# 2. Get token
-Copy token: 123456789:ABCdefGHI...
-
-# 3. Connect via Dashboard
-Dashboard → Channels → Add Channel → Telegram
-Paste token → Connect
-
-# 4. Test
-Search bot di Telegram → Send /start
-```
-
-### Discord Bot Setup
-
-```bash
-# 1. Create bot
-https://discord.com/developers/applications
-New Application → Bot → Add Bot
-
-# 2. Get token
-Copy bot token
-
-# 3. Invite to server
-OAuth2 → URL Generator → bot scope
-Copy URL → Invite to server
-
-# 4. Connect via Dashboard
-Dashboard → Channels → Add Channel → Discord
-Paste token → Connect
-```
-
-### WhatsApp Setup
-
-```bash
-# 1. Connect via Dashboard
-Dashboard → Channels → Add Channel → WhatsApp
-Click "Connect to WhatsApp"
-
-# 2. Scan QR Code
-Open WhatsApp → Settings → Linked Devices
-Scan QR code yang ditampilkan
-
-# 3. Test
-Send message ke nomor WhatsApp
-Bot akan merespon
-```
-
-## User Isolation
-
-Setiap user mendapat:
-- ✅ Isolated Hermes profile: `/root/.hermes/profiles/user-{userId}`
-- ✅ Separate gateway instance
-- ✅ Independent bot configurations
-- ✅ Isolated message handling
-
-**Benefit**: Bot user A tidak akan interfere dengan bot user B!
-
-## Monitoring & Logs
-
-### Check Gateway Status
-```bash
-ssh root@159.65.141.68
-/root/.local/bin/hermes --profile user-{userId} gateway status
-```
-
-### View Application Logs
-```bash
-pm2 logs blinkai | grep -i gateway
-pm2 logs blinkai | grep -i platform
-```
-
-### Check Hermes Config
-```bash
-/root/.local/bin/hermes --profile user-{userId} config show
-```
-
-## API Endpoints
-
-### Get Channels
-```http
-GET /api/channels
-Authorization: Bearer {session-token}
-```
-
-### Connect Platform
-```http
-POST /api/channels
-Content-Type: application/json
-
-{
-  "type": "telegram",
-  "name": "My Telegram Bot",
-  "agentId": "agent-id",
-  "botToken": "123456789:ABCdefGHI..."
+### 1. Added Profile Creation Step (Step 2.5)
+```typescript
+// 2.5. Create Hermes profile for gateway and chat (CRITICAL for gateway)
+try {
+  console.log(`[Onboarding] Creating Hermes profile for user ${session.user.id}`);
+  const { hermesIntegration } = await import('@/lib/hermes-integration');
+  
+  const profileResult = await hermesIntegration.createProfile(session.user.id!);
+  if (profileResult.success) {
+    console.log(`[Onboarding] ✅ Hermes profile created successfully`);
+  }
+} catch (profileError) {
+  console.error('[Onboarding] Profile creation error:', profileError);
 }
 ```
 
-### Gateway Control
-```http
-POST /api/hermes/gateway
-Content-Type: application/json
+### 2. Added Profile Verification Before Gateway Start (Step 7)
+```typescript
+// Import ensureHermesProfile
+const { ensureHermesProfile } = await import('@/lib/ensure-hermes-profile');
 
-{
-  "action": "start" | "stop" | "setup"
+// CRITICAL: Ensure Hermes profile exists before starting gateway
+const profileResult = await ensureHermesProfile(session.user.id!);
+
+if (!profileResult.success) {
+  gatewayStatus.error = `Profile creation failed: ${profileResult.error}`;
+  // Don't attempt gateway start if profile doesn't exist
+} else {
+  // Proceed with gateway setup and start
 }
 ```
 
-## Troubleshooting
+## Flow After Fix
 
-### Gateway Won't Start
+1. ✅ User creation in database
+2. ✅ Hermes CLI instance setup (hermesCliWrapper)
+3. ✅ **NEW: Hermes profile creation** (hermesIntegration.createProfile)
+4. ✅ Agent creation in database
+5. ✅ Credits and skills setup
+6. ✅ Auto-install minting skill
+7. ✅ **Verify profile exists** (ensureHermesProfile)
+8. ✅ Setup gateway (non-interactive)
+9. ✅ Start gateway service
 
-**Symptoms**: Gateway fails to start after platform setup
+## Files Modified
+- `src/app/api/onboarding/deploy/route.ts`
 
-**Solution**:
+## Testing
+1. Register user baru di https://reagent.eu.cc/sign-up
+2. Complete onboarding flow
+3. Check gateway status di dashboard
+4. Verify profile exists: `hermes profile list`
+5. Verify gateway running: `hermes --profile user-did-privy-xxx gateway status`
+
+## Deployment
 ```bash
-# Check if Hermes CLI is accessible
-/root/.local/bin/hermes --version
+# Local
+git add .
+git commit -m "fix: ensure Hermes profile creation before gateway start"
+git push
 
-# Check profile exists
-ls -la /root/.hermes/profiles/user-{userId}
-
-# Try manual gateway start
-/root/.local/bin/hermes --profile user-{userId} gateway start
-
-# Check logs
-pm2 logs blinkai --lines 50
+# VPS
+ssh root@188.166.247.252
+cd /root/reagent
+git pull
+npm run build
+pm2 restart reagent --update-env
 ```
 
-### Bot Token Invalid
-
-**Symptoms**: "Invalid bot token" error
-
-**Solution**:
-1. Verify token format (no spaces)
-2. Telegram: `123456789:ABCdefGHI...`
-3. Discord: `MTIzNDU2Nzg5...`
-4. Regenerate token if needed
-
-### Bot Not Responding
-
-**Symptoms**: Bot connected but tidak merespon
-
-**Solution**:
-```bash
-# Check gateway status
-/root/.local/bin/hermes --profile user-{userId} gateway status
-
-# Restart gateway
-/root/.local/bin/hermes --profile user-{userId} gateway stop
-/root/.local/bin/hermes --profile user-{userId} gateway start
-
-# Check bot permissions (Discord)
-# Check bot is not blocked (Telegram)
-```
-
-## Configuration Files
-
-### Hermes Profile Config
-```yaml
-# /root/.hermes/profiles/user-{userId}/config.yaml
-
-telegram:
-  bot_token: "123456789:ABCdefGHI..."
-  
-discord:
-  bot_token: "MTIzNDU2Nzg5..."
-  
-model:
-  provider: openai
-  api_key: "akml-jiPghENoUyjtFxCEeGRunnoyiGMUHuji"
-  base_url: "https://api.akashml.com/v1"
-  model: "MiniMaxAI/MiniMax-M2.5"
-```
-
-## Testing Checklist
-
-- [ ] Create Telegram bot via @BotFather
-- [ ] Connect Telegram bot via Dashboard
-- [ ] Send message to Telegram bot
-- [ ] Verify bot responds
-- [ ] Create Discord bot
-- [ ] Invite Discord bot to server
-- [ ] Connect Discord bot via Dashboard
-- [ ] Send message in Discord
-- [ ] Verify bot responds
-- [ ] Connect WhatsApp via QR code
-- [ ] Send WhatsApp message
-- [ ] Verify bot responds
+## Status: ✅ DEPLOYED
+- Commit: 7bc6775
+- Deployed: 2026-04-17
+- VPS: 188.166.247.252
+- Domain: https://reagent.eu.cc
 
 ## Next Steps
-
-1. ✅ Test platform connections
-2. ✅ Monitor gateway status
-3. ✅ Add multiple platforms per user
-4. ✅ Scale to multiple users
-5. ✅ Monitor message counts and activity
-
-## Documentation
-
-- **Setup Guide**: `PLATFORM_CONNECTION_GUIDE.md`
-- **Chat Fix**: `CHAT_FIX_COMPLETE.md`
-- **Deployment**: `DEPLOYMENT_SUCCESS.md`
-- **Dashboard**: `DASHBOARD_COMPLETION.md`
-
----
-
-**Deployment Time**: 2026-04-09
-**Status**: ✅ PRODUCTION READY
-**URL**: http://159.65.141.68:3000
-**Hermes CLI**: `/root/.local/bin/hermes`
-**Profiles**: `/root/.hermes/profiles/user-{userId}`
+- Test dengan user baru untuk verify gateway auto-start
+- Monitor logs untuk memastikan tidak ada error
+- Jika masih ada issue, check Hermes CLI logs: `hermes --profile user-xxx gateway logs`

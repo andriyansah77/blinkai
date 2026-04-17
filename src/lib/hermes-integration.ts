@@ -260,7 +260,7 @@ REAGENT_USER_ID=${userId}
             // 3. Copy profile markdown files (PLATFORM.md, TOOLS.md, SOUL.md)
             console.log(`[Profile] Copying profile markdown files for user ${userId}`);
             const profileDir = `/root/.hermes/profiles/${profileName}`;
-            const sourceProfilesDir = '/root/blinkai/hermes-profiles';
+            const sourceProfilesDir = '/root/reagent/hermes-profiles';
             
             try {
               // Copy PLATFORM.md
