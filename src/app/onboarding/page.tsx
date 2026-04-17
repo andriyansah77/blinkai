@@ -63,19 +63,77 @@ export default function OnboardingPage() {
   const { ready, authenticated, getAccessToken } = usePrivy();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [onboardingData, setOnboardingData] = useState({
     agentName: "",
     agentPersonality: "",
     channels: [] as string[],
     plan: "free",
-    agentId: ""
+    agentId: "",
+    walletAddress: ""
   });
 
   useEffect(() => {
     if (ready && !authenticated) {
       router.push("/sign-in");
+    } else if (ready && authenticated) {
+      checkOnboardingStatus();
     }
   }, [ready, authenticated, router]);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const token = await getAccessToken();
+      const response = await fetch('/api/onboarding/status', {
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      if (response.ok) {
+        const status = await response.json();
+        
+        if (status.completed) {
+          // User already completed onboarding, redirect to dashboard
+          router.push('/dashboard');
+          return;
+        }
+
+        // Find first incomplete step
+        const stepKeys = ['agentSetup', 'walletSetup', 'channels', 'plan', 'deployment'];
+        let firstIncompleteStep = 0;
+        
+        for (let i = 0; i < stepKeys.length; i++) {
+          if (!status.steps[stepKeys[i]]) {
+            firstIncompleteStep = i;
+            break;
+          }
+        }
+
+        // Pre-fill data if available
+        if (status.agent) {
+          setOnboardingData(prev => ({
+            ...prev,
+            agentName: status.agent.name,
+            agentId: status.agent.id
+          }));
+        }
+
+        if (status.wallet) {
+          setOnboardingData(prev => ({
+            ...prev,
+            walletAddress: status.wallet.address
+          }));
+        }
+
+        setCurrentStep(firstIncompleteStep);
+      }
+    } catch (error) {
+      console.error('Failed to check onboarding status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
@@ -93,7 +151,7 @@ export default function OnboardingPage() {
     setOnboardingData(prev => ({ ...prev, ...data }));
   };
 
-  if (!ready) {
+  if (!ready || loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>

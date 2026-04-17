@@ -416,10 +416,11 @@ REAGENT_USER_ID=${userId}
     
     // Fallback to direct AI API with conversation history
     console.log(`[Hermes] Using direct AI API fallback with ${options.conversationHistory?.length || 0} previous messages`);
-    yield* this.streamDirectAIResponse(message, options);
+    yield* this.streamDirectAIResponse(userId, message, options);
   }
 
   private async *streamDirectAIResponse(
+    userId: string,
     message: string,
     options: {
       model?: string;
@@ -428,13 +429,22 @@ REAGENT_USER_ID=${userId}
     } = {}
   ): AsyncGenerator<string> {
     try {
-      const model = options.model || AI_MODEL;
-      const apiKey = AI_API_KEY;
+      // Import getUserAIConfig dynamically to avoid circular dependency
+      const { getUserAIConfig } = await import('@/lib/platform');
+      
+      // Get user's AI config (platform or BYOK)
+      const aiConfig = await getUserAIConfig(userId);
+      
+      const model = options.model || aiConfig.model;
+      const apiKey = aiConfig.apiKey;
+      const baseUrl = aiConfig.baseUrl;
       
       if (!apiKey) {
-        yield "Error: AI API key not configured. Please set AI_API_KEY or OPENAI_API_KEY environment variable.";
+        yield "Error: AI API key not configured. Please set up your API key in settings or contact support.";
         return;
       }
+
+      console.log(`[Hermes] Using ${aiConfig.mode} mode with model ${model}`);
 
       // Build messages array with conversation history
       const messages: Array<{role: string; content: string}> = [
@@ -458,7 +468,7 @@ REAGENT_USER_ID=${userId}
       console.log(`[Hermes] Sending ${messages.length} messages to AI API (including system prompt)`);
 
       // Prepare request to AI API
-      const response = await fetch(`${AI_API_BASE_URL}/chat/completions`, {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1039,53 +1049,81 @@ REAGENT_USER_ID=${userId}
       
       const profileName = this.getProfileName(userId);
       
-      // First, check if gateway service is installed
+      // Check if gateway is already running
       try {
         const { stdout: statusOutput } = await execAsync(
           `${this.hermesPath} --profile ${profileName} gateway status`,
           { timeout: 10000 }
         );
         
-        // If service not found, install it first
-        if (statusOutput.includes('not found') || statusOutput.includes('not running')) {
-          console.log(`[Gateway] Installing gateway service for user ${userId}`);
-          
-          await execAsync(
-            `${this.hermesPath} --profile ${profileName} gateway install`,
-            { timeout: 30000 }
-          );
-          
-          console.log(`[Gateway] Gateway service installed for user ${userId}`);
+        if (statusOutput.includes('active') && statusOutput.includes('running')) {
+          console.log(`[Gateway] Gateway already running for user ${userId}`);
+          return { success: true };
         }
-      } catch (checkError) {
-        console.log(`[Gateway] Installing gateway service (first time setup)`);
-        
-        try {
-          await execAsync(
-            `${this.hermesPath} --profile ${profileName} gateway install`,
-            { timeout: 30000 }
-          );
-        } catch (installError) {
+      } catch (statusError) {
+        console.log(`[Gateway] Gateway not running, will start it`);
+      }
+      
+      // Install gateway service if not installed
+      try {
+        console.log(`[Gateway] Installing gateway service for user ${userId}`);
+        await execAsync(
+          `${this.hermesPath} --profile ${profileName} gateway install --yes`,
+          { timeout: 30000 }
+        );
+        console.log(`[Gateway] Gateway service installed for user ${userId}`);
+      } catch (installError: any) {
+        // If already installed, that's fine
+        if (!installError.message?.includes('already exists')) {
           console.warn(`[Gateway] Install warning:`, installError);
-          // Continue anyway, might already be installed
         }
       }
       
-      // Now start the gateway
+      // Start the gateway using systemctl (more reliable than hermes gateway start)
       try {
-        await execAsync(
-          `${this.hermesPath} --profile ${profileName} gateway start`,
-          { timeout: 10000 }
+        const serviceName = `hermes-gateway-${profileName}`;
+        
+        // Enable and start service
+        await execAsync(`systemctl enable ${serviceName}`, { timeout: 10000 });
+        await execAsync(`systemctl start ${serviceName}`, { timeout: 10000 });
+        
+        // Wait a bit for service to start
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Verify it's running
+        const { stdout: verifyOutput } = await execAsync(
+          `systemctl is-active ${serviceName}`,
+          { timeout: 5000 }
         );
         
-        console.log(`[Gateway] Gateway started successfully for user ${userId}`);
-        return { success: true };
+        if (verifyOutput.trim() === 'active') {
+          console.log(`[Gateway] ✅ Gateway started successfully for user ${userId}`);
+          return { success: true };
+        } else {
+          console.warn(`[Gateway] Gateway service not active: ${verifyOutput}`);
+          return { 
+            success: false, 
+            error: `Gateway service not active: ${verifyOutput}` 
+          };
+        }
       } catch (startError: any) {
         console.error(`[Gateway] Failed to start gateway:`, startError);
-        return { 
-          success: false, 
-          error: `Gateway start failed: ${startError.message || startError}` 
-        };
+        
+        // Fallback: try hermes gateway start command
+        try {
+          await execAsync(
+            `${this.hermesPath} --profile ${profileName} gateway start`,
+            { timeout: 10000 }
+          );
+          console.log(`[Gateway] Gateway started via hermes command for user ${userId}`);
+          return { success: true };
+        } catch (fallbackError) {
+          console.error(`[Gateway] Fallback start also failed:`, fallbackError);
+          return { 
+            success: false, 
+            error: `Gateway start failed: ${startError.message || startError}` 
+          };
+        }
       }
     } catch (error) {
       console.error(`[Gateway] Exception starting gateway for user ${userId}:`, error);
