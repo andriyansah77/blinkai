@@ -196,7 +196,8 @@ function MiningPageContent() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success(`Successfully minted ${data.tokensEarned} REAGENT!`);
+        const tokensEarned = data.tokensEarned || data.inscription?.tokensEarned || 10000;
+        toast.success(`Successfully minted ${tokensEarned.toLocaleString()} REAGENT!`);
         fetchData(); // Refresh data
       } else {
         toast.error(data.error?.message || "Minting failed");
