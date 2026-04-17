@@ -45,7 +45,27 @@ export async function POST(request: NextRequest) {
 
     const userId = session.user.id;
 
-    // 2. Check if user already has a wallet
+    // 2. Ensure user exists in database (upsert)
+    const userEmail = session.user.email || `${session.user.id}@privy.user`;
+    const userName = session.user.name || session.user.id!;
+    
+    await prisma.user.upsert({
+      where: { id: session.user.id! },
+      update: {
+        email: userEmail,
+        name: userName,
+      },
+      create: {
+        id: session.user.id!,
+        email: userEmail,
+        name: userName,
+        password: 'PRIVY_AUTH', // Privy users don't use password
+      }
+    });
+
+    console.log(`[Wallet] User ensured in database: ${session.user.id}`);
+
+    // 3. Check if user already has a wallet
     const existingWallet = await prisma.wallet.findUnique({
       where: { userId }
     });
@@ -63,7 +83,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Try to get Privy embedded wallet first
+    // 3. Check if user already has a wallet
+    const existingWallet = await prisma.wallet.findUnique({
+      where: { userId }
+    });
+
+    if (existingWallet) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'WALLET_EXISTS',
+            message: 'User already has a wallet'
+          }
+        },
+        { status: 400 }
+      );
+    }
+
+    // 4. Try to get Privy embedded wallet first
     let walletAddress: string;
     let walletPrivateKey: string;
     let walletSource = 'ethers'; // Default fallback
@@ -90,10 +128,10 @@ export async function POST(request: NextRequest) {
       walletPrivateKey = randomWallet.privateKey;
     }
 
-    // 4. Encrypt private key
+    // 5. Encrypt private key
     const { encrypted, iv } = encryptPrivateKey(walletPrivateKey);
 
-    // 5. Create wallet record
+    // 6. Create wallet record
     const newWallet = await prisma.wallet.create({
       data: {
         userId,
@@ -108,7 +146,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // 6. Create USD balance record
+    // 7. Create USD balance record
     await prisma.usdBalance.create({
       data: {
         userId,
@@ -120,7 +158,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Wallet] New wallet created for user ${userId}: ${walletAddress} (source: ${walletSource})`);
 
-    // 7. Return success with wallet info
+    // 8. Return success with wallet info
     return NextResponse.json({
       success: true,
       address: walletAddress,
