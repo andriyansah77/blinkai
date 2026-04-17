@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Component, ReactNode } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -22,6 +22,49 @@ import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { MintingHistory } from "@/components/mining/MintingHistory";
 import { DepositInstructions } from "@/components/mining/DepositInstructions";
+
+// Error Boundary Component
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('Mining page error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="h-screen bg-background flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-card border border-border rounded-xl p-6 text-center">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-foreground mb-2">Something went wrong</h2>
+            <p className="text-muted-foreground mb-4">
+              We encountered an error loading the mining dashboard.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 interface WalletData {
   address: string;
@@ -47,7 +90,7 @@ interface MiningStats {
   };
 }
 
-export default function MiningPage() {
+function MiningPageContent() {
   const { ready, authenticated } = usePrivy();
   const router = useRouter();
   
@@ -63,31 +106,61 @@ export default function MiningPage() {
       setLoading(true);
 
       // Fetch wallet data
-      const walletRes = await fetch("/api/wallet");
-      if (walletRes.ok) {
-        const walletData = await walletRes.json();
-        setWallet(walletData);
-      } else if (walletRes.status === 404) {
-        // Wallet not found - redirect to onboarding
-        router.push('/onboarding');
-        return;
+      try {
+        const walletRes = await fetch("/api/wallet");
+        if (walletRes.ok) {
+          const walletData = await walletRes.json();
+          
+          // Validate balance data before setting state
+          if (walletData) {
+            const validatedData = {
+              ...walletData,
+              pathusdBalance: isNaN(walletData.pathusdBalance) || !isFinite(walletData.pathusdBalance) 
+                ? 0 
+                : walletData.pathusdBalance,
+              reagentBalance: isNaN(walletData.reagentBalance) || !isFinite(walletData.reagentBalance) 
+                ? 0 
+                : walletData.reagentBalance,
+            };
+            setWallet(validatedData);
+          }
+        } else if (walletRes.status === 404) {
+          // Wallet not found - redirect to onboarding
+          router.push('/onboarding');
+          return;
+        } else {
+          // Other errors - show error but don't crash
+          console.error('Failed to fetch wallet:', walletRes.status);
+          toast.error('Failed to load wallet data. Please refresh the page.');
+        }
+      } catch (walletError) {
+        console.error('Wallet fetch error:', walletError);
+        toast.error('Failed to load wallet data. Please check your connection.');
       }
 
       // Fetch mining stats
-      const statsRes = await fetch("/api/mining/stats");
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setStats(statsData.stats);
+      try {
+        const statsRes = await fetch("/api/mining/stats");
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData.stats);
+        } else {
+          console.error('Failed to fetch stats:', statsRes.status);
+          // Don't show error for stats - it's not critical
+        }
+      } catch (statsError) {
+        console.error('Stats fetch error:', statsError);
+        // Don't show error for stats - it's not critical
       }
 
       setLastUpdated(new Date());
     } catch (error) {
       console.error("Failed to fetch mining data:", error);
-      toast.error("Failed to load mining data");
+      toast.error("Failed to load mining data. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -196,13 +269,23 @@ export default function MiningPage() {
             <h3 className="text-muted-foreground text-sm mb-1">PATHUSD Balance</h3>
             <p className="text-3xl font-bold text-foreground mb-2">
               {(() => {
-                const balance = typeof wallet?.pathusdBalance === 'number' 
-                  ? wallet.pathusdBalance 
-                  : parseFloat(wallet?.pathusdBalance || '0');
-                return Number(balance.toFixed(4)).toLocaleString('en-US', { 
-                  minimumFractionDigits: 2, 
-                  maximumFractionDigits: 4 
-                });
+                try {
+                  const balance = typeof wallet?.pathusdBalance === 'number' 
+                    ? wallet.pathusdBalance 
+                    : parseFloat(wallet?.pathusdBalance || '0');
+                  
+                  if (isNaN(balance) || !isFinite(balance)) {
+                    return '0.00';
+                  }
+                  
+                  return Number(balance.toFixed(4)).toLocaleString('en-US', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 4 
+                  });
+                } catch (error) {
+                  console.error('Error formatting PATHUSD balance:', error);
+                  return '0.00';
+                }
               })()}
             </p>
             <p className="text-muted-foreground text-xs">Available for minting</p>
@@ -223,13 +306,23 @@ export default function MiningPage() {
             <h3 className="text-muted-foreground text-sm mb-1">REAGENT Balance</h3>
             <p className="text-3xl font-bold text-foreground mb-2">
               {(() => {
-                const balance = typeof wallet?.reagentBalance === 'number' 
-                  ? wallet.reagentBalance 
-                  : parseFloat(wallet?.reagentBalance || '0');
-                return Number(balance.toFixed(2)).toLocaleString('en-US', { 
-                  minimumFractionDigits: 0, 
-                  maximumFractionDigits: 2 
-                });
+                try {
+                  const balance = typeof wallet?.reagentBalance === 'number' 
+                    ? wallet.reagentBalance 
+                    : parseFloat(wallet?.reagentBalance || '0');
+                  
+                  if (isNaN(balance) || !isFinite(balance)) {
+                    return '0';
+                  }
+                  
+                  return Number(balance.toFixed(2)).toLocaleString('en-US', { 
+                    minimumFractionDigits: 0, 
+                    maximumFractionDigits: 2 
+                  });
+                } catch (error) {
+                  console.error('Error formatting REAGENT balance:', error);
+                  return '0';
+                }
               })()}
             </p>
             <p className="text-muted-foreground text-xs">TIP-20 tokens</p>
@@ -461,5 +554,13 @@ export default function MiningPage() {
         <DepositInstructions />
       </div>
     </div>
+  );
+}
+
+export default function MiningPage() {
+  return (
+    <ErrorBoundary>
+      <MiningPageContent />
+    </ErrorBoundary>
   );
 }
