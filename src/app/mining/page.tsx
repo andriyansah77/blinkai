@@ -477,7 +477,7 @@ function MiningPageContent() {
                 <Activity className="w-8 h-8 text-white" />
               </div>
               <p className="text-2xl font-bold text-foreground mb-1">
-                {stats?.totalInscriptions.toLocaleString() || "0"}
+                {stats?.totalInscriptions ? stats.totalInscriptions.toLocaleString() : "0"}
               </p>
               <p className="text-muted-foreground text-sm">Total Mints</p>
               <p className="text-primary text-xs mt-1">+{stats?.inscriptions24h || 0} today</p>
@@ -491,7 +491,7 @@ function MiningPageContent() {
                 {stats?.totalSupplyMinted ? (parseInt(stats.totalSupplyMinted) / 1000000).toFixed(1) + "M" : "0"}
               </p>
               <p className="text-muted-foreground text-sm">Tokens Minted</p>
-              <p className="text-green-400 text-xs mt-1">{stats?.allocationPercentage.toFixed(1) || 0}% of allocation</p>
+              <p className="text-green-400 text-xs mt-1">{stats?.allocationPercentage ? stats.allocationPercentage.toFixed(1) : 0}% of allocation</p>
             </div>
 
             <div className="text-center">
@@ -499,7 +499,7 @@ function MiningPageContent() {
                 <TrendingUp className="w-8 h-8 text-white" />
               </div>
               <p className="text-2xl font-bold text-foreground mb-1">
-                {stats?.uniqueUsers.toLocaleString() || "0"}
+                {stats?.uniqueUsers ? stats.uniqueUsers.toLocaleString() : "0"}
               </p>
               <p className="text-muted-foreground text-sm">Active Miners</p>
               <p className="text-purple-400 text-xs mt-1">Unique users</p>

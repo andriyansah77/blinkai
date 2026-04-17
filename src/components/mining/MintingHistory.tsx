@@ -109,7 +109,8 @@ export function MintingHistory() {
     }).format(date);
   };
 
-  const formatAmount = (amount: number) => {
+  const formatAmount = (amount: number | undefined | null) => {
+    if (typeof amount !== 'number' || isNaN(amount)) return '0';
     return amount.toLocaleString();
   };
 
