@@ -5,19 +5,25 @@ import { preventProprietarySkillUninstall } from "@/lib/hooks/auto-install-minti
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[Skills API] GET request received');
+    
     const session = await getPrivySession(request);
     if (!session?.user) {
+      console.log('[Skills API] Unauthorized - no session');
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    console.log(`[Skills API] Fetching skills for user: ${session.user.id}`);
     const skills = await hermesIntegration.getSkills(session.user.id!);
+    
+    console.log(`[Skills API] Retrieved ${skills.length} skills`);
     
     return NextResponse.json({
       success: true,
       skills
     });
   } catch (error) {
-    console.error("Get skills error:", error);
+    console.error("[Skills API] Get skills error:", error);
     return NextResponse.json(
       { error: "Failed to get skills" },
       { status: 500 }
