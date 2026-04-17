@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       address: wallet.address,
       reagentBalance: parseFloat(wallet.reagentBalance) || 0,
       pathusdBalance: parseFloat(wallet.pathusdBalance) || 0,
-      usdBalance: parseFloat(usdBalance?.balance || '0'),
+      usdBalance: parseFloat(wallet.pathusdBalance) || 0,  // Use pathusdBalance as usdBalance for compatibility
       lastUpdate: wallet.lastBalanceUpdate.toISOString()
     });
 

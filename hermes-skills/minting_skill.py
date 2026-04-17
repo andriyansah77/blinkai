@@ -37,7 +37,7 @@ class MintingSkill:
     
     def get_balance(self) -> Dict[str, Any]:
         """
-        Get user's USD and REAGENT balance.
+        Get user's PATHUSD and REAGENT balance.
         
         Returns:
             Dict containing balance information
@@ -48,7 +48,13 @@ class MintingSkill:
                 headers=self.headers
             )
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            
+            # Ensure we return pathusdBalance as the primary balance
+            if data.get('success'):
+                data['usdBalance'] = data.get('pathusdBalance', 0)
+            
+            return data
         except Exception as e:
             return {
                 'success': False,
@@ -206,7 +212,8 @@ class MintingSkill:
         if not balance_data.get('success'):
             return f"❌ Failed to check balance: {balance_data.get('error', 'Unknown error')}"
         
-        usd_balance = balance_data.get('usdBalance', 0)
+        pathusd_balance = balance_data.get('pathusdBalance', 0)
+        usd_balance = balance_data.get('usdBalance', pathusd_balance)  # Fallback to pathusdBalance
         reagent_balance = balance_data.get('reagentBalance', 0)
         
         # Step 2: Estimate cost
@@ -217,14 +224,15 @@ class MintingSkill:
         total_cost = estimate.get('totalCostUsd', 0)
         tokens_to_earn = estimate.get('tokensToEarn', 10000)
         
-        # Step 3: Validate balance
-        if usd_balance < total_cost:
+        # Step 3: Validate balance (use pathusdBalance)
+        if pathusd_balance < total_cost:
             return (
-                f"❌ Insufficient balance for minting.\n\n"
-                f"💰 Current Balance: ${usd_balance:.2f} USD\n"
-                f"💵 Required: ${total_cost:.2f} USD\n"
-                f"📉 Shortfall: ${(total_cost - usd_balance):.2f} USD\n\n"
-                f"Please deposit more funds to continue."
+                f"❌ Insufficient PATHUSD balance for minting.\n\n"
+                f"💰 Current PATHUSD Balance: {pathusd_balance:.4f} PATHUSD\n"
+                f"💵 Required: {total_cost:.4f} PATHUSD\n"
+                f"📉 Shortfall: {(total_cost - pathusd_balance):.4f} PATHUSD\n\n"
+                f"Please deposit more PATHUSD to your wallet to continue.\n"
+                f"Note: PATHUSD is the native stablecoin on Tempo Network."
             )
         
         # Step 4: Execute minting
@@ -239,10 +247,10 @@ class MintingSkill:
             return (
                 f"✅ Minting successful!\n\n"
                 f"🪙 Tokens Earned: {tokens_earned:,} REAGENT\n"
-                f"💵 Fee Paid: ${fee_paid:.2f} USD\n"
+                f"💵 Fee Paid: {fee_paid:.4f} PATHUSD\n"
                 f"⛽ Gas Used: {gas_used:.6f} ETH\n"
                 f"🔗 Transaction: {tx_hash[:10]}...{tx_hash[-8:]}\n\n"
-                f"💰 New Balance: ${(usd_balance - total_cost):.2f} USD\n"
+                f"💰 New PATHUSD Balance: {(pathusd_balance - total_cost):.4f} PATHUSD\n"
                 f"🪙 Total REAGENT: {(reagent_balance + tokens_earned):,}\n\n"
                 f"View on Explorer: https://explore.tempo.xyz/tx/{tx_hash}"
             )

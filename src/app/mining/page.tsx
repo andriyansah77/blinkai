@@ -26,6 +26,7 @@ import { DepositInstructions } from "@/components/mining/DepositInstructions";
 interface WalletData {
   address: string;
   reagentBalance: number;
+  pathusdBalance: number;
   usdBalance: number;
 }
 
@@ -186,9 +187,9 @@ export default function MiningPage() {
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
             </div>
-            <h3 className="text-muted-foreground text-sm mb-1">USD Balance</h3>
+            <h3 className="text-muted-foreground text-sm mb-1">PATHUSD Balance</h3>
             <p className="text-3xl font-bold text-foreground mb-2">
-              ${typeof wallet?.usdBalance === 'number' ? wallet.usdBalance.toFixed(2) : parseFloat(wallet?.usdBalance || '0').toFixed(2)}
+              {typeof wallet?.pathusdBalance === 'number' ? wallet.pathusdBalance.toFixed(4) : parseFloat(wallet?.pathusdBalance || '0').toFixed(4)}
             </p>
             <p className="text-muted-foreground text-xs">Available for minting</p>
           </motion.div>
