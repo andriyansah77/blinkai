@@ -50,6 +50,9 @@ model ApiKeyConfig {
   byokBaseUrl String?
   byokModel   String?
 
+  // Mining API Key for AI agent access
+  miningApiKey String?
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }

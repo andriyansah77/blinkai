@@ -31,27 +31,27 @@ export async function GET(request: NextRequest) {
     let apiKeyConfig = await prisma.apiKeyConfig.findUnique({
       where: { userId },
       select: {
-        apiKey: true,
+        miningApiKey: true,
         mode: true,
       }
     });
 
     // 3. If no API key exists, create one
-    if (!apiKeyConfig || !apiKeyConfig.apiKey) {
+    if (!apiKeyConfig || !apiKeyConfig.miningApiKey) {
       const newApiKey = `rgt_${crypto.randomBytes(32).toString('hex')}`;
       
       apiKeyConfig = await prisma.apiKeyConfig.upsert({
         where: { userId },
         create: {
           userId,
-          apiKey: newApiKey,
+          miningApiKey: newApiKey,
           mode: 'platform',
         },
         update: {
-          apiKey: newApiKey,
+          miningApiKey: newApiKey,
         },
         select: {
-          apiKey: true,
+          miningApiKey: true,
           mode: true,
         }
       });
@@ -60,12 +60,12 @@ export async function GET(request: NextRequest) {
     // 4. Return API key
     return NextResponse.json({
       success: true,
-      apiKey: apiKeyConfig.apiKey,
+      apiKey: apiKeyConfig.miningApiKey,
       mode: apiKeyConfig.mode,
       usage: {
         description: "Use this API key to allow your AI agent to mint REAGENT tokens",
         environment_variable: "REAGENT_API_KEY",
-        example: `export REAGENT_API_KEY="${apiKeyConfig.apiKey}"`
+        example: `export REAGENT_API_KEY="${apiKeyConfig.miningApiKey}"`
       }
     });
 
@@ -116,11 +116,11 @@ export async function POST(request: NextRequest) {
       where: { userId },
       create: {
         userId,
-        apiKey: newApiKey,
+        miningApiKey: newApiKey,
         mode: 'platform',
       },
       update: {
-        apiKey: newApiKey,
+        miningApiKey: newApiKey,
       }
     });
 
