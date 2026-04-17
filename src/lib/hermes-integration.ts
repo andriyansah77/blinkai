@@ -852,25 +852,36 @@ REAGENT_USER_ID=${userId}
       const lines = output.split('\n');
       
       // Parse table format from Hermes CLI
-      // Format: │ skill-name │ category │ source │ trust │
+      // New format: │ skill-name │ category │ source │ trust │
       let inTable = false;
       
       for (const line of lines) {
         // Skip empty lines
         if (!line || !line.trim()) continue;
         
-        // Detect table start
+        // Detect table start (header with ┏ or title "Installed Skills")
         if (line.includes('┏') || line.includes('Installed Skills')) {
           inTable = true;
           continue;
         }
         
-        // Skip header and separator lines (┃ for header, ┡ for separator)
-        if (line.includes('┃') || line.includes('┡') || line.includes('└') || line.includes('━')) {
+        // Skip table end
+        if (line.includes('└') || line.includes('┗')) {
+          inTable = false;
           continue;
         }
         
-        // Parse skill rows (lines containing │)
+        // Skip header row (contains ┃) and separator row (contains ┡ or ━)
+        if (line.includes('┃') || line.includes('┡') || line.includes('━')) {
+          continue;
+        }
+        
+        // Skip summary line (e.g., "0 hub-installed, 75 builtin, 0 local")
+        if (line.match(/\d+\s+(hub-installed|builtin|local)/)) {
+          continue;
+        }
+        
+        // Parse skill rows (lines containing │ and in table)
         if (inTable && line.includes('│')) {
           try {
             // Split by │ and clean up
@@ -883,8 +894,8 @@ REAGENT_USER_ID=${userId}
               const category = parts[1] || '';
               const source = parts[2] || 'unknown';
               
-              // Skip if name is empty or contains summary text
-              if (!name || name.match(/^\d+\s+/) || name.includes('hub-installed')) {
+              // Skip if name is empty
+              if (!name) {
                 continue;
               }
               
