@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { MintingHistory } from "@/components/mining/MintingHistory";
 import { WalletCreation } from "@/components/mining/WalletCreation";
+import { DepositInstructions } from "@/components/mining/DepositInstructions";
 
 interface WalletData {
   address: string;
