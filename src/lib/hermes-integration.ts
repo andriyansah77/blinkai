@@ -981,7 +981,14 @@ REAGENT_USER_ID=${userId}
    */
   async getGatewayStatus(userId: string): Promise<HermesGateway> {
     try {
+      console.log(`[Gateway] Getting status for user ${userId}`);
       const profileName = this.getProfileName(userId);
+      
+      // Initialize gateway object
+      const gateway: HermesGateway = {
+        status: 'stopped',
+        platforms: {}
+      };
       
       // Check if gateway service is running
       try {
@@ -990,50 +997,65 @@ REAGENT_USER_ID=${userId}
           { timeout: 10000 }
         );
         
-        // Parse the output
-        const gateway = this.parseGatewayStatus(stdout);
+        console.log(`[Gateway] Status output:`, stdout.substring(0, 200));
         
-        // If gateway is running, check config.yaml for configured platforms
-        if (gateway.status === 'running') {
-          const configPath = `/root/.hermes/profiles/${profileName}/config.yaml`;
-          try {
-            const { stdout: configContent } = await execAsync(`cat ${configPath}`);
-            const config = yaml.parse(configContent);
-            
-            // Check which platforms are configured
-            if (config.telegram?.bot_token) {
-              gateway.platforms.telegram = {
-                status: 'connected',
-                botToken: '***' // Hide token
-              };
-            }
-            
-            if (config.discord?.bot_token) {
-              gateway.platforms.discord = {
-                status: 'connected',
-                botToken: '***' // Hide token
-              };
-            }
-            
-            if (config.whatsapp) {
-              gateway.platforms.whatsapp = {
-                status: 'connected',
-                paired: true
-              };
-            }
-          } catch (configError) {
-            console.warn(`[Gateway] Could not read config for user ${userId}:`, configError);
-          }
+        // Parse the output
+        const parsedGateway = this.parseGatewayStatus(stdout);
+        gateway.status = parsedGateway.status;
+        
+        console.log(`[Gateway] Parsed status: ${gateway.status}`);
+      } catch (statusError: any) {
+        console.warn(`[Gateway] Status check failed for user ${userId}:`, statusError.message);
+        // Gateway not running, but continue to check config
+      }
+      
+      // Always check config.yaml for configured platforms (even if gateway is stopped)
+      const configPath = `/root/.hermes/profiles/${profileName}/config.yaml`;
+      try {
+        const { stdout: configContent } = await execAsync(`cat ${configPath}`);
+        const config = yaml.parse(configContent);
+        
+        console.log(`[Gateway] Config keys:`, Object.keys(config));
+        
+        // Check which platforms are configured
+        if (config.telegram?.bot_token) {
+          console.log(`[Gateway] Telegram configured`);
+          gateway.platforms.telegram = {
+            status: gateway.status === 'running' ? 'connected' : 'disconnected',
+            botToken: '***' // Hide token
+          };
         }
         
-        return gateway;
-      } catch (statusError) {
-        console.warn(`[Gateway] Status check failed for user ${userId}:`, statusError);
-        return {
-          status: 'stopped',
-          platforms: {}
-        };
+        if (config.discord?.bot_token) {
+          console.log(`[Gateway] Discord configured`);
+          gateway.platforms.discord = {
+            status: gateway.status === 'running' ? 'connected' : 'disconnected',
+            botToken: '***' // Hide token
+          };
+        }
+        
+        if (config.whatsapp) {
+          console.log(`[Gateway] WhatsApp configured`);
+          gateway.platforms.whatsapp = {
+            status: gateway.status === 'running' ? 'connected' : 'disconnected',
+            paired: true
+          };
+        }
+        
+        if (config.slack?.bot_token) {
+          console.log(`[Gateway] Slack configured`);
+          gateway.platforms.slack = {
+            status: gateway.status === 'running' ? 'connected' : 'disconnected',
+            botToken: '***' // Hide token
+          };
+        }
+        
+        console.log(`[Gateway] Total platforms configured: ${Object.keys(gateway.platforms).length}`);
+      } catch (configError) {
+        console.warn(`[Gateway] Could not read config for user ${userId}:`, configError);
       }
+      
+      return gateway;
     } catch (error) {
       console.error(`[Gateway] Error getting status for user ${userId}:`, error);
       return {

@@ -90,14 +90,32 @@ export default function ChannelsPage() {
       if (!silent) setLoading(true);
       setRefreshing(true);
       
-      const response = await fetch('/api/hermes/gateway');
+      console.log('[Channels] Fetching gateway status...');
+      const response = await fetch('/api/hermes/gateway', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      
+      console.log('[Channels] Gateway API response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[Channels] Gateway data received:', data);
+        
         // Convert gateway status to channels format
         const gatewayChannels: Channel[] = [];
         
-        if (data.platforms) {
-          Object.entries(data.platforms).forEach(([platform, config]: [string, any]) => {
+        // Check if platforms exist in the response
+        const platforms = data.platforms || {};
+        console.log('[Channels] Platforms:', platforms);
+        
+        if (Object.keys(platforms).length > 0) {
+          Object.entries(platforms).forEach(([platform, config]: [string, any]) => {
+            console.log(`[Channels] Processing platform ${platform}:`, config);
+            
             if (config && config.status) {
               gatewayChannels.push({
                 id: platform,
@@ -112,10 +130,14 @@ export default function ChannelsPage() {
           });
         }
         
+        console.log('[Channels] Total channels:', gatewayChannels.length);
         setChannels(gatewayChannels);
+      } else {
+        const errorText = await response.text();
+        console.error('[Channels] Gateway API error:', response.status, errorText);
       }
     } catch (error) {
-      console.error('Failed to fetch channels:', error);
+      console.error('[Channels] Failed to fetch channels:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
