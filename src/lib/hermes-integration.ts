@@ -258,11 +258,14 @@ REAGENT_PLATFORM_MODE=true
 REAGENT_USER_ID=${userId}
 `;
             
-            // Write .env file using echo to avoid EOF issues
-            const escapedEnvContent = envContent.replace(/'/g, "'\\''");
-            await execAsync(`echo '${escapedEnvContent}' > ${envPath}`);
+            // Write .env file directly using cat with proper escaping
+            // Use double quotes to allow variable expansion
+            await execAsync(`cat > ${envPath} << EOF
+${envContent}
+EOF`);
             
             console.log(`[Profile] .env file created for user ${userId}`);
+            console.log(`[Profile] API Key set: ${AI_API_KEY ? 'Yes' : 'No'}`);
             console.log(`[Profile] AI configuration set successfully`);
             
             // 3. Copy profile markdown files (PLATFORM.md, TOOLS.md, SOUL.md)
