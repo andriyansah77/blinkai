@@ -216,21 +216,32 @@ export class WalletManager {
    */
   decryptPrivateKey(encryptedData: string, ivHex: string): string {
     try {
+      console.log('[WalletManager] Decrypting private key...');
+      console.log('[WalletManager] IV length:', ivHex.length);
+      console.log('[WalletManager] Encrypted data length:', encryptedData.length);
+      
       const iv = Buffer.from(ivHex, 'hex');
       
-      // Extract auth tag from end of encrypted data
-      const authTag = Buffer.from(encryptedData.slice(-AUTH_TAG_LENGTH * 2), 'hex');
-      const encrypted = encryptedData.slice(0, -AUTH_TAG_LENGTH * 2);
+      // Auth tag is the last 32 hex characters (16 bytes)
+      const authTagHex = encryptedData.slice(-32);
+      const encryptedHex = encryptedData.slice(0, -32);
+      
+      console.log('[WalletManager] Auth tag length:', authTagHex.length);
+      console.log('[WalletManager] Encrypted hex length:', encryptedHex.length);
+      
+      const authTag = Buffer.from(authTagHex, 'hex');
 
       const decipher = createDecipheriv(ENCRYPTION_ALGORITHM, this.encryptionKey, iv);
       decipher.setAuthTag(authTag);
 
-      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+      let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
 
+      console.log('[WalletManager] Decryption successful');
       return decrypted;
-    } catch (error) {
-      throw new Error('Failed to decrypt private key');
+    } catch (error: any) {
+      console.error('[WalletManager] Decryption failed:', error.message);
+      throw new Error(`Failed to decrypt private key: ${error.message}`);
     }
   }
 
