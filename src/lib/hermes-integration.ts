@@ -77,14 +77,14 @@ export interface HermesGateway {
 
 export class HermesIntegration {
   private hermesPath = '/root/.local/bin/hermes';
-  private profilesDir = '/tmp/hermes-profiles';
+  private profilesDir = '/root/.hermes/profiles';
 
   constructor() {
-    this.ensureProfilesDir();
+    // No need to ensure dir - Hermes manages this
   }
 
   private async ensureProfilesDir() {
-    await fs.ensureDir(this.profilesDir);
+    // Hermes manages profile directories automatically
   }
 
   /**
@@ -114,9 +114,6 @@ export class HermesIntegration {
     const profileName = this.getProfileName(userId);
     const profileHome = path.join(this.profilesDir, profileName);
     
-    // Ensure profile directory exists
-    await fs.ensureDir(profileHome);
-    
     // Build command arguments
     const args = [
       '--profile', profileName,
@@ -144,6 +141,10 @@ export class HermesIntegration {
     
     const fullCommand = `${this.hermesPath} ${args.join(' ')}`;
     
+    console.log(`[executeHermesCommand] Full command: ${fullCommand}`);
+    console.log(`[executeHermesCommand] CWD: ${options.cwd || profileHome}`);
+    console.log(`[executeHermesCommand] Profile home: ${profileHome}`);
+    
     try {
       const result = await execAsync(fullCommand, {
         cwd: options.cwd || profileHome,
@@ -156,15 +157,22 @@ export class HermesIntegration {
         }
       });
       
+      console.log(`[executeHermesCommand] Success! stdout length: ${result.stdout.length}, stderr length: ${result.stderr.length}`);
+      console.log(`[executeHermesCommand] First 500 chars of stdout:`, result.stdout.substring(0, 500));
+      
       return {
         success: true,
         output: result.stdout,
         error: result.stderr
       };
     } catch (error: any) {
+      console.error(`[executeHermesCommand] Error:`, error.message);
+      console.error(`[executeHermesCommand] stdout:`, error.stdout);
+      console.error(`[executeHermesCommand] stderr:`, error.stderr);
+      
       return {
         success: false,
-        output: '',
+        output: error.stdout || '',
         error: error.message
       };
     }
