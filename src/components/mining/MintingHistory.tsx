@@ -238,14 +238,14 @@ export function MintingHistory() {
                       {/* Fee */}
                       <td className="py-4 px-4 text-right">
                         <p className="text-muted-foreground text-sm">
-                          ${inscription.feeUsd.toFixed(2)}
+                          ${typeof inscription.feeUsd === 'number' ? inscription.feeUsd.toFixed(2) : '0.00'}
                         </p>
                       </td>
 
                       {/* Gas */}
                       <td className="py-4 px-4 text-right">
                         <p className="text-muted-foreground text-sm">
-                          {inscription.gasUsed.toFixed(6)}
+                          {typeof inscription.gasUsed === 'number' ? inscription.gasUsed.toFixed(6) : '0.000000'}
                         </p>
                       </td>
 
