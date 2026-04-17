@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { usePrivy } from "@privy-io/react-auth";
 import { 
   MessageSquare, 
   Zap, 
@@ -32,6 +33,13 @@ interface SidebarProps {
 interface SkillsData {
   total: number;
   installed: number;
+}
+
+interface UserData {
+  name: string;
+  email: string;
+  avatar?: string;
+  initials: string;
 }
 
 const MAIN_ITEMS = [
@@ -92,10 +100,38 @@ const ACCOUNT_ITEMS = [
 
 export default function HermesSidebar({ credits = 10000, planType = "Free Plan" }: SidebarProps) {
   const pathname = usePathname();
+  const { user } = usePrivy();
   const [isAccountExpanded, setIsAccountExpanded] = useState(false);
   const { agent, hasAgent, loading } = useUserAgent();
   const [skillsData, setSkillsData] = useState<SkillsData>({ total: 0, installed: 0 });
   const [loadingSkills, setLoadingSkills] = useState(true);
+  const [userData, setUserData] = useState<UserData>({
+    name: 'User',
+    email: '',
+    initials: 'U'
+  });
+
+  // Extract user data from Privy
+  useEffect(() => {
+    if (user) {
+      const name = user.email?.address || user.wallet?.address?.slice(0, 8) || 'User';
+      const email = user.email?.address || '';
+      
+      // Generate initials from name or email
+      let initials = 'U';
+      if (user.email?.address) {
+        initials = user.email.address.charAt(0).toUpperCase();
+      } else if (user.wallet?.address) {
+        initials = user.wallet.address.slice(2, 4).toUpperCase();
+      }
+
+      setUserData({
+        name,
+        email,
+        initials
+      });
+    }
+  }, [user]);
 
   // Fetch skills data
   useEffect(() => {
@@ -107,7 +143,7 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // Include cookies for auth
+          credentials: 'include',
         });
         
         console.log('[Sidebar] Skills API response status:', response.status);
@@ -307,7 +343,7 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
           </div>
           <div className="flex items-center gap-2 mb-2">
             <User className="w-3 h-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground truncate">
               {agent?.model || 'No model'}
             </span>
           </div>
@@ -330,11 +366,11 @@ export default function HermesSidebar({ credits = 10000, planType = "Free Plan" 
           className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors"
         >
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <span className="text-foreground text-xs font-bold">U</span>
+            <span className="text-foreground text-xs font-bold">{userData.initials}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-foreground truncate">User</div>
-            <div className="text-xs text-muted-foreground">Free Plan</div>
+            <div className="text-sm font-medium text-foreground truncate">{userData.name}</div>
+            <div className="text-xs text-muted-foreground">{planType}</div>
           </div>
           <Settings className="w-4 h-4 text-muted-foreground" />
         </Link>
