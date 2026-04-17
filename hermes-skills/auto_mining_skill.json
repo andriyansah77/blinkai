@@ -1,0 +1,66 @@
+{
+  "name": "auto_mining",
+  "version": "1.0.0",
+  "description": "Automatically mint REAGENT tokens on Tempo Network",
+  "category": "blockchain",
+  "trust": "user",
+  "commands": {
+    "check_balance": {
+      "description": "Check user's PATHUSD and REAGENT token balance",
+      "usage": "auto_mining check_balance",
+      "examples": [
+        "Check my balance",
+        "How much PATHUSD do I have?",
+        "Show my REAGENT balance"
+      ]
+    },
+    "start_mining": {
+      "description": "Start automatic REAGENT token minting",
+      "usage": "auto_mining start_mining [count]",
+      "parameters": {
+        "count": {
+          "type": "integer",
+          "description": "Number of minting operations (default: 1, max: 10)",
+          "optional": true,
+          "default": 1
+        }
+      },
+      "examples": [
+        "Start mining REAGENT",
+        "Mint REAGENT tokens",
+        "Start auto mining",
+        "Mine 5 REAGENT tokens"
+      ]
+    },
+    "get_status": {
+      "description": "Get current mining status and history",
+      "usage": "auto_mining get_status",
+      "examples": [
+        "Show mining status",
+        "What's my mining history?",
+        "Check mining progress"
+      ]
+    }
+  },
+  "requirements": {
+    "environment": {
+      "REAGENT_API_KEY": "User's API key for authentication",
+      "REAGENT_PLATFORM_URL": "Platform URL (default: https://reagent.eu.cc)"
+    },
+    "dependencies": [
+      "requests"
+    ]
+  },
+  "permissions": {
+    "wallet_access": true,
+    "transaction_signing": true,
+    "balance_read": true
+  },
+  "cost": {
+    "auto_minting": "0.5 PATHUSD + gas per operation",
+    "manual_minting": "1.0 PATHUSD + gas per operation"
+  },
+  "rewards": {
+    "per_mint": "10,000 REAGENT tokens"
+  }
+}

@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { MintingHistory } from "@/components/mining/MintingHistory";
 import { DepositInstructions } from "@/components/mining/DepositInstructions";
+import { AIAgentSetup } from "@/components/mining/AIAgentSetup";
 
 // Error Boundary Component
 class ErrorBoundary extends Component<
@@ -547,6 +548,9 @@ function MiningPageContent() {
             </p>
           </div>
         </motion.div>
+
+        {/* AI Agent Setup */}
+        <AIAgentSetup />
 
         {/* Minting History */}
         <MintingHistory />
