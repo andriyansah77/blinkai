@@ -16,7 +16,10 @@ import {
   Sparkles,
   Crown,
   Gift,
-  Wallet
+  Wallet,
+  AlertCircle,
+  Copy,
+  CheckCircle
 } from "lucide-react";
 
 interface OnboardingStep {
@@ -302,276 +305,367 @@ function AgentSetupStep({ data, updateData, nextStep, isFirstStep }: any) {
 }
 
 function WalletSetupStep({ data, updateData, nextStep, prevStep }: any) {
-  const { getAccessToken } = usePrivy();
-  const [walletMode, setWalletMode] = useState<'generate' | 'import' | null>(null);
-  const [privateKey, setPrivateKey] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [walletAddress, setWalletAddress] = useState('');
+  const [step, setStep] = useState<'intro' | 'creating' | 'display' | 'verify' | 'complete'>('intro');
+  const [walletData, setWalletData] = useState<{
+    address: string;
+    mnemonic: string;
+    privateKey: string;
+  } | null>(null);
+  const [showMnemonic, setShowMnemonic] = useState(false);
+  const [showPrivateKey, setShowPrivateKey] = useState(false);
+  const [verificationInput, setVerificationInput] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [savedConfirmed, setSavedConfirmed] = useState(false);
 
-  const handleGenerateWallet = async () => {
-    setLoading(true);
-    setError('');
-    
+  const handleCreateWallet = async () => {
     try {
-      const token = await getAccessToken();
-      const response = await fetch('/api/wallet/generate', {
+      setStep('creating');
+      
+      const response = await fetch('/api/wallet/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
+        headers: { 'Content-Type': 'application/json' },
       });
 
       const result = await response.json();
 
       if (result.success) {
-        setWalletAddress(result.address);
-        updateData({ walletAddress: result.address, walletImported: false });
-        // Auto-proceed to next step after 2 seconds
-        setTimeout(() => nextStep(), 2000);
+        setWalletData(result.wallet);
+        setStep('display');
       } else {
-        setError(result.error?.message || 'Failed to generate wallet');
+        alert(result.error?.message || 'Failed to create wallet');
+        setStep('intro');
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Wallet creation error:', error);
+      alert('Failed to create wallet');
+      setStep('intro');
     }
   };
 
-  const handleImportWallet = async () => {
-    if (!privateKey.trim()) {
-      setError('Please enter your private key');
+  const handleCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    alert(`${label} copied to clipboard`);
+  };
+
+  const handleDownload = () => {
+    if (!walletData) return;
+
+    const content = `REAGENT WALLET BACKUP
+======================
+
+⚠️ KEEP THIS FILE SECURE AND PRIVATE ⚠️
+
+Address: ${walletData.address}
+
+Mnemonic Phrase (12 words):
+${walletData.mnemonic}
+
+Private Key:
+${walletData.privateKey}
+
+Network: Tempo Network (Chain ID: 4217)
+
+IMPORTANT:
+- Never share your mnemonic or private key with anyone
+- Store this file in a secure location
+- You will need this to access your wallet
+- If you lose this, you lose access to your funds forever
+
+Generated: ${new Date().toISOString()}
+`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reagent-wallet-${walletData.address.slice(0, 8)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleVerify = async () => {
+    if (!walletData || !verificationInput.trim()) {
+      alert('Please enter your mnemonic phrase');
       return;
     }
 
-    setLoading(true);
-    setError('');
-    
     try {
-      const token = await getAccessToken();
-      const response = await fetch('/api/wallet/import', {
+      setVerifying(true);
+
+      const response = await fetch('/api/wallet/verify', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ privateKey })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mnemonic: verificationInput.trim() }),
       });
 
       const result = await response.json();
 
-      if (result.success) {
-        setWalletAddress(result.address);
-        updateData({ walletAddress: result.address, walletImported: true });
-        // Auto-proceed to next step after 2 seconds
+      if (result.success && result.verified) {
+        setStep('complete');
+        updateData({ walletAddress: walletData.address });
         setTimeout(() => nextStep(), 2000);
       } else {
-        setError(result.error?.message || 'Failed to import wallet');
+        alert('Mnemonic does not match. Please try again.');
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
+    } catch (error) {
+      console.error('Verification error:', error);
+      alert('Failed to verify mnemonic');
     } finally {
-      setLoading(false);
+      setVerifying(false);
     }
   };
 
   return (
     <div className="space-y-6">
-      {!walletMode && !walletAddress && (
+      {step === 'intro' && (
         <div className="bg-white/5 border border-white/10 rounded-xl p-8">
-          <div className="text-center mb-6">
-            <Wallet className="w-16 h-16 text-orange-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Setup Your Wallet</h3>
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Wallet className="w-10 h-10 text-orange-400" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Create Your Wallet</h3>
             <p className="text-gray-400">
-              Choose how you want to setup your blockchain wallet
+              Secure wallet for REAGENT token minting on Tempo Network
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              onClick={() => setWalletMode('generate')}
-              className="p-6 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-left"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-white mb-1">Generate New Wallet</h3>
-                  <p className="text-sm text-gray-400">
-                    Create a new secure wallet automatically
+          <div className="space-y-4 mb-8">
+            <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-500 mb-1">Important Security Notice</p>
+                <p className="text-gray-400">
+                  You will receive a 12-word mnemonic phrase. 
+                  <span className="font-semibold text-white"> You must save it securely</span> - 
+                  it cannot be recovered if lost.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
+                <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm mb-1">Secure Storage</p>
+                  <p className="text-xs text-gray-400">
+                    Your keys are never stored on our servers
                   </p>
-                  <div className="mt-3 flex items-center gap-2 text-xs text-green-400">
-                    <Check className="w-4 h-4" />
-                    <span>Recommended for new users</span>
-                  </div>
                 </div>
               </div>
-            </button>
 
-            <button
-              onClick={() => setWalletMode('import')}
-              className="p-6 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-left"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                  <Wallet className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-white mb-1">Import Existing Wallet</h3>
-                  <p className="text-sm text-gray-400">
-                    Use your existing wallet with private key
+              <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
+                <Check className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm mb-1">Full Control</p>
+                  <p className="text-xs text-gray-400">
+                    You own and control your wallet completely
                   </p>
-                  <div className="mt-3 flex items-center gap-2 text-xs text-blue-400">
-                    <Check className="w-4 h-4" />
-                    <span>For experienced users</span>
-                  </div>
                 </div>
               </div>
-            </button>
+
+              <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
+                <Zap className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm mb-1">Easy Recovery</p>
+                  <p className="text-xs text-gray-400">
+                    Restore wallet anytime with your mnemonic
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-6 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-orange-300">
-              Your wallet will be used for mining REAGENT tokens and managing your assets on Tempo Network
-            </p>
-          </div>
+          <button
+            onClick={handleCreateWallet}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-lg transition-colors"
+          >
+            Create Wallet
+          </button>
         </div>
       )}
 
-      {walletMode === 'generate' && !walletAddress && (
-        <div className="bg-white/5 border border-white/10 rounded-xl p-8">
-          <div className="text-center">
-            <Wallet className="w-16 h-16 text-green-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Generate New Wallet</h3>
-            <p className="text-gray-400 mb-6">
-              We'll create a secure wallet for you automatically
-            </p>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-                {error}
-              </div>
-            )}
-
-            <button
-              onClick={handleGenerateWallet}
-              disabled={loading}
-              className="flex items-center gap-2 bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-500 px-6 py-3 rounded-lg font-medium transition-colors mx-auto"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Generate Wallet
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={() => setWalletMode(null)}
-              className="mt-4 text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              ← Back to options
-            </button>
+      {step === 'creating' && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
+          <div className="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Wallet className="w-10 h-10 text-orange-400" />
           </div>
+          <h3 className="text-2xl font-bold mb-2">Creating Your Wallet...</h3>
+          <p className="text-gray-400">Please wait a moment</p>
         </div>
       )}
 
-      {walletMode === 'import' && !walletAddress && (
+      {step === 'display' && walletData && (
         <div className="bg-white/5 border border-white/10 rounded-xl p-8">
           <div className="text-center mb-6">
-            <Wallet className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Import Existing Wallet</h3>
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2">Wallet Created Successfully!</h3>
             <p className="text-gray-400">
-              Enter your private key to import your wallet
+              Save your mnemonic phrase securely
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Wallet Address */}
             <div>
-              <label className="block text-white font-medium mb-3">Private Key</label>
+              <label className="text-sm font-semibold mb-2 block">Wallet Address</label>
+              <div className="flex items-center gap-2 p-4 bg-white/5 rounded-lg">
+                <code className="flex-1 text-sm font-mono break-all">{walletData.address}</code>
+                <button
+                  onClick={() => handleCopy(walletData.address, 'Address')}
+                  className="p-2 hover:bg-white/10 rounded transition-colors flex-shrink-0"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Mnemonic Phrase */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-semibold">Mnemonic Phrase (12 words)</label>
+                <button
+                  onClick={() => setShowMnemonic(!showMnemonic)}
+                  className="text-sm text-orange-400 hover:underline flex items-center gap-1"
+                >
+                  {showMnemonic ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <div className="relative p-4 bg-white/5 rounded-lg">
+                {showMnemonic ? (
+                  <div className="flex items-start gap-2">
+                    <code className="flex-1 text-sm font-mono break-all">{walletData.mnemonic}</code>
+                    <button
+                      onClick={() => handleCopy(walletData.mnemonic, 'Mnemonic')}
+                      className="p-2 hover:bg-white/10 rounded transition-colors flex-shrink-0"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400">Click "Show" to reveal your mnemonic phrase</p>
+                )}
+              </div>
+            </div>
+
+            {/* Warning */}
+            <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-semibold text-red-500 mb-1">Critical: Save Your Keys Now!</p>
+                <ul className="text-gray-400 space-y-1 list-disc list-inside">
+                  <li>This is the ONLY time you'll see your mnemonic</li>
+                  <li>Write it down or download the backup file</li>
+                  <li>Store it in a secure location</li>
+                  <li>Never share it with anyone</li>
+                  <li>If you lose it, you lose access to your wallet forever</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Confirmation Checkbox */}
+            <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
               <input
-                type="password"
-                value={privateKey}
-                onChange={(e) => setPrivateKey(e.target.value)}
-                placeholder="0x..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 font-mono text-sm"
+                type="checkbox"
+                id="saved-confirm"
+                checked={savedConfirmed}
+                onChange={(e) => setSavedConfirmed(e.target.checked)}
+                className="mt-1"
+              />
+              <label htmlFor="saved-confirm" className="text-sm cursor-pointer">
+                I have saved my mnemonic phrase in a secure location. 
+                I understand that I cannot recover it if I lose it.
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleDownload}
+                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Download Backup
+              </button>
+              <button
+                onClick={() => setStep('verify')}
+                disabled={!savedConfirmed}
+                className={`flex-1 font-semibold py-3 rounded-lg transition-colors ${
+                  savedConfirmed
+                    ? "bg-orange-500 hover:bg-orange-600 text-white"
+                    : "bg-white/5 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                Continue to Verification
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step === 'verify' && walletData && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-8">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-orange-400" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2">Verify Your Mnemonic</h3>
+            <p className="text-gray-400">
+              Enter your 12-word mnemonic phrase to confirm you've saved it
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <label className="text-sm font-semibold mb-2 block">
+                Mnemonic Phrase (12 words, separated by spaces)
+              </label>
+              <textarea
+                value={verificationInput}
+                onChange={(e) => setVerificationInput(e.target.value)}
+                placeholder="Enter your 12-word mnemonic phrase..."
+                className="w-full p-4 bg-white/5 border border-white/10 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                rows={3}
               />
             </div>
 
-            {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-                {error}
-              </div>
-            )}
-
-            <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex items-start gap-3">
-              <span className="text-yellow-400 text-xl flex-shrink-0">⚠️</span>
-              <p className="text-sm text-yellow-300">
-                Never share your private key with anyone. We encrypt and store it securely.
-              </p>
-            </div>
-
-            <button
-              onClick={handleImportWallet}
-              disabled={loading || !privateKey.trim()}
-              className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-500 px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Importing...
-                </>
-              ) : (
-                <>
-                  <Wallet className="w-4 h-4" />
-                  Import Wallet
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={() => setWalletMode(null)}
-              className="w-full text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              ← Back to options
-            </button>
-          </div>
-        </div>
-      )}
-
-      {walletAddress && (
-        <div className="bg-white/5 border border-white/10 rounded-xl p-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="w-8 h-8 text-green-400" />
-            </div>
-            
-            <h3 className="text-xl font-semibold mb-2">Wallet Setup Complete!</h3>
-            <p className="text-gray-400 mb-6">Your wallet is ready to use</p>
-            
-            <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-400 mb-2">Wallet Address</p>
-              <p className="text-white font-mono text-sm break-all">{walletAddress}</p>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 text-green-400 mb-4">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm">Proceeding to next step...</span>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStep('display')}
+                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-semibold py-3 rounded-lg transition-colors"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleVerify}
+                disabled={verifying || !verificationInput.trim()}
+                className={`flex-1 font-semibold py-3 rounded-lg transition-colors ${
+                  verifying || !verificationInput.trim()
+                    ? "bg-white/5 text-gray-500 cursor-not-allowed"
+                    : "bg-orange-500 hover:bg-orange-600 text-white"
+                }`}
+              >
+                {verifying ? 'Verifying...' : 'Verify & Complete'}
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {!walletAddress && (
+      {step === 'complete' && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-10 h-10 text-green-400" />
+          </div>
+          <h3 className="text-2xl font-bold mb-2">Wallet Setup Complete!</h3>
+          <p className="text-gray-400 mb-4">Proceeding to next step...</p>
+        </div>
+      )}
+
+      {step === 'intro' && (
         <div className="flex justify-between">
           <button
             onClick={prevStep}

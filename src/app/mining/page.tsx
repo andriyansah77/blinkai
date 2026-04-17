@@ -21,7 +21,6 @@ import {
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { MintingHistory } from "@/components/mining/MintingHistory";
-import { WalletCreation } from "@/components/mining/WalletCreation";
 import { DepositInstructions } from "@/components/mining/DepositInstructions";
 
 interface WalletData {
@@ -58,8 +57,6 @@ export default function MiningPage() {
   const [minting, setMinting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [needsWalletCreation, setNeedsWalletCreation] = useState(false);
-  const [hasOldWallet, setHasOldWallet] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -69,23 +66,11 @@ export default function MiningPage() {
       const walletRes = await fetch("/api/wallet");
       if (walletRes.ok) {
         const walletData = await walletRes.json();
-        
-        // Check if wallet needs setup (old wallet with encrypted keys)
-        if (walletData.needsSetup) {
-          // Old wallet - show creation screen to migrate
-          setNeedsWalletCreation(true);
-          setHasOldWallet(true);
-          setWallet(null);
-        } else {
-          setWallet(walletData);
-          setNeedsWalletCreation(false);
-          setHasOldWallet(false);
-        }
+        setWallet(walletData);
       } else if (walletRes.status === 404) {
-        // Wallet not found - user needs to create one
-        setNeedsWalletCreation(true);
-        setHasOldWallet(false);
-        setWallet(null);
+        // Wallet not found - redirect to onboarding
+        router.push('/onboarding');
+        return;
       }
 
       // Fetch mining stats
@@ -164,11 +149,6 @@ export default function MiningPage() {
 
   if (!authenticated) {
     return null;
-  }
-
-  // Show wallet creation if user doesn't have a wallet yet
-  if (needsWalletCreation) {
-    return <WalletCreation onWalletCreated={fetchData} hasOldWallet={hasOldWallet} />;
   }
 
   return (
