@@ -23,7 +23,8 @@ import {
   Database,
   Sparkles,
   Gift,
-  Crown
+  Crown,
+  BookOpen
 } from "lucide-react";
 
 export default function LandingPage() {
