@@ -298,6 +298,9 @@ function MiningPageContent() {
 
   return (
     <div className="h-full bg-background overflow-auto">
+      {/* Mobile padding for hamburger button */}
+      <div className="lg:hidden h-16" />
+      
       {/* Header */}
       <div className="border-b border-border p-3 sm:p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
