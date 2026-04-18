@@ -56,7 +56,7 @@ class TelegramCommandsSkill:
             return None
     
     def handle_mine_command(self, user_id: str, args: list[str]) -> str:
-        """Handle /mine command"""
+        """Handle /mine command - uses same API as webchat"""
         try:
             # Parse amount (default 1)
             amount = 1
@@ -65,40 +65,67 @@ class TelegramCommandsSkill:
                 if amount < 1 or amount > 10:
                     return "❌ Amount must be between 1 and 10"
             
-            # Call minting API
-            response = requests.post(
-                f"{PLATFORM_URL}/api/mining/simple-mint",
-                headers={
-                    "Authorization": f"Bearer {PLATFORM_API_KEY}",
-                    "Content-Type": "application/json",
-                    "X-User-ID": user_id  # Pass user ID in header
-                },
-                json={"type": "auto"},
-                timeout=30
-            )
+            # Track results
+            successful_mints = 0
+            failed_mints = 0
+            total_tokens = 0
+            last_tx_hash = None
+            error_message = None
             
-            if response.status_code == 200:
-                result = response.json()
-                if result.get('success'):
-                    tx_hash = result.get('txHash', 'N/A')
-                    tokens = result.get('tokensEarned', '10000')
+            # Mine multiple times if amount > 1
+            for i in range(amount):
+                try:
+                    # Call simple-mint API (same as webchat)
+                    response = requests.post(
+                        f"{PLATFORM_URL}/api/mining/simple-mint",
+                        headers={
+                            "Authorization": f"Bearer {PLATFORM_API_KEY}",
+                            "Content-Type": "application/json",
+                            "X-User-ID": user_id
+                        },
+                        json={"type": "auto"},  # Auto mining via bot
+                        timeout=30
+                    )
                     
-                    return f"""✅ Mining successful!
+                    if response.status_code == 200:
+                        result = response.json()
+                        if result.get('success'):
+                            successful_mints += 1
+                            tokens = result.get('tokensEarned', 10000)
+                            total_tokens += tokens
+                            last_tx_hash = result.get('txHash')
+                        else:
+                            failed_mints += 1
+                            error_message = result.get('error', 'Unknown error')
+                    else:
+                        failed_mints += 1
+                        error_message = f"Server error ({response.status_code})"
+                        
+                except Exception as e:
+                    failed_mints += 1
+                    error_message = str(e)
+            
+            # Build response message
+            if successful_mints > 0:
+                message = f"""✅ Mining completed!
 
-🎉 Minted: {tokens} REAGENT
-📝 TX Hash: {tx_hash[:10]}...{tx_hash[-8:]}
-🔗 View: https://explore.tempo.xyz/tx/{tx_hash}
-
-💰 Total minted: {amount} time(s)
+🎉 Successful: {successful_mints}/{amount}
+🪙 Total earned: {total_tokens:,} REAGENT
 """
-                else:
-                    error = result.get('error', 'Unknown error')
-                    return f"❌ Mining failed: {error}"
+                if last_tx_hash:
+                    message += f"""📝 Last TX: {last_tx_hash[:10]}...{last_tx_hash[-8:]}
+🔗 Explorer: https://explore.tempo.xyz/tx/{last_tx_hash}
+"""
+                
+                if failed_mints > 0:
+                    message += f"\n⚠️ Failed: {failed_mints} (Reason: {error_message})"
+                
+                return message
             else:
-                return f"❌ Mining failed: Server error ({response.status_code})"
+                return f"❌ All mining attempts failed: {error_message}"
                 
         except Exception as e:
-            return f"❌ Mining failed: {str(e)}"
+            return f"❌ Mining failed: {str(e)}\n\nUsage: /mine [amount]\nExample: /mine 5"
     
     def handle_balance_command(self, user_id: str) -> str:
         """Handle /balance command"""
