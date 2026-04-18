@@ -53,32 +53,74 @@ export class SimpleMintingEngine {
 
       console.log(`[SimpleMinting] User wallet: ${userWallet.address}`);
 
-      // 2. Check and deduct PATHUSD fee (DISABLED for now - will implement proper balance system later)
+      // 2. Check PATHUSD balance from blockchain and charge fee
       const fee = type === 'auto' ? AUTO_MINT_FEE : MANUAL_MINT_FEE;
-      console.log(`[SimpleMinting] Fee for ${type} minting: ${fee} PATHUSD (not charged yet)`);
+      console.log(`[SimpleMinting] Fee for ${type} minting: ${fee} PATHUSD`);
       
-      // TODO: Implement proper PATHUSD balance system
-      // For now, skip fee check to allow minting
-      /*
       try {
-        const balanceInfo = await usdBalanceManager.getBalance(userId);
-        const balance = balanceInfo.balance;
-        console.log(`[SimpleMinting] User PATHUSD balance: ${balance}`);
+        // Check user's PATHUSD balance on blockchain
+        const provider = new ethers.JsonRpcProvider(
+          process.env.TEMPO_RPC_URL || 'https://rpc.tempo.xyz'
+        );
         
-        if (parseFloat(balance) < parseFloat(fee)) {
+        const pathusdBalance = await provider.getBalance(userWallet.address);
+        const pathusdBalanceFormatted = parseFloat(ethers.formatUnits(pathusdBalance, 6)); // PATHUSD uses 6 decimals
+        
+        console.log(`[SimpleMinting] User PATHUSD balance on blockchain: ${pathusdBalanceFormatted}`);
+        
+        // Check if user has enough PATHUSD for fee + gas
+        const feeAmount = parseFloat(fee);
+        const estimatedGas = 0.01; // Estimate 0.01 PATHUSD for gas
+        const totalNeeded = feeAmount + estimatedGas;
+        
+        if (pathusdBalanceFormatted < totalNeeded) {
           return {
             success: false,
-            error: `Insufficient PATHUSD balance. Need ${fee} PATHUSD, have ${balance} PATHUSD. Please deposit PATHUSD first.`
+            error: `Insufficient PATHUSD balance. Need ${totalNeeded.toFixed(2)} PATHUSD (${fee} fee + ${estimatedGas} gas), have ${pathusdBalanceFormatted.toFixed(2)} PATHUSD.`
           };
         }
-      } catch (balanceError) {
-        console.error('[SimpleMinting] Balance check failed:', balanceError);
+        
+        // Transfer PATHUSD fee from user to platform wallet
+        const platformWalletAddress = process.env.PLATFORM_WALLET_ADDRESS || masterWallet?.address;
+        if (!platformWalletAddress) {
+          throw new Error('Platform wallet address not configured');
+        }
+        
+        console.log(`[SimpleMinting] Transferring ${fee} PATHUSD fee from user to platform`);
+        
+        // Construct fee transfer transaction
+        const feeTransferTx = {
+          to: platformWalletAddress,
+          from: userWallet.address,
+          value: ethers.parseUnits(fee, 6), // PATHUSD uses 6 decimals
+          gasLimit: 21000, // Standard transfer
+          chainId: TEMPO_CHAIN_ID
+        };
+        
+        // Get nonce and gas price for fee transfer
+        const nonce = await provider.getTransactionCount(userWallet.address, 'pending');
+        const feeData = await provider.getFeeData();
+        const gasPrice = feeData.gasPrice || ethers.parseUnits('20', 'gwei');
+        
+        feeTransferTx.nonce = nonce;
+        feeTransferTx.gasPrice = gasPrice;
+        
+        // Sign and broadcast fee transfer with user's wallet
+        const signedFeeTx = await simpleWalletManager.signTransaction(userId, feeTransferTx);
+        const feeTxHash = await simpleWalletManager.broadcastTransaction(signedFeeTx);
+        
+        console.log(`[SimpleMinting] Fee transfer tx: ${feeTxHash}`);
+        
+        // Wait for fee transfer confirmation (quick check)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+      } catch (feeError: any) {
+        console.error('[SimpleMinting] Fee transfer failed:', feeError);
         return {
           success: false,
-          error: 'Failed to check PATHUSD balance. Please try again.'
+          error: `Failed to charge fee: ${feeError.message}`
         };
       }
-      */
 
       // 3. Create inscription record
       const inscription = await prisma.inscription.create({
