@@ -299,47 +299,47 @@ function MiningPageContent() {
   return (
     <div className="h-full bg-background overflow-auto">
       {/* Header */}
-      <div className="border-b border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border p-3 sm:p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
           <div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">Mining Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1 sm:mb-2">Mining Dashboard</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
               Mint REAGENT tokens on Tempo Network
             </p>
-            <p className="text-muted-foreground text-xs mt-1">
+            <p className="text-muted-foreground text-[10px] sm:text-xs mt-1">
               Last updated: {lastUpdated.toLocaleTimeString()}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={fetchData}
               disabled={loading}
-              className="flex items-center gap-2 bg-accent hover:bg-accent/80 disabled:opacity-50 text-foreground px-4 py-2 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 bg-accent hover:bg-accent/80 disabled:opacity-50 text-foreground px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-              Refresh
+              <RefreshCw className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", loading && "animate-spin")} />
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
         {/* Wallet & Balance Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {/* USD Balance */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-card border border-border rounded-xl p-6"
+            className="bg-card border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-sm">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
-            <h3 className="text-muted-foreground text-sm mb-1">PATHUSD Balance</h3>
-            <p className="text-3xl font-bold text-foreground mb-2">
+            <h3 className="text-muted-foreground text-xs sm:text-sm mb-1">PATHUSD Balance</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">
               {(() => {
                 try {
                   const balance = typeof wallet?.pathusdBalance === 'number' 
@@ -360,7 +360,7 @@ function MiningPageContent() {
                 }
               })()}
             </p>
-            <p className="text-muted-foreground text-xs">Available for minting</p>
+            <p className="text-muted-foreground text-[10px] sm:text-xs">Available for minting</p>
           </motion.div>
 
           {/* REAGENT Balance */}
@@ -368,15 +368,15 @@ function MiningPageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-card border border-border rounded-xl p-6"
+            className="bg-card border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
-                <Coins className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-sm">
+                <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
-            <h3 className="text-muted-foreground text-sm mb-1">REAGENT Balance</h3>
-            <p className="text-3xl font-bold text-foreground mb-2">
+            <h3 className="text-muted-foreground text-xs sm:text-sm mb-1">REAGENT Balance</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">
               {(() => {
                 try {
                   const balance = typeof wallet?.reagentBalance === 'number' 
@@ -397,7 +397,7 @@ function MiningPageContent() {
                 }
               })()}
             </p>
-            <p className="text-muted-foreground text-xs">TIP-20 tokens</p>
+            <p className="text-muted-foreground text-[10px] sm:text-xs">TIP-20 tokens</p>
           </motion.div>
 
           {/* Wallet Address */}
@@ -405,31 +405,31 @@ function MiningPageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-card border border-border rounded-xl p-6"
+            className="bg-card border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                <Wallet className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-sm">
+                <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
-            <h3 className="text-muted-foreground text-sm mb-1">Wallet Address</h3>
-            <div className="flex items-center gap-2 mb-2">
-              <p className="text-sm font-mono text-foreground truncate flex-1">
+            <h3 className="text-muted-foreground text-xs sm:text-sm mb-1">Wallet Address</h3>
+            <div className="flex items-center gap-2 mb-1 sm:mb-2">
+              <p className="text-xs sm:text-sm font-mono text-foreground truncate flex-1">
                 {wallet?.address ? `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}` : "Not available"}
               </p>
               <button
                 onClick={handleCopyAddress}
                 disabled={!wallet?.address}
-                className="p-2 hover:bg-accent rounded-lg transition-colors disabled:opacity-50"
+                className="p-1.5 sm:p-2 hover:bg-accent rounded-lg transition-colors disabled:opacity-50"
               >
                 {copied ? (
-                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
                 ) : (
-                  <Copy className="w-4 h-4 text-muted-foreground" />
+                  <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                 )}
               </button>
             </div>
-            <p className="text-muted-foreground text-xs">Tempo Network</p>
+            <p className="text-muted-foreground text-[10px] sm:text-xs">Tempo Network</p>
           </motion.div>
         </div>
 
@@ -438,26 +438,26 @@ function MiningPageContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-card border border-border rounded-xl p-6"
+          className="bg-card border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm"
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
             <div>
-              <h2 className="text-foreground font-semibold text-lg mb-1">Mint REAGENT Tokens</h2>
-              <p className="text-muted-foreground text-sm">
+              <h2 className="text-foreground font-semibold text-base sm:text-lg mb-1">Mint REAGENT Tokens</h2>
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 Mint 10,000 REAGENT tokens per transaction
               </p>
             </div>
-            <Zap className="w-6 h-6 text-primary" />
+            <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-primary hidden sm:block" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
             {/* Auto Minting */}
-            <div className="p-4 bg-accent/50 rounded-lg border border-border">
-              <div className="flex items-center gap-2 mb-3">
-                <Activity className="w-5 h-5 text-primary" />
-                <h3 className="text-foreground font-medium">Auto Minting</h3>
+            <div className="p-3 sm:p-4 bg-accent/50 rounded-lg border border-border">
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <h3 className="text-foreground font-medium text-sm sm:text-base">Auto Minting</h3>
               </div>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Cost:</span>
                   <span className="text-foreground font-medium">0.5 PATHUSD + gas</span>
@@ -471,18 +471,18 @@ function MiningPageContent() {
                   <span className="text-foreground font-medium">Via AI Agent</span>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 sm:mt-3">
                 Use your AI agent to mint tokens automatically
               </p>
             </div>
 
             {/* Manual Minting */}
-            <div className="p-4 bg-accent/50 rounded-lg border border-border">
-              <div className="flex items-center gap-2 mb-3">
-                <Zap className="w-5 h-5 text-orange-400" />
-                <h3 className="text-foreground font-medium">Manual Minting</h3>
+            <div className="p-3 sm:p-4 bg-accent/50 rounded-lg border border-border">
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+                <h3 className="text-foreground font-medium text-sm sm:text-base">Manual Minting</h3>
               </div>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Cost:</span>
                   <span className="text-foreground font-medium">1.0 PATHUSD + gas</span>
@@ -496,7 +496,7 @@ function MiningPageContent() {
                   <span className="text-foreground font-medium">Direct</span>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 sm:mt-3">
                 Mint tokens directly through the dashboard
               </p>
             </div>
@@ -506,25 +506,25 @@ function MiningPageContent() {
           <button
             onClick={handleMintNow}
             disabled={minting || !wallet?.address}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
           >
             {minting ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 Minting...
               </>
             ) : (
               <>
-                <Zap className="w-5 h-5" />
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                 Inscribe Now
               </>
             )}
           </button>
 
           {!wallet?.address && (
-            <div className="mt-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-orange-400">
+            <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs sm:text-sm text-orange-400">
                 Wallet not found. Please contact support to set up your mining wallet.
               </p>
             </div>
@@ -536,56 +536,56 @@ function MiningPageContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-card border border-border rounded-xl p-6"
+          className="bg-card border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm"
         >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-foreground font-semibold text-lg">Global Mining Statistics</h2>
-            <TrendingUp className="w-5 h-5 text-muted-foreground" />
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-foreground font-semibold text-base sm:text-lg">Global Mining Statistics</h2>
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Activity className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-sm">
+                <Activity className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-foreground mb-1">
+              <p className="text-xl sm:text-2xl font-bold text-foreground mb-1">
                 {stats?.totalInscriptions ? stats.totalInscriptions.toLocaleString() : "0"}
               </p>
-              <p className="text-muted-foreground text-sm">Total Mints</p>
-              <p className="text-primary text-xs mt-1">+{stats?.inscriptions24h || 0} today</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">Total Mints</p>
+              <p className="text-primary text-[10px] sm:text-xs mt-1">+{stats?.inscriptions24h || 0} today</p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Coins className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-sm">
+                <Coins className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-foreground mb-1">
+              <p className="text-xl sm:text-2xl font-bold text-foreground mb-1">
                 {stats?.totalSupplyMinted ? (parseInt(stats.totalSupplyMinted) / 1000000).toFixed(1) + "M" : "0"}
               </p>
-              <p className="text-muted-foreground text-sm">Tokens Minted</p>
-              <p className="text-green-400 text-xs mt-1">{stats?.allocationPercentage ? stats.allocationPercentage.toFixed(1) : 0}% of allocation</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">Tokens Minted</p>
+              <p className="text-green-400 text-[10px] sm:text-xs mt-1">{stats?.allocationPercentage ? stats.allocationPercentage.toFixed(1) : 0}% of allocation</p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-sm">
+                <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-foreground mb-1">
+              <p className="text-xl sm:text-2xl font-bold text-foreground mb-1">
                 {stats?.uniqueUsers ? stats.uniqueUsers.toLocaleString() : "0"}
               </p>
-              <p className="text-muted-foreground text-sm">Active Miners</p>
-              <p className="text-purple-400 text-xs mt-1">Unique users</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">Active Miners</p>
+              <p className="text-purple-400 text-[10px] sm:text-xs mt-1">Unique users</p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Clock className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-sm">
+                <Clock className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
               </div>
-              <p className="text-2xl font-bold text-foreground mb-1">
+              <p className="text-xl sm:text-2xl font-bold text-foreground mb-1">
                 {stats?.typeBreakdown.auto || 0} / {stats?.typeBreakdown.manual || 0}
               </p>
-              <p className="text-muted-foreground text-sm">Auto / Manual</p>
-              <p className="text-blue-400 text-xs mt-1">
+              <p className="text-muted-foreground text-xs sm:text-sm">Auto / Manual</p>
+              <p className="text-blue-400 text-[10px] sm:text-xs mt-1">
                 {stats?.typeBreakdown.autoPercentage || 0}% auto
               </p>
             </div>
@@ -597,16 +597,16 @@ function MiningPageContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="bg-card border border-border rounded-xl p-6"
+          className="bg-card border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm"
         >
-          <h3 className="text-foreground font-semibold mb-4">About REAGENT Mining</h3>
-          <div className="space-y-3 text-sm text-muted-foreground">
+          <h3 className="text-foreground font-semibold text-sm sm:text-base mb-3 sm:mb-4">About REAGENT Mining</h3>
+          <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
             <p>
               REAGENT is a TIP-20 token on Tempo Network. Each mint operation creates 10,000 REAGENT tokens.
             </p>
-            <p>
+            <p className="break-all">
               <strong className="text-foreground">Token Address:</strong>{" "}
-              <code className="text-xs bg-accent px-2 py-1 rounded">
+              <code className="text-[10px] sm:text-xs bg-accent px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                 {process.env.NEXT_PUBLIC_REAGENT_TOKEN_ADDRESS || "0x20C000000000000000000000a59277C0c1d65Bc5"}
               </code>
             </p>
