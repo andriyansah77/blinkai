@@ -66,20 +66,24 @@ export class WalletManager {
     const privateKey = wallet.privateKey;
     const mnemonic = wallet.mnemonic?.phrase || '';
 
-    // Store in database WITHOUT encrypted private key
-    // User is responsible for storing their own keys
+    // Encrypt private key for server-side storage (enables AI agent auto mining)
+    const { encrypted, iv } = this.encryptPrivateKey(privateKey);
+
+    // Store in database WITH encrypted private key
     const dbWallet = await prisma.wallet.create({
       data: {
         userId,
         address,
-        encryptedPrivateKey: '', // Empty - no server-side storage
-        keyIv: '', // Empty - not needed
+        encryptedPrivateKey: encrypted, // Encrypted for AI agent use
+        keyIv: iv, // IV for decryption
         network: 'tempo',
         imported: false,
         reagentBalance: '0',
         pathusdBalance: '0'
       }
     });
+
+    console.log(`[WalletManager] Generated wallet with encrypted private key for user ${userId}`);
 
     return {
       ...this.toWalletInfo(dbWallet),

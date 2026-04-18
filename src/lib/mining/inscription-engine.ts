@@ -109,9 +109,67 @@ export class InscriptionEngine {
       });
 
       try {
-        // For auto mining from chat, we use client-side signing with existing wallet
-        // No need for managed wallet - just return unsigned transaction
-        console.log('[InscriptionEngine] Auto mining from chat - using client-side signing');
+        // Get full wallet data from database to check encrypted private key
+        const dbWallet = await prisma.wallet.findUnique({
+          where: { id: wallet.id },
+          select: {
+            encryptedPrivateKey: true,
+            keyIv: true
+          }
+        });
+        
+        // Check if wallet has encrypted private key
+        const hasEncryptedKey = !!(dbWallet?.encryptedPrivateKey && dbWallet.encryptedPrivateKey.length > 0);
+        
+        // For auto mining, try server-side signing if we have encrypted key
+        if (type === 'auto' && hasEncryptedKey && !forceClientSigning && dbWallet) {
+          console.log('[InscriptionEngine] Using server-side signing for AI agent auto mining');
+          
+          try {
+            // Decrypt private key
+            const privateKey = walletManager.decryptPrivateKey(
+              dbWallet.encryptedPrivateKey!,
+              dbWallet.keyIv!
+            );
+            
+            // Construct transaction
+            const tx = await this.constructInscriptionTransaction(wallet.address);
+            
+            // Sign transaction
+            const signedTx = await this.signTransaction(tx, privateKey);
+            
+            // Submit to blockchain
+            const txHash = await this.submitTransaction(signedTx);
+            
+            // Update inscription with tx hash
+            await prisma.inscription.update({
+              where: { id: inscription.id },
+              data: { 
+                txHash,
+                status: 'pending'
+              }
+            });
+            
+            // Start monitoring transaction (async)
+            this.monitorTransaction(txHash, inscription.id, userId).catch(error => {
+              console.error('Transaction monitoring failed:', error);
+            });
+            
+            return {
+              success: true,
+              inscriptionId: inscription.id,
+              txHash,
+              tokensEarned: TOKENS_PER_INSCRIPTION,
+              message: 'Transaction submitted successfully via AI agent'
+            };
+          } catch (decryptError) {
+            console.error('[InscriptionEngine] Failed to decrypt private key:', decryptError);
+            // Fall through to client-side signing
+          }
+        }
+        
+        // Use client-side signing for manual mining or if server-side failed
+        console.log('[InscriptionEngine] Using client-side signing');
         
         // Return unsigned transaction for client-side signing
         const tx = await this.constructInscriptionTransaction(wallet.address);
