@@ -1,21 +1,27 @@
 /**
  * Simple Minting Engine - Server-Side Only
- * All minting is done server-side with encrypted private keys
+ * All minting is done server-side with master wallet
+ * Users pay PATHUSD fee before minting
  */
 
 import { ethers } from 'ethers';
 import { prisma } from '@/lib/prisma';
 import { simpleWalletManager } from './simple-wallet-manager';
+import { usdBalanceManager } from './usd-balance-manager';
 
 const TOKENS_PER_MINT = '10000'; // 10,000 REAGENT per mint
+const AUTO_MINT_FEE = '0.5'; // 0.5 PATHUSD for auto
+const MANUAL_MINT_FEE = '1.0'; // 1.0 PATHUSD for manual
 const REAGENT_TOKEN_ADDRESS = process.env.REAGENT_TOKEN_ADDRESS || '0x20C000000000000000000000a59277C0c1d65Bc5';
 const TEMPO_CHAIN_ID = parseInt(process.env.TEMPO_CHAIN_ID || '4217');
+const MASTER_WALLET_USER_ID = process.env.MASTER_WALLET_USER_ID || 'master'; // Master wallet user ID
 
 export interface MintResult {
   success: boolean;
   inscriptionId?: string;
   txHash?: string;
   tokensEarned?: string;
+  feePaid?: string;
   error?: string;
 }
 
@@ -37,25 +43,47 @@ export class SimpleMintingEngine {
     
     try {
       // 1. Get user wallet
-      const wallet = await simpleWalletManager.getWallet(userId);
-      if (!wallet) {
+      const userWallet = await simpleWalletManager.getWallet(userId);
+      if (!userWallet) {
         return {
           success: false,
           error: 'Wallet not found. Please create a wallet first.'
         };
       }
 
-      console.log(`[SimpleMinting] Wallet found: ${wallet.address}`);
+      console.log(`[SimpleMinting] User wallet: ${userWallet.address}`);
 
-      // 2. Create inscription record
+      // 2. Check and deduct PATHUSD fee
+      const fee = type === 'auto' ? AUTO_MINT_FEE : MANUAL_MINT_FEE;
+      console.log(`[SimpleMinting] Checking PATHUSD balance for fee: ${fee}`);
+      
+      try {
+        const balance = await usdBalanceManager.getBalance(userId);
+        console.log(`[SimpleMinting] User PATHUSD balance: ${balance}`);
+        
+        if (parseFloat(balance) < parseFloat(fee)) {
+          return {
+            success: false,
+            error: `Insufficient PATHUSD balance. Need ${fee} PATHUSD, have ${balance} PATHUSD. Please deposit PATHUSD first.`
+          };
+        }
+      } catch (balanceError) {
+        console.error('[SimpleMinting] Balance check failed:', balanceError);
+        return {
+          success: false,
+          error: 'Failed to check PATHUSD balance. Please try again.'
+        };
+      }
+
+      // 3. Create inscription record
       const inscription = await prisma.inscription.create({
         data: {
           userId,
-          walletId: wallet.id,
+          walletId: userWallet.id,
           type,
           status: 'pending',
-          inscriptionFee: '0',
-          gasEstimate: '150000',
+          inscriptionFee: fee,
+          gasEstimate: '300000',
           gasFee: '0',
           tokensEarned: TOKENS_PER_MINT
         }
@@ -64,19 +92,31 @@ export class SimpleMintingEngine {
       console.log(`[SimpleMinting] Inscription created: ${inscription.id}`);
 
       try {
-        // 3. Construct transaction
-        const tx = await this.constructMintTransaction(wallet.address);
+        // 4. Deduct PATHUSD fee
+        await usdBalanceManager.deduct(
+          userId,
+          fee,
+          'minting_fee',
+          `${type} minting fee`,
+          'inscription',
+          inscription.id
+        );
+        
+        console.log(`[SimpleMinting] PATHUSD fee deducted: ${fee}`);
+
+        // 5. Construct transaction (master wallet mints TO user address)
+        const tx = await this.constructMintTransaction(userWallet.address);
         console.log(`[SimpleMinting] Transaction constructed`);
 
-        // 4. Sign transaction
-        const signedTx = await simpleWalletManager.signTransaction(userId, tx);
-        console.log(`[SimpleMinting] Transaction signed`);
+        // 6. Sign transaction with MASTER wallet (not user wallet)
+        const signedTx = await simpleWalletManager.signTransaction(MASTER_WALLET_USER_ID, tx);
+        console.log(`[SimpleMinting] Transaction signed by master wallet`);
 
-        // 5. Broadcast transaction
+        // 7. Broadcast transaction
         const txHash = await simpleWalletManager.broadcastTransaction(signedTx);
         console.log(`[SimpleMinting] Transaction broadcast: ${txHash}`);
 
-        // 6. Update inscription
+        // 8. Update inscription
         await prisma.inscription.update({
           where: { id: inscription.id },
           data: {
@@ -85,7 +125,7 @@ export class SimpleMintingEngine {
           }
         });
 
-        // 7. Start monitoring (async)
+        // 9. Start monitoring (async)
         this.monitorTransaction(txHash, inscription.id, userId).catch(error => {
           console.error('[SimpleMinting] Monitoring failed:', error);
         });
@@ -94,11 +134,26 @@ export class SimpleMintingEngine {
           success: true,
           inscriptionId: inscription.id,
           txHash,
-          tokensEarned: TOKENS_PER_MINT
+          tokensEarned: TOKENS_PER_MINT,
+          feePaid: fee
         };
 
       } catch (txError: any) {
         console.error('[SimpleMinting] Transaction failed:', txError);
+        
+        // Refund PATHUSD fee if transaction failed
+        try {
+          await usdBalanceManager.refund(
+            userId,
+            fee,
+            'Refund for failed minting',
+            'inscription',
+            inscription.id
+          );
+          console.log(`[SimpleMinting] PATHUSD fee refunded: ${fee}`);
+        } catch (refundError) {
+          console.error('[SimpleMinting] Refund failed:', refundError);
+        }
         
         // Update inscription as failed
         await prisma.inscription.update({
@@ -126,10 +181,17 @@ export class SimpleMintingEngine {
 
   /**
    * Construct mint transaction
+   * Master wallet mints TO user address
    */
-  private async constructMintTransaction(fromAddress: string): Promise<ethers.TransactionRequest> {
-    // Get current nonce
-    const nonce = await this.provider.getTransactionCount(fromAddress, 'pending');
+  private async constructMintTransaction(toAddress: string): Promise<ethers.TransactionRequest> {
+    // Get master wallet address
+    const masterWallet = await simpleWalletManager.getWallet(MASTER_WALLET_USER_ID);
+    if (!masterWallet) {
+      throw new Error('Master wallet not found. Please setup master wallet first.');
+    }
+
+    // Get current nonce for master wallet
+    const nonce = await this.provider.getTransactionCount(masterWallet.address, 'pending');
 
     // Get gas price
     const feeData = await this.provider.getFeeData();
@@ -142,13 +204,13 @@ export class SimpleMintingEngine {
     
     // Convert REAGENT amount to token units (6 decimals)
     const amountInUnits = ethers.parseUnits(TOKENS_PER_MINT, 6);
-    const data = iface.encodeFunctionData('mint', [fromAddress, amountInUnits]);
+    const data = iface.encodeFunctionData('mint', [toAddress, amountInUnits]);
 
     return {
       to: REAGENT_TOKEN_ADDRESS,
-      from: fromAddress,
+      from: masterWallet.address, // FROM master wallet
       nonce,
-      gasLimit: 300000, // Increased from 150000 to 300000
+      gasLimit: 300000,
       gasPrice,
       data,
       value: 0,
