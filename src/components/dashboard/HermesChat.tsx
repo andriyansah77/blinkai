@@ -26,6 +26,7 @@ interface Message {
 
 interface ChatProps {
   className?: string;
+  initialCommand?: string | null;
 }
 
 const SUGGESTIONS = [
@@ -62,7 +63,7 @@ const FEATURED_CARD = {
   secondaryAction: "Earn Money"
 };
 
-export default function HermesChat({ className }: ChatProps) {
+export default function HermesChat({ className, initialCommand }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -132,6 +133,21 @@ export default function HermesChat({ className }: ChatProps) {
   useEffect(() => {
     loadSuggestions();
   }, []);
+
+  // Handle initial command from URL
+  useEffect(() => {
+    if (initialCommand && inputRef.current) {
+      setInput(initialCommand);
+      inputRef.current.focus();
+      // Auto-submit after a short delay
+      setTimeout(() => {
+        if (initialCommand.startsWith('/')) {
+          executeSlashCommand(initialCommand);
+          setInput("");
+        }
+      }, 500);
+    }
+  }, [initialCommand]);
 
   // Load dynamic suggestions
   const loadSuggestions = async (type: string = 'featured') => {

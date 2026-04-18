@@ -4,6 +4,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import HermesSidebar from "@/components/dashboard/HermesSidebar";
+import MiningPromoModal from "@/components/dashboard/MiningPromoModal";
 import { Menu, X } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -53,6 +54,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
+      {/* Mining Promo Modal */}
+      <MiningPromoModal />
+
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
