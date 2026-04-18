@@ -78,16 +78,15 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
         try:
             print(f"Starting minting operation {i+1}/{count}...", file=sys.stderr)
             
-            # Request minting with auto type (will use managed wallet if available)
+            # Use simple-mint endpoint (server-side signing)
             response = requests.post(
-                f"{PLATFORM_URL}/api/mining/inscribe",
+                f"{PLATFORM_URL}/api/mining/simple-mint",
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json"
                 },
                 json={
-                    "confirm": True,
-                    "forceClientSigning": False  # Allow server-side signing for managed wallets
+                    "type": "auto"
                 },
                 timeout=60
             )
@@ -95,29 +94,20 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
             result = response.json()
             
             if response.status_code == 200 and result.get('success'):
-                if result.get('requiresClientSigning'):
-                    # User has external wallet, cannot auto-mint
-                    failed += 1
-                    results.append({
-                        "operation": i + 1,
-                        "success": False,
-                        "error": "Auto mining requires managed wallet. Please enable managed wallet in settings to allow AI agent to mint on your behalf."
-                    })
-                    print(f"✗ Minting {i+1} requires managed wallet", file=sys.stderr)
-                else:
-                    # Server-side signing succeeded with managed wallet
-                    successful += 1
-                    results.append({
-                        "operation": i + 1,
-                        "success": True,
-                        "tokens_earned": result.get('tokensEarned', '10000'),
-                        "tx_hash": result.get('txHash'),
-                        "inscription_id": result.get('inscriptionId')
-                    })
-                    print(f"✓ Minting {i+1} successful: {result.get('tokensEarned', '10000')} REAGENT", file=sys.stderr)
+                # Success!
+                successful += 1
+                results.append({
+                    "operation": i + 1,
+                    "success": True,
+                    "tokens_earned": result.get('tokensEarned', '10000'),
+                    "tx_hash": result.get('txHash'),
+                    "inscription_id": result.get('inscriptionId')
+                })
+                print(f"✓ Minting {i+1} successful: {result.get('tokensEarned', '10000')} REAGENT", file=sys.stderr)
+                print(f"  TX: {result.get('txHash', 'N/A')}", file=sys.stderr)
             else:
                 failed += 1
-                error_msg = result.get('error', {}).get('message', 'Unknown error') if isinstance(result.get('error'), dict) else result.get('error', 'Unknown error')
+                error_msg = result.get('error', 'Unknown error')
                 results.append({
                     "operation": i + 1,
                     "success": False,
@@ -125,10 +115,9 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
                 })
                 print(f"✗ Minting {i+1} failed: {error_msg}", file=sys.stderr)
                 
-                # Stop if rate limited
-                error_code = result.get('error', {}).get('code') if isinstance(result.get('error'), dict) else None
-                if error_code == 'RATE_LIMIT_EXCEEDED':
-                    print("Rate limit reached, stopping...", file=sys.stderr)
+                # Stop if critical error
+                if 'not found' in error_msg.lower() or 'authentication' in error_msg.lower():
+                    print("Critical error, stopping...", file=sys.stderr)
                     break
                     
         except Exception as e:
@@ -146,8 +135,7 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
         "successful": successful,
         "failed": failed,
         "total_tokens_earned": successful * 10000,
-        "results": results,
-        "note": "Auto mining requires managed wallet. Enable it in settings if you see 'requires managed wallet' errors."
+        "results": results
     }
 
 def get_mining_status(api_key: str) -> Dict[str, Any]:
