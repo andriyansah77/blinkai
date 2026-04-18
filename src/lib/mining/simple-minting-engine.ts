@@ -81,9 +81,9 @@ export class SimpleMintingEngine {
         }
         
         // Transfer PATHUSD fee from user to platform wallet
-        const platformWalletAddress = process.env.PLATFORM_WALLET_ADDRESS || masterWallet?.address;
+        const platformWalletAddress = process.env.PLATFORM_WALLET_ADDRESS;
         if (!platformWalletAddress) {
-          throw new Error('Platform wallet address not configured');
+          throw new Error('Platform wallet address not configured. Please set PLATFORM_WALLET_ADDRESS in .env');
         }
         
         console.log(`[SimpleMinting] Transferring ${fee} PATHUSD fee from user to platform`);
