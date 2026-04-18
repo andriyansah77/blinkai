@@ -6,7 +6,7 @@ Handles /mine and other slash commands in Telegram bot
 import os
 import json
 import requests
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 # Platform configuration
 PLATFORM_URL = os.getenv('PLATFORM_URL', 'https://reagent.eu.cc')
@@ -19,6 +19,60 @@ class TelegramCommandsSkill:
         self.name = "telegram_commands"
         self.description = "Handle Telegram slash commands like /mine, /balance, /wallet"
         self.version = "1.0.0"
+        
+        # Define Telegram commands for auto-registration
+        self.telegram_commands = [
+            {
+                "command": "mine",
+                "description": "Mine REAGENT tokens (usage: /mine [amount])"
+            },
+            {
+                "command": "balance",
+                "description": "Check your wallet balance"
+            },
+            {
+                "command": "wallet",
+                "description": "View your wallet information"
+            },
+            {
+                "command": "help",
+                "description": "Show help message and available commands"
+            },
+            {
+                "command": "start",
+                "description": "Start the bot and link your account"
+            }
+        ]
+    
+    def get_telegram_commands(self) -> List[Dict[str, str]]:
+        """Return list of commands for Telegram bot registration"""
+        return self.telegram_commands
+    
+    def register_commands(self, bot_token: str) -> bool:
+        """Register commands with Telegram Bot API"""
+        try:
+            url = f"https://api.telegram.org/bot{bot_token}/setMyCommands"
+            response = requests.post(
+                url,
+                json={"commands": self.telegram_commands},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('ok'):
+                    print(f"✅ Telegram commands registered successfully")
+                    return True
+                else:
+                    print(f"❌ Failed to register commands: {result.get('description')}")
+                    return False
+            else:
+                print(f"❌ HTTP error: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error registering commands: {e}")
+            return False
         
     def is_command(self, message: str) -> bool:
         """Check if message is a slash command"""
