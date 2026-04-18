@@ -51,13 +51,25 @@ export async function POST(request: NextRequest) {
       console.log(`[SimpleMint API] User authenticated: ${userId}`);
     }
 
-    // 2. Get request body
+    // 2. Verify userId is not null
+    if (!userId) {
+      console.log('[SimpleMint API] User ID is null');
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'User ID not found'
+        },
+        { status: 400 }
+      );
+    }
+
+    // 3. Get request body
     const body = await request.json().catch(() => ({}));
     const type = body.type || 'manual';
 
     console.log(`[SimpleMint API] Minting type: ${type}`);
 
-    // 3. Execute minting
+    // 4. Execute minting
     const result = await simpleMintingEngine.mint(userId, type);
 
     console.log(`[SimpleMint API] Minting result:`, result);
