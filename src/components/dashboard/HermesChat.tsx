@@ -183,7 +183,7 @@ export default function HermesChat({ className }: ChatProps) {
   // Slash command suggestions
   const SLASH_COMMANDS = [
     '/help', '/skills', '/memory', '/sessions', '/session', '/clear', 
-    '/agent', '/learn', '/forget', '/mode', '/export', '/reset'
+    '/agent', '/learn', '/forget', '/mode', '/export', '/reset', '/mine'
   ];
 
   // Handle input change for slash command detection
@@ -210,6 +210,12 @@ export default function HermesChat({ className }: ChatProps) {
     const parts = commandText.trim().split(' ');
     const command = parts[0];
     const args = parts.slice(1);
+
+    // Handle /mine command directly
+    if (command === '/mine') {
+      await handleMineCommand(args);
+      return;
+    }
 
     try {
       const response = await fetch('/api/hermes/commands', {
@@ -900,6 +906,133 @@ export default function HermesChat({ className }: ChatProps) {
     </AnimatePresence>
   );
 
+  // Handle /mine command
+  const handleMineCommand = async (args: string[]) => {
+    const commandMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: `/mine ${args.join(' ')}`,
+      timestamp: new Date(),
+      type: "text"
+    };
+
+    setMessages(prev => [...prev, commandMessage]);
+    setIsLoading(true);
+
+    try {
+      // Parse amount from args (default to 1 if not specified)
+      const amount = args.length > 0 ? parseInt(args[0]) : 1;
+      
+      if (isNaN(amount) || amount < 1 || amount > 10) {
+        throw new Error('Invalid amount. Please specify a number between 1 and 10.');
+      }
+
+      // Check if MetaMask is available
+      if (typeof window === 'undefined' || !window.ethereum) {
+        throw new Error('MetaMask not found. Please install MetaMask to use auto mining.');
+      }
+
+      const resultMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `⛏️ Starting auto mining for ${amount} REAGENT token${amount > 1 ? 's' : ''}...\n\n`,
+        timestamp: new Date(),
+        type: "text"
+      };
+
+      setMessages(prev => [...prev, resultMessage]);
+
+      // Execute mining
+      for (let i = 0; i < amount; i++) {
+        // Step 1: Get unsigned transaction
+        const response = await fetch('/api/mining/mine-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Mining failed');
+        }
+
+        const result = await response.json();
+
+        if (!result.success || !result.requiresClientSigning) {
+          throw new Error(result.error || 'Failed to prepare transaction');
+        }
+
+        // Step 2: Sign with MetaMask
+        const tx = result.unsignedTransaction;
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: tx.from,
+            to: tx.to,
+            data: tx.data,
+            value: tx.value || '0x0',
+            gas: tx.gasLimit ? `0x${parseInt(tx.gasLimit).toString(16)}` : undefined,
+            gasPrice: tx.gasPrice ? `0x${parseInt(tx.gasPrice).toString(16)}` : undefined,
+          }],
+        });
+
+        // Step 3: Submit tx hash for monitoring
+        await fetch('/api/mining/submit-signed', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inscriptionId: result.inscriptionId,
+            txHash
+          }),
+        });
+
+        // Update message with progress
+        const progress = `✅ Mint ${i + 1}/${amount}: Transaction submitted\n` +
+                        `   TX Hash: ${txHash.slice(0, 10)}...${txHash.slice(-8)}\n` +
+                        `   Tokens: 10000 REAGENT\n\n`;
+
+        setMessages(prev => prev.map(msg => 
+          msg.id === resultMessage.id 
+            ? { ...msg, content: msg.content + progress }
+            : msg
+        ));
+
+        // Wait 2 seconds between mints to avoid rate limiting
+        if (i < amount - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+
+      // Add completion message
+      setMessages(prev => prev.map(msg => 
+        msg.id === resultMessage.id 
+          ? { 
+              ...msg, 
+              content: msg.content + `\n🎉 Mining complete! Minted ${amount * 10000} REAGENT tokens.\n\nTransactions are being confirmed on the blockchain. Check your balance on the Mining page in a few minutes.`
+            }
+          : msg
+      ));
+
+    } catch (error: any) {
+      console.error('Mine command error:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        role: "assistant",
+        content: `❌ Mining failed: ${error.message}\n\nUsage: /mine [amount]\nExample: /mine 5 (mints 5 times, earning 50,000 REAGENT)\n\nNote: You need MetaMask installed and connected to use this command.`,
+        timestamp: new Date(),
+        type: "text"
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Get command description helper
   const getCommandDescription = (command: string) => {
     const descriptions: Record<string, string> = {
@@ -914,7 +1047,8 @@ export default function HermesChat({ className }: ChatProps) {
       '/forget': 'Remove memory',
       '/mode': 'Change agent mode',
       '/export': 'Export chat',
-      '/reset': 'Reset agent'
+      '/reset': 'Reset agent',
+      '/mine': 'Auto mine REAGENT tokens'
     };
     return descriptions[command] || '';
   };

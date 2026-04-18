@@ -109,106 +109,37 @@ export class InscriptionEngine {
       });
 
       try {
-        // Get full wallet data from database to check encrypted private key
-        const dbWallet = await prisma.wallet.findUnique({
-          where: { id: wallet.id },
-          select: {
-            encryptedPrivateKey: true,
-            keyIv: true
+        // For auto mining from chat, we use client-side signing with existing wallet
+        // No need for managed wallet - just return unsigned transaction
+        console.log('[InscriptionEngine] Auto mining from chat - using client-side signing');
+        
+        // Return unsigned transaction for client-side signing
+        const tx = await this.constructInscriptionTransaction(wallet.address);
+        
+        await prisma.inscription.update({
+          where: { id: inscription.id },
+          data: { 
+            status: 'pending_signature',
+            errorMessage: 'Awaiting client-side signature'
           }
         });
         
-        // Check if wallet has encrypted private key (managed wallet)
-        const hasManagedWallet = !!(dbWallet?.encryptedPrivateKey && dbWallet.encryptedPrivateKey.length > 0);
-        
-        // For auto mining, we need managed wallet
-        if (type === 'auto' && !hasManagedWallet) {
-          await prisma.inscription.update({
-            where: { id: inscription.id },
-            data: { 
-              status: 'failed',
-              errorMessage: 'Auto mining requires managed wallet. Please enable managed wallet in settings.'
-            }
-          });
-          
-          return {
-            success: false,
-            error: 'Auto mining requires managed wallet. Please enable managed wallet in settings to allow AI agent to mint on your behalf.'
-          };
-        }
-        
-        // If has managed wallet and not forcing client signing, use server-side signing
-        if (hasManagedWallet && !forceClientSigning && dbWallet) {
-          console.log('[InscriptionEngine] Using server-side signing with managed wallet');
-          
-          // Decrypt private key
-          const privateKey = walletManager.decryptPrivateKey(
-            dbWallet.encryptedPrivateKey!,
-            dbWallet.keyIv!
-          );
-          
-          // Construct transaction
-          const tx = await this.constructInscriptionTransaction(wallet.address);
-          
-          // Sign transaction
-          const signedTx = await this.signTransaction(tx, privateKey);
-          
-          // Submit to blockchain
-          const txHash = await this.submitTransaction(signedTx);
-          
-          // Update inscription with tx hash
-          await prisma.inscription.update({
-            where: { id: inscription.id },
-            data: { 
-              txHash,
-              status: 'pending'
-            }
-          });
-          
-          // Start monitoring transaction (async)
-          this.monitorTransaction(txHash, inscription.id, userId).catch(error => {
-            console.error('Transaction monitoring failed:', error);
-          });
-          
-          return {
-            success: true,
-            inscriptionId: inscription.id,
-            txHash,
-            tokensEarned: TOKENS_PER_INSCRIPTION,
-            message: 'Transaction submitted successfully'
-          };
-        } else {
-          // Use client-side signing for external wallets
-          console.log('[InscriptionEngine] Using client-side signing');
-          
-          // Return unsigned transaction for client-side signing
-          const tx = await this.constructInscriptionTransaction(wallet.address);
-          
-          await prisma.inscription.update({
-            where: { id: inscription.id },
-            data: { 
-              status: 'pending_signature',
-              errorMessage: 'Awaiting client-side signature'
-            }
-          });
-          
-          return {
-            success: true,
-            inscriptionId: inscription.id,
-            requiresClientSigning: true,
-            unsignedTransaction: {
-              to: tx.to?.toString(),
-              from: tx.from?.toString(),
-              data: tx.data?.toString(),
-              value: tx.value?.toString() || '0',
-              gasLimit: tx.gasLimit?.toString(),
-              gasPrice: tx.gasPrice?.toString(),
-              nonce: tx.nonce != null ? Number(tx.nonce) : undefined,
-              chainId: tx.chainId != null ? Number(tx.chainId) : undefined
-            },
-            message: 'Please sign the transaction with your wallet'
-          };
-        }
+        return {
+          success: true,
+          inscriptionId: inscription.id,
+          requiresClientSigning: true,
+          unsignedTransaction: {
+            to: tx.to?.toString(),
+            from: tx.from?.toString(),
+            data: tx.data?.toString(),
+            value: tx.value?.toString() || '0',
+            gasLimit: tx.gasLimit?.toString(),
+            gasPrice: tx.gasPrice?.toString(),
+            nonce: tx.nonce != null ? Number(tx.nonce) : undefined,
+            chainId: tx.chainId != null ? Number(tx.chainId) : undefined
+          },
+          message: 'Please sign the transaction with your wallet'
+        };
 
       } catch (blockchainError: any) {
         // Handle blockchain submission failure

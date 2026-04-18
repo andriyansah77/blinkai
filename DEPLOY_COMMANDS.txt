@@ -1,0 +1,44 @@
+# Commands to Deploy AI Agent Auto Mining to VPS
+
+## 1. SSH to VPS
+ssh root@188.166.247.252
+
+## 2. Navigate to project directory
+cd /root/reagent
+
+## 3. Pull latest code
+git pull origin main
+
+## 4. Install dependencies (if needed)
+npm install
+
+## 5. Build application
+npm run build
+
+## 6. Restart PM2
+pm2 restart reagent
+
+## 7. Copy updated Hermes skill
+cp /root/reagent/hermes-skills/auto_mining_skill.py /root/.hermes/skills/
+cp /root/reagent/hermes-skills/auto_mining_skill.json /root/.hermes/skills/
+
+## 8. Check PM2 status
+pm2 status
+
+## 9. View logs (optional)
+pm2 logs reagent --lines 50
+
+## 10. Test in browser
+# Open: https://reagent.eu.cc/mining
+# Hard refresh: Ctrl+Shift+R
+# Enable managed wallet from AI Agent Setup section
+
+## OR run the deployment script:
+bash DEPLOY_AUTO_MINING.sh
+
+## Verify deployment:
+# Check if API returns hasManagedWallet field
+curl -X GET https://reagent.eu.cc/api/wallet -H "Cookie: YOUR_SESSION_COOKIE" | jq
+
+# Check if enable-managed endpoint exists
+curl -X POST https://reagent.eu.cc/api/wallet/enable-managed -H "Cookie: YOUR_SESSION_COOKIE" | jq
