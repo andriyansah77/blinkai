@@ -97,7 +97,7 @@ export class SimpleMintingEngine {
         await usdBalanceManager.deduct(
           userId,
           fee,
-          'minting_fee',
+          'inscription_fee', // Use valid reason type
           `${type} minting fee`,
           'inscription',
           inscription.id
