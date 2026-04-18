@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   XCircle,
   Trash2,
-  Download
+  Download,
+  BookOpen
 } from "lucide-react";
 import { motion } from "framer-motion";
 
