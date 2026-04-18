@@ -418,11 +418,14 @@ git pull origin main
 ### 2. Run Database Migration
 
 ```bash
-# Run Prisma migration to create TelegramLink table
+# Generate Prisma client
+npx prisma generate
+
+# Run migration to create TelegramLink table
 npx prisma migrate deploy
 
-# Or if using dev database
-npx prisma migrate dev
+# Verify table created
+psql -U reagent -d reagent -c "\d \"TelegramLink\""
 ```
 
 ### 3. Add Environment Variables
