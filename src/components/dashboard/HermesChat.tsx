@@ -876,30 +876,32 @@ export default function HermesChat({ className }: ChatProps) {
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="absolute bottom-12 left-0 bg-white/[0.08] backdrop-blur-sm border border-border rounded-xl p-2 min-w-[250px] z-50"
+          className="absolute bottom-14 sm:bottom-12 left-0 right-0 sm:right-auto bg-card/95 backdrop-blur-md border-2 border-border rounded-xl sm:rounded-2xl p-2 sm:p-3 sm:min-w-[280px] max-w-full sm:max-w-md z-50 shadow-xl mx-2 sm:mx-0"
         >
-          <div className="flex items-center gap-2 px-3 py-2 text-xs text-white/50 border-b border-border mb-1">
-            <Terminal className="w-3 h-3" />
-            Hermes Commands
+          <div className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm text-muted-foreground border-b border-border mb-1">
+            <Terminal className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span className="font-medium">Slash Commands</span>
           </div>
-          {commandSuggestions.map((command) => (
-            <button
-              key={command}
-              onClick={() => {
-                setInput(command + ' ');
-                setShowCommandMenu(false);
-                inputRef.current?.focus();
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors text-left"
-            >
-              <span className="font-mono text-blue-400">{command}</span>
-              <span className="text-xs text-muted-foreground">
-                {getCommandDescription(command)}
-              </span>
-            </button>
-          ))}
-          <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border mt-1">
-            Type <span className="font-mono text-blue-400">/help</span> for all commands
+          <div className="max-h-[60vh] overflow-y-auto">
+            {commandSuggestions.map((command) => (
+              <button
+                key={command}
+                onClick={() => {
+                  setInput(command + ' ');
+                  setShowCommandMenu(false);
+                  inputRef.current?.focus();
+                }}
+                className="w-full flex items-start sm:items-center gap-2 sm:gap-3 px-3 py-2.5 sm:py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all text-left group"
+              >
+                <span className="font-mono text-primary font-semibold text-xs sm:text-sm flex-shrink-0">{command}</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground group-hover:text-foreground/80 line-clamp-2 sm:line-clamp-1">
+                  {getCommandDescription(command)}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="px-3 py-2 text-[10px] sm:text-xs text-muted-foreground border-t border-border mt-1">
+            Type <span className="font-mono text-primary font-semibold">/help</span> for all commands
           </div>
         </motion.div>
       )}
@@ -1149,6 +1151,9 @@ export default function HermesChat({ className }: ChatProps) {
             {/* Input Area - Moved to center for empty state */}
             <div className="w-full max-w-2xl mb-6 sm:mb-8 px-2 sm:px-4 md:px-0">
               <form onSubmit={handleSubmit} className="relative">
+                {/* Command Menu - Outside of hidden div so it shows on mobile */}
+                <CommandMenu />
+                
                 <div className="relative flex items-end gap-2">
                   {/* Add Button with Upload Menu - Hidden on mobile */}
                   <div className="relative hidden sm:block">
@@ -1163,7 +1168,6 @@ export default function HermesChat({ className }: ChatProps) {
                       <Plus className="w-4 h-4" />
                     </button>
                     <UploadMenu />
-                    <CommandMenu />
                   </div>
 
                   {/* Input Field */}
@@ -1470,6 +1474,9 @@ export default function HermesChat({ className }: ChatProps) {
       {!isEmpty && (
         <div className="border-t border-border/60 p-3 sm:p-4 md:p-6 bg-background/50 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto">
+            {/* Command Menu - Outside of hidden div so it shows on mobile */}
+            <CommandMenu />
+            
             <div className="relative flex items-end gap-2">
               {/* Add Button with Upload Menu - Hidden on mobile */}
               <div className="relative hidden sm:block">
@@ -1484,7 +1491,6 @@ export default function HermesChat({ className }: ChatProps) {
                   <Plus className="w-4 h-4" />
                 </button>
                 <UploadMenu />
-                <CommandMenu />
               </div>
 
               {/* Input Field */}
