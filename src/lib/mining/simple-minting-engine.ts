@@ -13,6 +13,7 @@ const TOKENS_PER_MINT = '10000'; // 10,000 REAGENT per mint
 const AUTO_MINT_FEE = '0.5'; // 0.5 PATHUSD for auto
 const MANUAL_MINT_FEE = '1.0'; // 1.0 PATHUSD for manual
 const REAGENT_TOKEN_ADDRESS = process.env.REAGENT_TOKEN_ADDRESS || '0x20C000000000000000000000a59277C0c1d65Bc5';
+const PATHUSD_TOKEN_ADDRESS = process.env.PATHUSD_TOKEN_ADDRESS || '0x20c0000000000000000000000000000000000000';
 const TEMPO_CHAIN_ID = parseInt(process.env.TEMPO_CHAIN_ID || '4217');
 const MASTER_WALLET_USER_ID = process.env.MASTER_WALLET_USER_ID || 'master'; // Master wallet user ID
 
@@ -63,20 +64,28 @@ export class SimpleMintingEngine {
           process.env.TEMPO_RPC_URL || 'https://rpc.tempo.xyz'
         );
         
-        const pathusdBalance = await provider.getBalance(userWallet.address);
+        // Create PATHUSD token contract instance
+        const pathusdContract = new ethers.Contract(
+          PATHUSD_TOKEN_ADDRESS,
+          [
+            'function balanceOf(address account) view returns (uint256)',
+            'function transfer(address to, uint256 amount) returns (bool)'
+          ],
+          provider
+        );
+        
+        const pathusdBalance = await pathusdContract.balanceOf(userWallet.address);
         const pathusdBalanceFormatted = parseFloat(ethers.formatUnits(pathusdBalance, 6)); // PATHUSD uses 6 decimals
         
         console.log(`[SimpleMinting] User PATHUSD balance on blockchain: ${pathusdBalanceFormatted}`);
         
-        // Check if user has enough PATHUSD for fee + gas
+        // Check if user has enough PATHUSD for fee
         const feeAmount = parseFloat(fee);
-        const estimatedGas = 0.01; // Estimate 0.01 PATHUSD for gas
-        const totalNeeded = feeAmount + estimatedGas;
         
-        if (pathusdBalanceFormatted < totalNeeded) {
+        if (pathusdBalanceFormatted < feeAmount) {
           return {
             success: false,
-            error: `Insufficient PATHUSD balance. Need ${totalNeeded.toFixed(2)} PATHUSD (${fee} fee + ${estimatedGas} gas), have ${pathusdBalanceFormatted.toFixed(2)} PATHUSD.`
+            error: `Insufficient PATHUSD balance. Need ${feeAmount.toFixed(2)} PATHUSD, have ${pathusdBalanceFormatted.toFixed(2)} PATHUSD.`
           };
         }
         
@@ -93,12 +102,22 @@ export class SimpleMintingEngine {
         const feeData = await provider.getFeeData();
         const gasPrice = feeData.gasPrice || ethers.parseUnits('20', 'gwei');
         
-        // Construct fee transfer transaction
+        // Encode ERC-20 transfer function call
+        const iface = new ethers.Interface([
+          'function transfer(address to, uint256 amount) returns (bool)'
+        ]);
+        const transferData = iface.encodeFunctionData('transfer', [
+          platformWalletAddress,
+          ethers.parseUnits(fee, 6) // PATHUSD uses 6 decimals
+        ]);
+        
+        // Construct fee transfer transaction (ERC-20 transfer)
         const feeTransferTx: ethers.TransactionRequest = {
-          to: platformWalletAddress,
+          to: PATHUSD_TOKEN_ADDRESS, // Send to PATHUSD contract
           from: userWallet.address,
-          value: ethers.parseUnits(fee, 6), // PATHUSD uses 6 decimals
-          gasLimit: 21000, // Standard transfer
+          value: 0, // No native token transfer
+          data: transferData, // ERC-20 transfer call
+          gasLimit: 100000, // ERC-20 transfer needs more gas
           chainId: TEMPO_CHAIN_ID,
           nonce: nonce,
           gasPrice: gasPrice
