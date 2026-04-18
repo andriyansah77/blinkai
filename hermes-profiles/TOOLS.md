@@ -2,7 +2,15 @@
 
 ## Overview
 
-This document defines all tools and skills available to AI agents on the ReAgent platform. These tools enable agents to interact with the platform, execute blockchain transactions, and assist users with various tasks.
+This document defines all tools and skills available to AI agents on the ReAgent platform. These tools enable agents to interact with the platform via REST API endpoints, execute blockchain transactions, and assist users with various tasks.
+
+## API-Based Architecture
+
+All agent operations are performed through HTTP API calls to the ReAgent platform. The platform handles:
+- Authentication (Privy session for web, API key + User ID for bots)
+- Blockchain interactions (wallet, transactions, minting)
+- Database operations (history, statistics)
+- Security and validation
 
 ## Core Skills
 
@@ -10,23 +18,29 @@ This document defines all tools and skills available to AI agents on the ReAgent
 
 **Category**: Blockchain  
 **Type**: Proprietary (Auto-installed, Cannot be uninstalled)  
-**Version**: 1.0.0
+**Version**: 2.0.0  
+**API Endpoint**: `/api/mining/simple-mint`
 
-**Description**: Execute REAGENT token minting operations on Tempo Network.
+**Description**: Execute REAGENT token minting operations on Tempo Network via unified API endpoint.
+
+**Authentication**:
+- Web: Privy session cookie (automatic)
+- Bot: `Authorization: Bearer {API_KEY}` + `X-User-ID: {userId}` headers
 
 ### 2. Wallet_Skill
 
 **Category**: Blockchain  
 **Type**: Proprietary (Auto-installed, Cannot be uninstalled)  
-**Version**: 1.0.0
+**Version**: 2.0.0  
+**API Endpoints**: `/api/wallet/*`
 
-**Description**: Manage user's blockchain wallet - check balance, send/receive tokens, view transaction history. All operations are real-time from Tempo Network blockchain.
+**Description**: Manage user's blockchain wallet via API - check balance, send/receive tokens, view transaction history. All operations are real-time from Tempo Network blockchain.
 
 **Capabilities**:
 - Real-time balance checking (ETH, REAGENT, PATHUSD)
 - Send ETH to any address
 - Send REAGENT tokens to any address
-- View wallet address
+- View wallet address and info
 - Transaction history
 - Automatic balance validation before sending
 
@@ -34,192 +48,201 @@ This document defines all tools and skills available to AI agents on the ReAgent
 - `wallet:read` - Read wallet information and balances
 - `wallet:write` - Execute transactions (send tokens)
 
+**Authentication**:
+- Web: Privy session cookie (automatic)
+- Bot: `Authorization: Bearer {API_KEY}` + `X-User-ID: {userId}` headers
+
 ---
 
-## Tool Definitions
+## API Endpoint Reference
 
-### IMPORTANT: cURL-Based Tool Access
+### Base URL
+- Production: `https://reagent.eu.cc`
+- Development: `http://localhost:3000`
 
-All minting tools are accessed via shell script that makes HTTP API calls using `curl`. The AI agent can execute these commands directly through the Hermes CLI.
+### Authentication Methods
 
-**Skill Script**: `reagent_minting_curl.sh`  
-**Location**: `/root/blinkai/hermes-skills/reagent_minting_curl.sh`  
-**Method**: Shell command execution with cURL
-
-### How to Use
-
-The AI agent can execute minting operations by running shell commands:
-
-```bash
-# Check balance
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh check_balance
-
-# Estimate cost
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh estimate_cost
-
-# Mint tokens
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh mint
-
-# Get history
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh history --page 1 --limit 10
-
-# Get stats
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh stats
+**Web Chat (Dashboard)**:
+```http
+Cookie: privy-token=<session_token>
 ```
 
-**Environment Variables** (automatically set by Hermes):
-- `REAGENT_USER_ID`: Current user's ID
-- `REAGENT_API_BASE`: API base URL (default: http://localhost:3000)
+**Telegram Bot / External**:
+```http
+Authorization: Bearer <PLATFORM_API_KEY>
+X-User-ID: <user_id>
+```
 
 ---
+
+## Mining API Endpoints
 
 ### check_mining_balance
 
-**Function**: Check user's wallet balances
+**Endpoint**: `GET /api/wallet/balance`  
+**Authentication**: Required (session or API key)
 
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh check_balance
+**Description**: Check user's wallet balances in real-time from blockchain
+
+**Request**:
+```http
+GET /api/wallet/balance HTTP/1.1
+Host: reagent.eu.cc
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
 ```
 
-**Returns**: Formatted message with:
-- USD Balance
-- REAGENT Balance  
-- Wallet Address
-
-**Example Output**:
-```
-💰 USD Balance: $10.50
-🪙 REAGENT Balance: 50,000 tokens
-📍 Wallet: 0x1234...5678
+**Response**:
+```json
+{
+  "success": true,
+  "address": "0x1234567890abcdef...",
+  "reagentBalance": "50000.000000",
+  "pathusdBalance": "10.500000",
+  "ethBalance": "0.5"
+}
 ```
 
 **AI Agent Usage**:
 ```
 User: "What's my balance?"
-Agent: *executes check_balance command*
-Agent: [Displays the output]
-```
+Agent: *calls GET /api/wallet/balance*
+Agent: "Here's your current balance:
 
----
-
-### estimate_minting_cost
-
-**Function**: Estimate cost of minting operation
-
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh estimate_cost
-```
-
-**Returns**: Formatted message with:
-- Base fee (auto-mining)
-- Gas fee estimate
-- Total cost
-- Tokens to earn
-
-**Example Output**:
-```
-💵 Base Fee: $0.50 USD (auto-mining)
-⛽ Gas Fee: ~$0.00015 USD
-📊 Total: ~$0.50 USD
-🪙 Reward: 10,000 REAGENT tokens
-```
-
-**AI Agent Usage**:
-```
-User: "How much does it cost to mint?"
-Agent: *executes estimate_cost command*
-Agent: [Displays the output]
+💰 USD Balance: $10.50
+🪙 REAGENT Balance: 50,000 tokens
+⛽ ETH Balance: 0.5 ETH
+📍 Wallet: 0x1234...5678"
 ```
 
 ---
 
 ### mint_reagent_tokens
 
-**Function**: Mint 10,000 REAGENT tokens
+**Endpoint**: `POST /api/mining/simple-mint`  
+**Authentication**: Required (session or API key)
 
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh mint
+**Description**: Mint 10,000 REAGENT tokens (unified endpoint for web and bot)
+
+**Request**:
+```http
+POST /api/mining/simple-mint HTTP/1.1
+Host: reagent.eu.cc
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
+Content-Type: application/json
+
+{
+  "type": "auto"
+}
 ```
 
-**Returns**: Formatted message with:
-- Success/failure status
-- Tokens earned
-- Fees paid
-- Gas used
-- Transaction hash
-- Updated balances
-- Explorer link
+**Request Body**:
+- `type`: `"auto"` (for AI agent) or `"manual"` (for dashboard)
 
-**Example Output** (Success):
-```
-✅ Minting successful!
-
-🪙 Tokens Earned: 10,000 REAGENT
-💵 Fee Paid: $0.50 USD
-⛽ Gas Used: 0.000150 ETH
-🔗 Transaction: 0x1234...5678
-
-💰 New Balance: $9.50 USD
-🪙 Total REAGENT: 10,000 tokens
-
-View on Explorer: https://explore.tempo.xyz/tx/0x1234...5678
+**Response** (Success):
+```json
+{
+  "success": true,
+  "txHash": "0x1234567890abcdef...",
+  "tokensEarned": 10000,
+  "feePaid": "0.500000",
+  "gasUsed": "0.000150",
+  "newUsdBalance": "10.000000",
+  "newReagentBalance": "60000.000000",
+  "explorerUrl": "https://explore.tempo.xyz/tx/0x1234..."
+}
 ```
 
-**Example Output** (Insufficient Balance):
-```
-Error: Insufficient balance. You need at least 0.5 USD for auto-mining.
-
-Current Balance: 0.30 USD
-Required: 0.5 USD
-Shortfall: 0.20 USD
-
-Please deposit more funds through the Mining Dashboard.
+**Response** (Insufficient Balance):
+```json
+{
+  "success": false,
+  "error": "Insufficient balance",
+  "required": "0.500000",
+  "current": "0.300000",
+  "shortfall": "0.200000"
+}
 ```
 
 **AI Agent Usage**:
 ```
 User: "Can you mint tokens for me?"
 Agent: "Let me check your balance first..."
-Agent: *executes check_balance command*
-Agent: "Great! You have enough balance. Minting costs $0.50 USD. Proceed?"
+Agent: *calls GET /api/wallet/balance*
+Agent: "Great! You have $10.50 USD. Minting costs $0.50. Proceed?"
 User: "Yes"
-Agent: *executes mint command*
-Agent: [Displays the output]
+Agent: *calls POST /api/mining/simple-mint with {"type": "auto"}*
+Agent: "✅ Success! You've earned 10,000 REAGENT tokens!
+
+🪙 Tokens Earned: 10,000 REAGENT
+💵 Fee Paid: $0.50 USD
+🔗 TX: 0x1234...5678
+
+💰 New Balance: $10.00 USD
+🪙 Total REAGENT: 60,000 tokens
+
+View: https://explore.tempo.xyz/tx/0x1234..."
 ```
 
-**CRITICAL**: Always get user confirmation before executing mint command!
+**CRITICAL**: Always get user confirmation before calling this endpoint!
 
 ---
 
 ### get_minting_history
 
-**Function**: Retrieve user's minting history
+**Endpoint**: `GET /api/mining/inscriptions`  
+**Authentication**: Required (session or API key)
 
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh history [options]
+**Description**: Retrieve user's minting history with pagination
+
+**Request**:
+```http
+GET /api/mining/inscriptions?page=1&limit=10&status=confirmed HTTP/1.1
+Host: reagent.eu.cc
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
 ```
 
-**Options**:
-- `--page <n>`: Page number (default: 1)
-- `--limit <n>`: Items per page (default: 10)
-- `--status <s>`: Filter by status (pending/confirmed/failed)
+**Query Parameters**:
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 10, max: 50)
+- `status`: Filter by status (optional: `pending`, `confirmed`, `failed`)
 
-**Returns**: JSON array of inscriptions with pagination info
+**Response**:
+```json
+{
+  "success": true,
+  "inscriptions": [
+    {
+      "id": "123",
+      "txHash": "0x1234...",
+      "tokensEarned": 10000,
+      "feePaid": "0.500000",
+      "status": "confirmed",
+      "type": "auto",
+      "createdAt": "2026-04-18T10:30:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 5,
+    "pages": 1
+  }
+}
+```
 
 **AI Agent Usage**:
 ```
 User: "Show me my minting history"
-Agent: *executes history command*
+Agent: *calls GET /api/mining/inscriptions?page=1&limit=10*
 Agent: "Your recent minting operations:
 
-1. ✅ Confirmed - Apr 11, 10:30 AM
+1. ✅ Confirmed - Apr 18, 10:30 AM
    🪙 10,000 REAGENT | 💵 $0.50 | Auto
    
-2. ✅ Confirmed - Apr 10, 3:45 PM
+2. ✅ Confirmed - Apr 17, 3:45 PM
    🪙 10,000 REAGENT | 💵 $0.50 | Auto
    
 Total: 5 mints | 50,000 REAGENT earned"
@@ -229,19 +252,37 @@ Total: 5 mints | 50,000 REAGENT earned"
 
 ### get_mining_stats
 
-**Function**: Get global mining statistics
+**Endpoint**: `GET /api/mining/stats`  
+**Authentication**: Required (session or API key)
 
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_minting_curl.sh stats
+**Description**: Get platform-wide mining statistics
+
+**Request**:
+```http
+GET /api/mining/stats HTTP/1.1
+Host: reagent.eu.cc
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
 ```
 
-**Returns**: Platform-wide statistics
+**Response**:
+```json
+{
+  "success": true,
+  "totalMints": 1250,
+  "totalTokensMinted": "12500000.000000",
+  "activeMiners": 320,
+  "last24h": 45,
+  "autoMints": 800,
+  "manualMints": 450,
+  "remainingAllocation": "187500000.000000"
+}
+```
 
 **AI Agent Usage**:
 ```
 User: "How's the mining going overall?"
-Agent: *executes stats command*
+Agent: *calls GET /api/mining/stats*
 Agent: "Global Mining Statistics:
 
 📊 Total Mints: 1,250
@@ -258,73 +299,38 @@ Keep mining! 187.5M REAGENT still available."
 
 ---
 
----
-
-## Wallet Tool Definitions
-
-### IMPORTANT: cURL-Based Wallet Access
-
-All wallet operations are accessed via shell script that makes HTTP API calls using `curl`. The AI agent can execute these commands directly through the Hermes CLI.
-
-**Skill Script**: `reagent_wallet_curl.sh`  
-**Location**: `/root/blinkai/hermes-skills/reagent_wallet_curl.sh`  
-**Method**: Shell command execution with cURL
-
-### How to Use Wallet Tools
-
-The AI agent can execute wallet operations by running shell commands:
-
-```bash
-# Check balance (real-time from blockchain)
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh check_balance
-
-# Get wallet address
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh get_address
-
-# Send ETH
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh send_eth <to_address> <amount>
-
-# Send REAGENT tokens
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh send_reagent <to_address> <amount>
-
-# Get transaction history
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh history
-```
-
-**Environment Variables** (automatically set by Hermes):
-- `REAGENT_USER_ID`: Current user's ID
-- `REAGENT_API_BASE`: API base URL (default: http://localhost:3000)
-
----
+## Wallet API Endpoints
 
 ### check_wallet_balance
 
-**Function**: Check wallet balance in real-time from blockchain
+**Endpoint**: `GET /api/wallet/balance`  
+**Authentication**: Required (session or API key)
 
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh check_balance
+**Description**: Check wallet balance in real-time from blockchain
+
+**Request**:
+```http
+GET /api/wallet/balance HTTP/1.1
+Host: reagent.eu.cc
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
 ```
 
-**Returns**: Real-time balance data with:
-- Wallet address
-- ETH balance
-- REAGENT balance
-- PATHUSD balance
-
-**Example Output**:
-```
-✓ Wallet Balance
-Address: 0xA3215753cc7D5039884159eB32CC5D79F0Fb29f
-ETH: 0.5
-REAGENT: 50000
-PATHUSD: 10.50
+**Response**:
+```json
+{
+  "success": true,
+  "address": "0xA3215753cc7D5039884159eB32CC5D79F0Fb29f",
+  "ethBalance": "0.5",
+  "reagentBalance": "50000.000000",
+  "pathusdBalance": "10.500000"
+}
 ```
 
 **AI Agent Usage**:
 ```
 User: "What's my wallet balance?"
-Agent: *executes check_balance command*
+Agent: *calls GET /api/wallet/balance*
 Agent: "Here's your current wallet balance:
 
 💰 ETH: 0.5 ETH
@@ -338,210 +344,149 @@ All balances are real-time from the Tempo Network blockchain."
 
 ---
 
-### get_wallet_address
+### get_wallet_info
 
-**Function**: Get user's wallet address
+**Endpoint**: `GET /api/wallet/info`  
+**Authentication**: Required (session or API key)
 
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh get_address
+**Description**: Get wallet address and creation info
+
+**Request**:
+```http
+GET /api/wallet/info HTTP/1.1
+Host: reagent.eu.cc
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
 ```
 
-**Returns**: Wallet address and creation date
-
-**Example Output**:
-```
-✓ Wallet Address
-Address: 0xA3215753cc7D5039884159eB32CC5D79F0Fb29f
-Created: 2026-04-11T10:30:00.000Z
+**Response**:
+```json
+{
+  "success": true,
+  "address": "0xA3215753cc7D5039884159eB32CC5D79F0Fb29f",
+  "network": "tempo",
+  "createdAt": "2026-04-11T10:30:00.000Z"
+}
 ```
 
 **AI Agent Usage**:
 ```
 User: "What's my wallet address?"
-Agent: *executes get_address command*
+Agent: *calls GET /api/wallet/info*
 Agent: "Your wallet address is:
 
-📍 0xA3215753cc7D5039884159eB32CC5D79F0Fb29f
+� 0xA3215753cc7D5039884159eB32CC5D79F0Fb29f
 
 Created on: April 11, 2026
+Network: Tempo Network
 
-You can share this address to receive ETH, REAGENT, or other tokens on Tempo Network."
+You can share this address to receive ETH, REAGENT, or other tokens."
 ```
 
 ---
 
-### send_eth
+### send_eth (Coming Soon)
 
-**Function**: Send ETH to another address
+**Endpoint**: `POST /api/wallet/send-eth`  
+**Authentication**: Required (session or API key)
 
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh send_eth <to_address> <amount>
+**Description**: Send ETH to another address
+
+**Request**:
+```http
+POST /api/wallet/send-eth HTTP/1.1
+Host: reagent.eu.cc
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
+Content-Type: application/json
+
+{
+  "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+  "amount": "0.1"
+}
 ```
 
-**Parameters**:
-- `to_address`: Recipient's wallet address (must be valid Ethereum address)
-- `amount`: Amount of ETH to send (e.g., "0.1" for 0.1 ETH)
-
-**Returns**: Transaction details with:
-- Transaction hash
-- Explorer URL
-- From/To addresses
-- Amount sent
-
-**Example Output**:
-```
-✓ Transaction Sent
-From: 0xA3215753cc7D5039884159eB32CC5D79F0Fb29f
-To: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
-Amount: 0.1 ETH
-TX Hash: 0x1234567890abcdef...
-Explorer: https://explore.tempo.xyz/tx/0x1234...
-```
-
-**AI Agent Usage**:
-```
-User: "Send 0.1 ETH to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
-Agent: "Let me check your balance first..."
-Agent: *executes check_balance command*
-Agent: "You have 0.5 ETH available. Sending 0.1 ETH to 0x742d...0bEb. Proceed?"
-User: "Yes"
-Agent: *executes send_eth command*
-Agent: "✅ Transaction sent successfully!
-
-From: 0xA321...Fb29f
-To: 0x742d...0bEb
-Amount: 0.1 ETH
-
-🔗 Transaction Hash: 0x1234...
-📊 View on Explorer: https://explore.tempo.xyz/tx/0x1234...
-
-Your new balance: 0.4 ETH (minus gas fees)"
-```
-
-**CRITICAL**: Always check balance and get user confirmation before sending!
-
----
-
-### send_reagent
-
-**Function**: Send REAGENT tokens to another address
-
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh send_reagent <to_address> <amount>
-```
-
-**Parameters**:
-- `to_address`: Recipient's wallet address (must be valid Ethereum address)
-- `amount`: Amount of REAGENT to send (e.g., "1000" for 1,000 REAGENT)
-
-**Returns**: Transaction details with:
-- Transaction hash
-- Explorer URL
-- From/To addresses
-- Amount sent
-
-**Example Output**:
-```
-✓ Transaction Sent
-From: 0xA3215753cc7D5039884159eB32CC5D79F0Fb29f
-To: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
-Amount: 1000 REAGENT
-TX Hash: 0x1234567890abcdef...
-Explorer: https://explore.tempo.xyz/tx/0x1234...
-```
-
-**AI Agent Usage**:
-```
-User: "Send 1000 REAGENT to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
-Agent: "Let me check your REAGENT balance first..."
-Agent: *executes check_balance command*
-Agent: "You have 50,000 REAGENT available. Sending 1,000 REAGENT to 0x742d...0bEb. Proceed?"
-User: "Yes"
-Agent: *executes send_reagent command*
-Agent: "✅ REAGENT tokens sent successfully!
-
-From: 0xA321...Fb29f
-To: 0x742d...0bEb
-Amount: 1,000 REAGENT
-
-🔗 Transaction Hash: 0x1234...
-📊 View on Explorer: https://explore.tempo.xyz/tx/0x1234...
-
-Your new balance: 49,000 REAGENT"
-```
-
-**CRITICAL**: Always check balance and get user confirmation before sending!
-
----
-
-### get_transaction_history
-
-**Function**: Get wallet transaction history
-
-**Command**:
-```bash
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh history
-```
-
-**Returns**: List of recent transactions
-
-**AI Agent Usage**:
-```
-User: "Show me my transaction history"
-Agent: *executes history command*
-Agent: "Your recent transactions:
-
-1. ✅ Sent 0.1 ETH - Apr 12, 2:30 PM
-   To: 0x742d...0bEb
-   TX: 0x1234...
-
-2. ✅ Received 10,000 REAGENT - Apr 11, 10:30 AM
-   From: Mining Contract
-   TX: 0x5678...
-
-3. ✅ Sent 1,000 REAGENT - Apr 10, 3:45 PM
-   To: 0x9abc...def0
-   TX: 0x9abc...
-
-Total: 3 transactions"
+**Response**:
+```json
+{
+  "success": true,
+  "txHash": "0x1234567890abcdef...",
+  "from": "0xA3215753cc7D5039884159eB32CC5D79F0Fb29f",
+  "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+  "amount": "0.1",
+  "explorerUrl": "https://explore.tempo.xyz/tx/0x1234..."
+}
 ```
 
 ---
 
+### send_reagent (Coming Soon)
+
+**Endpoint**: `POST /api/wallet/send-reagent`  
+**Authentication**: Required (session or API key)
+
+**Description**: Send REAGENT tokens to another address
+
+**Request**:
+```http
+POST /api/wallet/send-reagent HTTP/1.1
+Host: reagent.eu.cc
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
+Content-Type: application/json
+
+{
+  "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+  "amount": "1000"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "txHash": "0x1234567890abcdef...",
+  "from": "0xA3215753cc7D5039884159eB32CC5D79F0Fb29f",
+  "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+  "amount": "1000",
+  "explorerUrl": "https://explore.tempo.xyz/tx/0x1234..."
+}
+```
+
 ---
 
-## How AI Agents Access Wallet Tools
+## How AI Agents Access Tools
 
-### Direct Execution via Shell Commands
+### API-Based Execution
 
-AI agents can execute wallet operations directly by running the `reagent_wallet_curl.sh` script. This script uses `curl` to make authenticated API calls to the ReAgent platform.
+AI agents interact with the ReAgent platform through HTTP API calls. The platform provides a unified API that works across all channels (web chat, Telegram, Discord, WhatsApp).
 
 ### Prerequisites
 
-1. **Script Location**: `/root/blinkai/hermes-skills/reagent_wallet_curl.sh`
-2. **Permissions**: Script must be executable (`chmod +x`)
-3. **Dependencies**: `curl` and `jq` must be installed
-4. **Environment**: `REAGENT_USER_ID` must be set (automatically by Hermes)
+1. **Authentication**: API key (for bots) or session cookie (for web)
+2. **User Context**: User ID must be provided or derived from session
+3. **Network Access**: HTTPS connection to reagent.eu.cc
+4. **Permissions**: Appropriate permissions for the operation
 
 ### Execution Pattern
 
-**Step 1**: Always check balance before any send operation
-```bash
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh check_balance
+**Step 1**: Always check balance before any operation
+```http
+GET /api/wallet/balance
 ```
 
-**Step 2**: Get user confirmation for send operations
+**Step 2**: Get user confirmation for transactions
 ```
-Agent: "I can send 0.1 ETH to 0x742d...0bEb. This will cost approximately 0.1 ETH plus gas fees. Proceed?"
+Agent: "I can mint 10,000 REAGENT for $0.50. Proceed?"
 User: "Yes"
 ```
 
-**Step 3**: Execute the send command
-```bash
-bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh send_eth 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb 0.1
+**Step 3**: Execute the operation
+```http
+POST /api/mining/simple-mint
+Content-Type: application/json
+
+{"type": "auto"}
 ```
 
 **Step 4**: Display the result to user
@@ -549,82 +494,70 @@ bash /root/blinkai/hermes-skills/reagent_wallet_curl.sh send_eth 0x742d35Cc6634C
 ### Example Conversation Flow
 
 ```
-User: "Send 1000 REAGENT to my friend at 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+User: "Can you mint some tokens for me?"
 
-Agent: "Let me check your REAGENT balance first..."
-Agent: *executes check_balance*
-Agent: "Great! You have 50,000 REAGENT available.
+Agent: "Let me check your balance first..."
+Agent: *calls GET /api/wallet/balance*
+Agent: "Great! You have $10.50 USD available.
 
-I can send 1,000 REAGENT tokens to:
-📍 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
-
-This will cost:
-🪙 1,000 REAGENT (tokens to send)
-⛽ ~0.0001 ETH (gas fee)
+Minting 10,000 REAGENT tokens will cost $0.50 USD (including gas).
 
 Would you like me to proceed?"
 
-User: "Yes, send it"
+User: "Yes, go ahead"
 
-Agent: "Perfect! Sending now..."
-Agent: *executes send_reagent*
-Agent: "✅ Transaction sent successfully!
+Agent: "Perfect! Minting now..."
+Agent: *calls POST /api/mining/simple-mint with {"type": "auto"}*
+Agent: "✅ Success! You've earned 10,000 REAGENT tokens!
 
-🪙 Sent: 1,000 REAGENT
-📍 To: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
-🔗 TX Hash: 0x1234567890abcdef...
+🪙 Tokens Earned: 10,000 REAGENT
+� Fee Paid: $0.50 USD
+🔗 TX: 0x1234...5678
 
-Your new balance: 49,000 REAGENT
+💰 New Balance: $10.00 USD
+🪙 Total REAGENT: 10,000 tokens
 
-View on Explorer: https://explore.tempo.xyz/tx/0x1234..."
+View: https://explore.tempo.xyz/tx/0x1234..."
 ```
 
 ### Error Handling
 
 **Insufficient Balance**:
 ```
-Agent: *executes check_balance*
-Agent: "I'd love to help you send 1000 REAGENT, but your balance is only 500 REAGENT.
+Agent: *calls GET /api/wallet/balance*
+Agent: "I'd love to help you mint tokens, but your balance is $0.30 USD.
 
-Current Balance: 500 REAGENT
-Requested: 1,000 REAGENT
-Shortfall: 500 REAGENT
+You need at least $0.50 USD for auto-mining.
 
-Would you like to:
-- Send a smaller amount (500 REAGENT or less)
-- Mint more REAGENT tokens first
-- Check your transaction history"
+Would you like me to show you how to deposit funds?"
 ```
 
-**Invalid Address**:
+**Transaction Failure**:
 ```
-Agent: "The address you provided doesn't look valid. Ethereum addresses should:
-- Start with '0x'
-- Be 42 characters long
-- Contain only hexadecimal characters (0-9, a-f)
-
-Please double-check the address and try again."
-```
-
-**Transaction Failed**:
-```
-Agent: "Oops! The transaction failed. This could be due to:
+Agent: *calls POST /api/mining/simple-mint*
+Agent: "Oops! The minting transaction failed. This could be due to:
 - Network congestion
-- Insufficient gas
 - Temporary blockchain issue
 
-Your funds are safe and haven't been sent. Would you like to try again?"
+Your funds have been refunded. Would you like to try again?"
+```
+
+**API Error**:
+```
+Agent: "I'm having trouble connecting to the platform right now. This is usually temporary.
+
+Let me try again in a moment... If it persists, please check your connection or contact support."
 ```
 
 ### Important Rules
 
-1. **Always Check Balance First**: Before any send discussion
-2. **Always Get Confirmation**: Never send without explicit user approval
+1. **Always Check Balance First**: Before any transaction discussion
+2. **Always Get Confirmation**: Never transact without explicit user approval
 3. **Display Full Details**: Show all transaction details before and after
 4. **Handle Errors Gracefully**: Explain errors in user-friendly terms
 5. **Provide Context**: Explain what's happening at each step
-6. **Validate Addresses**: Check address format before sending
-7. **Show Gas Estimates**: Inform users about gas costs
+6. **Validate Inputs**: Check addresses, amounts before sending
+7. **Show Costs**: Inform users about fees and gas costs
 
 ---
 
@@ -822,7 +755,7 @@ Your funds have been refunded. Would you like to try again?"
 
 ## Tool Usage Guidelines
 
-### When to Use Minting Tools
+### When to Use Mining Tools
 
 **Appropriate Scenarios**:
 1. User explicitly requests to mint tokens
@@ -837,20 +770,36 @@ Your funds have been refunded. Would you like to try again?"
 3. Automatic/unsolicited minting
 4. Minting without user confirmation
 
+### When to Use Wallet Tools
+
+**Appropriate Scenarios**:
+1. User explicitly requests to check balance
+2. User wants to send tokens or ETH
+3. User asks about their wallet address
+4. User wants to see transaction history
+5. User asks "how much do I have?"
+
+**Inappropriate Scenarios**:
+1. User hasn't mentioned wallet or balance
+2. User is asking unrelated questions
+3. Automatic/unsolicited transactions
+4. Sending without user confirmation
+
 ### Best Practices
 
-1. **Always Confirm Before Minting**:
+1. **Always Confirm Before Transactions**:
    ```
    User: "Mint tokens"
-   Agent: "I can mint 10,000 REAGENT tokens for you. This will cost approximately $1.00 USD. Would you like me to proceed?"
+   Agent: "I can mint 10,000 REAGENT for $0.50 USD. Proceed?"
    User: "Yes"
-   Agent: *calls mint_reagent_tokens()*
+   Agent: *calls POST /api/mining/simple-mint*
    ```
 
 2. **Provide Context**:
-   - Explain costs before minting
+   - Explain costs before transactions
    - Show current balance
    - Mention savings for auto mining
+   - Display transaction details
 
 3. **Handle Errors Gracefully**:
    - Explain what went wrong
@@ -866,9 +815,9 @@ Your funds have been refunded. Would you like to try again?"
 
 **Successful Mint**:
 ```
-"Great news! I've successfully minted 10,000 REAGENT tokens for you. 
+"Great news! I've successfully minted 10,000 REAGENT tokens for you via the auto-mining API.
 
-The transaction cost $1.00 USD and is now confirmed on the blockchain. You can view it on the Tempo Explorer.
+The transaction cost $0.50 USD and is now confirmed on the blockchain.
 
 Your new balance is $X.XX USD and you now have X,XXX REAGENT tokens total.
 
@@ -880,7 +829,7 @@ Would you like to mint more, or is there anything else I can help you with?"
 "I'd love to help you mint tokens, but it looks like your USD balance is a bit low.
 
 Current Balance: $X.XX USD
-Required: $1.00 USD
+Required: $0.50 USD
 Shortfall: $X.XX USD
 
 You can deposit more funds through the Mining Dashboard. Would you like me to show you how?"
@@ -893,7 +842,7 @@ You can deposit more funds through the Mining Dashboard. Would you like me to sh
 Manual (via dashboard): $1.00 USD + gas
 Auto (via me): $0.50 USD + gas
 
-That's a 50% savings when you let me handle it! Gas fees are typically very low on Tempo Network (less than $0.001).
+That's a 50% savings when you let me handle it via the API! Gas fees are typically very low on Tempo Network (less than $0.001).
 
 Would you like me to mint some tokens for you?"
 ```
@@ -904,22 +853,23 @@ Would you like me to mint some tokens for you?"
 
 ### Auto-Installation
 
-The Minting_Skill is automatically installed for all users during registration. It cannot be uninstalled as it's a core platform feature.
+Both Minting_Skill and Wallet_Skill are automatically installed for all users during registration. They cannot be uninstalled as they're core platform features.
 
 ### Skill Metadata
 
+**Minting_Skill**:
 ```json
 {
   "name": "Minting_Skill",
-  "version": "1.0.0",
-  "description": "Mint REAGENT tokens on Tempo Network",
+  "version": "2.0.0",
+  "description": "Mint REAGENT tokens via unified API endpoint",
   "author": "ReAgent Platform",
   "category": "blockchain",
   "proprietary": true,
   "autoInstall": true,
+  "apiEndpoint": "/api/mining/simple-mint",
   "capabilities": [
     "check_balance",
-    "estimate_cost",
     "execute_mint",
     "get_history",
     "get_stats"
@@ -931,6 +881,70 @@ The Minting_Skill is automatically installed for all users during registration. 
   ]
 }
 ```
+
+**Wallet_Skill**:
+```json
+{
+  "name": "Wallet_Skill",
+  "version": "2.0.0",
+  "description": "Manage wallet and send tokens via API",
+  "author": "ReAgent Platform",
+  "category": "blockchain",
+  "proprietary": true,
+  "autoInstall": true,
+  "apiEndpoints": [
+    "/api/wallet/balance",
+    "/api/wallet/info",
+    "/api/wallet/send-eth",
+    "/api/wallet/send-reagent"
+  ],
+  "capabilities": [
+    "check_balance",
+    "get_address",
+    "send_eth",
+    "send_reagent",
+    "get_history"
+  ],
+  "requiredPermissions": [
+    "wallet:read",
+    "wallet:write"
+  ]
+}
+```
+
+---
+
+## Multi-Channel Support
+
+### Telegram Bot Integration
+
+**Commands**: `/mine`, `/balance`, `/wallet`, `/help`, `/start`  
+**Skill**: `telegram_commands_skill.py`  
+**API**: Same `/api/mining/simple-mint` endpoint as web  
+**Authentication**: `Authorization: Bearer {API_KEY}` + `X-User-ID: {userId}`
+
+**Auto-Registration**: Commands automatically registered when user adds Telegram channel
+
+**Example Flow**:
+```
+User: /mine 3
+Bot: *calls POST /api/mining/simple-mint 3 times*
+Bot: "✅ Mining completed!
+
+🎉 Successful: 3/3
+🪙 Total earned: 30,000 REAGENT
+
+📝 Last TX: 0x1234...5678
+🔗 Explorer: https://explore.tempo.xyz/tx/0x1234..."
+```
+
+### Discord Bot Integration (Coming Soon)
+
+Same API endpoints, different authentication method.
+
+### WhatsApp Bot Integration (Coming Soon)
+
+Same API endpoints, different authentication method.
 
 ---
 
@@ -955,6 +969,7 @@ The Minting_Skill is automatically installed for all users during registration. 
 
 ---
 
-**Document Version**: 1.0.0  
-**Last Updated**: 2026-04-11  
-**Platform**: ReAgent v1.0.0
+**Document Version**: 2.0.0  
+**Last Updated**: 2026-04-18  
+**Platform**: ReAgent v1.0.0  
+**API Base**: https://reagent.eu.cc

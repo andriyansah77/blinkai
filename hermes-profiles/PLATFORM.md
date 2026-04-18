@@ -15,10 +15,11 @@
 ### 2. Token Mining System
 - **REAGENT Token**: Platform's native TIP-20 token on Tempo Network
 - **Mining Methods**:
-  - Auto Mining: 0.5 PATHUSD per mint (via AI agent)
-  - Manual Mining: 1.0 PATHUSD per mint (via dashboard)
+  - Auto Mining: Configurable fee (default 0.5 PATHUSD) via AI agent
+  - Manual Mining: Configurable fee (default 1.0 PATHUSD) via dashboard
 - **Rewards**: 10,000 REAGENT tokens per successful mint
 - **Total Supply**: 400M REAGENT (50% allocated for mining)
+- **API Endpoint**: `/api/mining/simple-mint` (unified for web and bot)
 
 ### 3. Blockchain Integration
 - **Network**: Tempo Network (Chain ID: 4217)
@@ -51,9 +52,10 @@
 ### Mining Economics
 - **Tokens per Mint**: 10,000 REAGENT
 - **Max Mints**: 20,000 (200M / 10K)
-- **Auto Mining Fee**: 0.5 PATHUSD + gas
-- **Manual Mining Fee**: 1.0 PATHUSD + gas
-- **Savings**: 50% discount for auto mining
+- **Auto Mining Fee**: Configurable via `AUTO_MINT_FEE` env (default 0.5 PATHUSD) + gas
+- **Manual Mining Fee**: Configurable via `MANUAL_MINT_FEE` env (default 1.0 PATHUSD) + gas
+- **Savings**: 50% discount for auto mining (default)
+- **Payment Method**: ERC-20 transfer of PATHUSD token (not native transfer)
 
 ## Platform Capabilities
 
@@ -66,11 +68,12 @@
 6. **Trading** (Coming Soon): Trade REAGENT tokens
 
 ### For AI Agents
-1. **Minting Skill**: Execute token minting on behalf of users
-2. **Balance Checking**: Query user balances
-3. **Cost Estimation**: Estimate minting costs
-4. **History Retrieval**: Access minting history
+1. **Minting Skill**: Execute token minting via `/api/mining/simple-mint` endpoint
+2. **Balance Checking**: Query user balances in real-time
+3. **Wallet Operations**: Send ETH and REAGENT tokens
+4. **History Retrieval**: Access minting and transaction history
 5. **Statistics**: Get global mining statistics
+6. **Multi-Channel**: Works on web chat, Telegram, Discord, WhatsApp
 
 ## Platform Values
 
@@ -121,10 +124,12 @@
 - Explorer integration
 
 ### Payment System
-- PATHUSD stablecoin for fees
+- PATHUSD stablecoin for fees (ERC-20 transfer)
+- Token address: 0x20c0000000000000000000000000000000000000
 - USD balance management
 - Automatic refunds on failures
 - Transaction tracking
+- Unified API: `/api/mining/simple-mint` for all channels
 
 ## Support & Resources
 
@@ -146,8 +151,24 @@
 - FAQ: /faq
 - Status Page: /status
 
+## API Integration
+
+### Mining API Endpoint
+- **URL**: `POST /api/mining/simple-mint`
+- **Authentication**: 
+  - Web: Privy session cookie
+  - Bot: `Authorization: Bearer {API_KEY}` + `X-User-ID: {userId}` header
+- **Request Body**: `{ "type": "auto" | "manual" }`
+- **Response**: Transaction hash, tokens earned, fees paid, updated balances
+
+### Telegram Bot Integration
+- **Commands**: `/mine`, `/balance`, `/wallet`, `/help`, `/start`
+- **Auto-Registration**: Commands registered automatically on channel setup
+- **Unified API**: Uses same `/api/mining/simple-mint` endpoint as web
+- **Skill**: `telegram_commands_skill.py` in hermes-skills
+
 ---
 
 **Platform Version**: 1.0.0  
-**Last Updated**: 2026-04-11  
+**Last Updated**: 2026-04-18  
 **Network**: Tempo Mainnet (Chain ID: 4217)

@@ -3,6 +3,59 @@ import { getPrivySession } from "@/lib/privy-server";
 import { hermesIntegration } from "@/lib/hermes-integration";
 import { ensureHermesProfile } from "@/lib/ensure-hermes-profile";
 
+// Telegram commands to auto-register
+const TELEGRAM_COMMANDS = [
+  {
+    command: "mine",
+    description: "Mine REAGENT tokens (usage: /mine [amount])"
+  },
+  {
+    command: "balance",
+    description: "Check your wallet balance"
+  },
+  {
+    command: "wallet",
+    description: "View your wallet information"
+  },
+  {
+    command: "help",
+    description: "Show help message and available commands"
+  },
+  {
+    command: "start",
+    description: "Start the bot and link your account"
+  }
+];
+
+/**
+ * Auto-register Telegram bot commands
+ */
+async function registerTelegramCommands(botToken: string): Promise<boolean> {
+  try {
+    const url = `https://api.telegram.org/bot${botToken}/setMyCommands`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        commands: TELEGRAM_COMMANDS
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`Telegram API error: ${response.status}`);
+      return false;
+    }
+
+    const result = await response.json();
+    return result.ok === true;
+  } catch (error) {
+    console.error('Error registering Telegram commands:', error);
+    return false;
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getPrivySession(request);
@@ -110,6 +163,21 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
           }
           setupResult = await hermesIntegration.setupTelegram(session.user.id!, config.botToken);
+          
+          // Auto-register Telegram commands after successful setup
+          if (setupResult.success) {
+            try {
+              const commandsRegistered = await registerTelegramCommands(config.botToken);
+              if (commandsRegistered) {
+                console.log(`✅ Telegram commands auto-registered for user ${session.user.id}`);
+              } else {
+                console.warn(`⚠️ Failed to auto-register Telegram commands for user ${session.user.id}`);
+              }
+            } catch (cmdError) {
+              // Don't fail the whole setup if command registration fails
+              console.error(`⚠️ Command registration error (non-fatal):`, cmdError);
+            }
+          }
           break;
 
         case 'discord':
@@ -168,11 +236,18 @@ export async function POST(request: NextRequest) {
         isolated: true
       });
 
+      // Build success message
+      let successMessage = `${type.charAt(0).toUpperCase() + type.slice(1)} channel connected successfully to your isolated Hermes instance!`;
+      if (type === 'telegram') {
+        successMessage += ' Slash commands (/mine, /balance, /wallet, /help, /start) have been automatically registered.';
+      }
+
       return NextResponse.json({ 
         channel,
-        message: `${type.charAt(0).toUpperCase() + type.slice(1)} channel connected successfully to your isolated Hermes instance!`,
+        message: successMessage,
         hermesSetup: setupResult.error || "Platform configured successfully",
-        userIsolation: true
+        userIsolation: true,
+        commandsRegistered: type === 'telegram' ? true : undefined
       }, { status: 201 });
 
     } catch (validationError) {

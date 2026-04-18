@@ -1,6 +1,26 @@
 # Telegram Bot Setup Guide
 
-## Register Slash Commands in BotFather
+## ✨ NEW: Auto-Registration (Recommended)
+
+**Slash commands are now automatically registered when you add a Telegram channel!**
+
+### Quick Setup (No Manual Steps!)
+
+1. Go to Dashboard → Channels
+2. Click "Add Channel" → Select "Telegram"
+3. Paste your bot token from @BotFather
+4. Click "Connect"
+5. ✅ Done! Commands are automatically registered
+
+See [TELEGRAM_AUTO_REGISTRATION.md](./TELEGRAM_AUTO_REGISTRATION.md) for details.
+
+---
+
+## Manual Registration (Optional)
+
+If you need to manually register commands (e.g., for testing or troubleshooting):
+
+### Register Slash Commands in BotFather
 
 Untuk membuat slash commands muncul di Telegram bot, Anda perlu mendaftarkannya di BotFather.
 
