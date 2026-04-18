@@ -70,11 +70,9 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
     if not balance_check.get('success'):
         return balance_check
     
-    if not balance_check.get('can_mint'):
-        return {
-            "success": False,
-            "error": f"Insufficient PATHUSD balance. Current: {balance_check.get('pathusd_balance', 0)}, Required: 0.5"
-        }
+    # Note: For external wallets, user doesn't need PATHUSD balance
+    # They pay gas directly from their wallet
+    # This check is just informational
     
     results = []
     successful = 0
@@ -84,6 +82,7 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
         try:
             print(f"Starting minting operation {i+1}/{count}...", file=sys.stderr)
             
+            # Step 1: Request unsigned transaction
             response = requests.post(
                 f"{PLATFORM_URL}/api/mining/inscribe",
                 headers={
@@ -92,7 +91,7 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
                 },
                 json={
                     "confirm": True,
-                    "forceClientSigning": False  # Use server-side if available
+                    "forceClientSigning": True
                 },
                 timeout=60
             )
@@ -100,15 +99,27 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
             result = response.json()
             
             if response.status_code == 200 and result.get('success'):
-                successful += 1
-                results.append({
-                    "operation": i + 1,
-                    "success": True,
-                    "tokens_earned": result.get('tokensEarned', '10000'),
-                    "tx_hash": result.get('txHash'),
-                    "inscription_id": result.get('inscriptionId')
-                })
-                print(f"✓ Minting {i+1} successful: {result.get('tokensEarned', '10000')} REAGENT", file=sys.stderr)
+                if result.get('requiresClientSigning'):
+                    # For AI agent, we can't sign transactions
+                    # This requires user's wallet interaction
+                    failed += 1
+                    results.append({
+                        "operation": i + 1,
+                        "success": False,
+                        "error": "Client-side signing required. Please use the web interface to mint tokens with your wallet."
+                    })
+                    print(f"✗ Minting {i+1} requires wallet signing", file=sys.stderr)
+                else:
+                    # Server-side signing succeeded (legacy)
+                    successful += 1
+                    results.append({
+                        "operation": i + 1,
+                        "success": True,
+                        "tokens_earned": result.get('tokensEarned', '10000'),
+                        "tx_hash": result.get('txHash'),
+                        "inscription_id": result.get('inscriptionId')
+                    })
+                    print(f"✓ Minting {i+1} successful: {result.get('tokensEarned', '10000')} REAGENT", file=sys.stderr)
             else:
                 failed += 1
                 error_msg = result.get('error', {}).get('message', 'Unknown error')
@@ -139,7 +150,8 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
         "successful": successful,
         "failed": failed,
         "total_tokens_earned": successful * 10000,
-        "results": results
+        "results": results,
+        "note": "AI agent cannot sign transactions. Please use the web interface to mint tokens with your wallet."
     }
 
 def get_mining_status(api_key: str) -> Dict[str, Any]:

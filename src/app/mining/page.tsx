@@ -188,20 +188,87 @@ function MiningPageContent() {
     try {
       setMinting(true);
       
+      // Step 1: Request unsigned transaction from server
       const response = await fetch("/api/mining/inscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ confirm: true }),
+        body: JSON.stringify({ confirm: true, forceClientSigning: true }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
+      if (!data.success) {
+        toast.error(data.error?.message || "Failed to prepare transaction");
+        return;
+      }
+
+      // Step 2: Check if client-side signing is required
+      if (data.requiresClientSigning && data.unsignedTransaction) {
+        toast.loading("Please sign the transaction in your wallet...");
+        
+        try {
+          // Get Privy wallet provider
+          const provider = await (window as any).ethereum;
+          if (!provider) {
+            toast.error("No wallet provider found. Please install MetaMask or connect your wallet.");
+            return;
+          }
+
+          // Request accounts
+          const accounts = await provider.request({ method: 'eth_requestAccounts' });
+          const fromAddress = accounts[0];
+
+          // Prepare transaction for signing
+          const tx = {
+            from: fromAddress,
+            to: data.unsignedTransaction.to,
+            data: data.unsignedTransaction.data,
+            value: data.unsignedTransaction.value || '0x0',
+            gas: data.unsignedTransaction.gasLimit,
+            gasPrice: data.unsignedTransaction.gasPrice,
+          };
+
+          // Send transaction (wallet will sign and broadcast)
+          const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [tx],
+          });
+
+          toast.dismiss();
+          toast.success("Transaction submitted! Waiting for confirmation...");
+
+          // Step 3: Submit tx hash to server for monitoring
+          const submitResponse = await fetch("/api/mining/submit-signed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              inscriptionId: data.inscriptionId,
+              txHash: txHash,
+            }),
+          });
+
+          const submitData = await submitResponse.json();
+
+          if (submitData.success) {
+            toast.success(`Transaction confirmed! Minted 10,000 REAGENT tokens.`);
+            toast.success(`View on Explorer: ${submitData.explorerUrl}`, { duration: 10000 });
+            fetchData(); // Refresh data
+          } else {
+            toast.error(submitData.error?.message || "Failed to submit transaction");
+          }
+        } catch (walletError: any) {
+          console.error("Wallet signing error:", walletError);
+          if (walletError.code === 4001) {
+            toast.error("Transaction rejected by user");
+          } else {
+            toast.error(`Wallet error: ${walletError.message || "Unknown error"}`);
+          }
+        }
+      } else {
+        // Server-side signing (legacy, should not happen)
         const tokensEarned = data.tokensEarned || data.inscription?.tokensEarned || 10000;
         toast.success(`Successfully minted ${tokensEarned.toLocaleString()} REAGENT!`);
-        fetchData(); // Refresh data
-      } else {
-        toast.error(data.error?.message || "Minting failed");
+        fetchData();
       }
     } catch (error) {
       console.error("Minting error:", error);
