@@ -38,6 +38,14 @@ export async function POST(request: NextRequest) {
       userId = session.user.id;
     }
 
+    // Verify userId is not null
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'User ID not found' },
+        { status: 400 }
+      );
+    }
+
     // Get request body
     const body = await request.json();
     const { telegramUserId, telegramUsername, telegramFirstName, telegramLastName } = body;
