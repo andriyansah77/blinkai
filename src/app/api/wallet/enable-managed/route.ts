@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrivySession } from '@/lib/privy-server';
 import { walletManager } from '@/lib/mining/wallet-manager';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,9 +27,17 @@ export async function POST(request: NextRequest) {
 
     const userId = session.user.id;
 
-    // 2. Get existing wallet
-    const wallet = await walletManager.getWallet(userId);
-    if (!wallet) {
+    // 2. Get existing wallet from database (need to check encryptedPrivateKey)
+    const dbWallet = await prisma.wallet.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        address: true,
+        encryptedPrivateKey: true
+      }
+    });
+
+    if (!dbWallet) {
       return NextResponse.json(
         {
           success: false,
@@ -42,10 +51,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Check if already has managed wallet
-    if (wallet.encryptedPrivateKey && wallet.encryptedPrivateKey.length > 0) {
+    if (dbWallet.encryptedPrivateKey && dbWallet.encryptedPrivateKey.length > 0) {
       return NextResponse.json({
         success: true,
         message: 'Managed wallet already enabled',
+        address: dbWallet.address,
         hasManagedWallet: true
       });
     }
