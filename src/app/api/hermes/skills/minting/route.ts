@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrivySession } from "@/lib/privy-server";
-import { WalletManager } from "@/lib/mining/wallet-manager";
-import { InscriptionEngine } from "@/lib/mining/inscription-engine";
-import { GasEstimator } from "@/lib/mining/gas-estimator";
-import { UsdBalanceManager } from "@/lib/mining/usd-balance-manager";
+import { simpleWalletManager } from "@/lib/mining/simple-wallet-manager";
+import { simpleMintingEngine } from "@/lib/mining/simple-minting-engine";
 import { prisma } from "@/lib/prisma";
+import { ethers } from 'ethers';
 
 /**
  * Minting Skill API - Accessible by AI Agent
  * Provides all minting-related functions for the AI agent
+ * Uses server-side signing only
  */
 
 export async function POST(request: NextRequest) {
@@ -16,14 +16,22 @@ export async function POST(request: NextRequest) {
     // Check for session-based auth first
     const session = await getPrivySession(request);
     
-    // If no session, check for X-User-ID header (for Hermes CLI)
+    // If no session, check for X-User-ID header (for Hermes CLI/Telegram bot)
     let userId = session?.user?.id;
     
     if (!userId) {
       const userIdHeader = request.headers.get("X-User-ID");
       if (userIdHeader) {
-        userId = userIdHeader;
-        console.log(`[Minting Skill] Using X-User-ID header: ${userId}`);
+        // Verify API key for bot requests
+        const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '');
+        const platformApiKey = process.env.PLATFORM_API_KEY;
+        
+        if (apiKey && platformApiKey && apiKey === platformApiKey) {
+          userId = userIdHeader;
+          console.log(`[Minting Skill] Using X-User-ID header: ${userId}`);
+        } else {
+          return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+        }
       }
     }
     
@@ -69,8 +77,7 @@ export async function POST(request: NextRequest) {
  */
 async function checkMiningBalance(userId: string) {
   try {
-    const walletManager = new WalletManager();
-    const wallet = await walletManager.getWallet(userId);
+    const wallet = await simpleWalletManager.getWallet(userId);
 
     if (!wallet) {
       return NextResponse.json({
@@ -79,24 +86,32 @@ async function checkMiningBalance(userId: string) {
       });
     }
 
-    // Get USD balance
-    const balanceManager = new UsdBalanceManager();
-    const usdBalance = await balanceManager.getBalance(userId);
+    // Get PATHUSD balance from blockchain
+    const provider = new ethers.JsonRpcProvider(process.env.TEMPO_RPC_URL || 'https://rpc.tempo.xyz');
+    const PATHUSD_ADDRESS = process.env.PATHUSD_TOKEN_ADDRESS || '0x20c0000000000000000000000000000000000000';
+    
+    const pathusdContract = new ethers.Contract(
+      PATHUSD_ADDRESS,
+      ['function balanceOf(address) view returns (uint256)'],
+      provider
+    );
+    
+    const pathusdBalanceRaw = await pathusdContract.balanceOf(wallet.address);
+    const pathusdBalance = ethers.formatUnits(pathusdBalanceRaw, 6); // PATHUSD has 6 decimals
 
-    // Get REAGENT balance from blockchain
-    const tokenBalances = await walletManager.getTokenBalance(userId);
-    const reagentBalance = tokenBalances.reagent;
+    // Get REAGENT balance from database
+    const reagentBalance = wallet.reagentBalance || '0';
 
     return NextResponse.json({
       success: true,
       data: {
         address: wallet.address,
-        usdBalance: parseFloat(usdBalance.toString()),
-        reagentBalance: parseFloat(reagentBalance.toString())
+        pathusdBalance: parseFloat(pathusdBalance),
+        reagentBalance: parseFloat(reagentBalance)
       },
       formatted: {
         address: wallet.address,
-        usd: `${usdBalance} USD`,
+        pathusd: `${pathusdBalance} PATHUSD`,
         reagent: `${reagentBalance} REAGENT`
       }
     });
@@ -114,8 +129,7 @@ async function checkMiningBalance(userId: string) {
  */
 async function estimateMintingCost(userId: string) {
   try {
-    const walletManager = new WalletManager();
-    const wallet = await walletManager.getWallet(userId);
+    const wallet = await simpleWalletManager.getWallet(userId);
 
     if (!wallet) {
       return NextResponse.json({
@@ -124,20 +138,15 @@ async function estimateMintingCost(userId: string) {
       });
     }
 
-    const gasEstimator = new GasEstimator();
-    const gasEstimate = await gasEstimator.estimateGasForInscription();
-
-    const feeUsd = 0.5; // Auto-mining fee
-    const totalCostUsd = feeUsd + parseFloat(gasEstimate.estimatedGas);
+    const feePathusd = 0.05; // Auto-mining fee in PATHUSD
+    const gasEstimate = "0.000150"; // Estimated gas in ETH
 
     return NextResponse.json({
       success: true,
-      feeUsd,
-      gasEstimate: gasEstimate.gasUnits,
-      gasCostUsd: gasEstimate.estimatedGas,
-      totalCostUsd,
+      feePathusd,
+      gasEstimate,
       tokensToEarn: 10000,
-      message: `💵 Base Fee: ${feeUsd} USD (auto-mining)\n⛽ Gas Fee: ~${gasEstimate.estimatedGas} USD\n📊 Total: ~${totalCostUsd.toFixed(2)} USD\n🪙 Reward: 10,000 REAGENT tokens`
+      message: `💵 Base Fee: ${feePathusd} PATHUSD (auto-mining)\n⛽ Gas Fee: ~${gasEstimate} ETH\n🪙 Reward: 10,000 REAGENT tokens`
     });
   } catch (error) {
     console.error("[Estimate Cost] Error:", error);
@@ -148,27 +157,13 @@ async function estimateMintingCost(userId: string) {
   }
 }
 
-
 /**
  * Mint REAGENT tokens
  */
 async function mintReagentTokens(userId: string) {
   try {
-    // Check balance first
-    const balanceManager = new UsdBalanceManager();
-    const usdBalance = await balanceManager.getBalance(userId);
-
-    const requiredAmount = 0.5; // Auto-mining fee
-    if (parseFloat(usdBalance.toString()) < requiredAmount) {
-      return NextResponse.json({
-        success: false,
-        error: `Insufficient balance. You need at least $${requiredAmount} USD for auto-mining.\n\nCurrent Balance: $${usdBalance} USD\nRequired: $${requiredAmount} USD\nShortfall: $${(requiredAmount - parseFloat(usdBalance.toString())).toFixed(2)} USD\n\nPlease deposit more funds through the Mining Dashboard.`
-      });
-    }
-
     // Get wallet
-    const walletManager = new WalletManager();
-    const wallet = await walletManager.getWallet(userId);
+    const wallet = await simpleWalletManager.getWallet(userId);
 
     if (!wallet) {
       return NextResponse.json({
@@ -177,12 +172,8 @@ async function mintReagentTokens(userId: string) {
       });
     }
 
-    // Execute minting (handles balance deduction and refunds internally)
-    const inscriptionEngine = new InscriptionEngine();
-    const result = await inscriptionEngine.executeInscription(
-      userId,
-      "auto" // Auto-mining type
-    );
+    // Execute minting with server-side signing
+    const result = await simpleMintingEngine.mint(userId, "auto");
 
     if (!result.success) {
       return NextResponse.json({
@@ -191,21 +182,17 @@ async function mintReagentTokens(userId: string) {
       });
     }
 
-    // Get updated balances
-    const newUsdBalance = await balanceManager.getBalance(userId);
-    const newTokenBalances = await walletManager.getTokenBalance(userId);
-    const newReagentBalance = newTokenBalances.reagent;
+    // Get updated wallet
+    const updatedWallet = await simpleWalletManager.getWallet(userId);
 
     return NextResponse.json({
       success: true,
       txHash: result.txHash,
-      tokensEarned: 10000,
-      feeUsd: requiredAmount,
-      gasUsed: result.gasPaid || "0.000150",
-      newUsdBalance: parseFloat(newUsdBalance.toString()),
-      newReagentBalance: parseFloat(newReagentBalance.toString()),
+      tokensEarned: result.tokensEarned || "10000",
+      feePathusd: result.feePaid || "0.05",
+      newReagentBalance: updatedWallet?.reagentBalance || "0",
       explorerUrl: `https://explore.tempo.xyz/tx/${result.txHash}`,
-      message: `✅ Minting successful!\n\n🪙 Tokens Earned: 10,000 REAGENT\n💵 Fee Paid: $${requiredAmount} USD\n⛽ Gas Used: ${result.gasUsed || "0.000150"} ETH\n🔗 Transaction: ${result.txHash}\n\n💰 New Balance: $${newUsdBalance} USD\n🪙 Total REAGENT: ${newReagentBalance} tokens\n\nView on Explorer: https://explore.tempo.xyz/tx/${result.txHash}`
+      message: `✅ Minting successful!\n\n🪙 Tokens Earned: ${result.tokensEarned || "10000"} REAGENT\n💵 Fee Paid: ${result.feePaid || "0.05"} PATHUSD\n🔗 Transaction: ${result.txHash}\n\n🪙 Total REAGENT: ${updatedWallet?.reagentBalance || "0"} tokens\n\nView on Explorer: https://explore.tempo.xyz/tx/${result.txHash}`
     });
   } catch (error) {
     console.error("[Mint Tokens] Error:", error);
@@ -249,7 +236,7 @@ async function getMintingHistory(userId: string, params: any) {
         createdAt: i.createdAt,
         type: i.type,
         tokensEarned: 10000,
-        feeUsd: i.type === "auto" ? 0.5 : 1.0,
+        feePathusd: i.type === "auto" ? 0.05 : 0.1,
         gasUsed: i.gasFee || "0.000150",
         status: i.status,
         txHash: i.txHash,
