@@ -1135,23 +1135,23 @@ export default function HermesChat({ className }: ChatProps) {
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto">
         {isEmpty ? (
-          <div className="h-full flex flex-col items-center justify-center p-4 md:p-8">
+          <div className="h-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
             {/* Welcome Message */}
-            <div className="text-center mb-8 md:mb-12 max-w-2xl px-4">
-              <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-3 md:mb-4">
+            <div className="text-center mb-6 sm:mb-8 md:mb-12 max-w-2xl w-full">
+              <h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3 md:mb-4 px-2">
                 What would you like to do?
               </h1>
-              <p className="text-muted-foreground text-base md:text-lg">
+              <p className="text-muted-foreground text-sm sm:text-base md:text-lg px-2">
                 {agent?.name} is ready
               </p>
             </div>
 
             {/* Input Area - Moved to center for empty state */}
-            <div className="w-full max-w-2xl mb-8 px-4 md:px-0">
+            <div className="w-full max-w-2xl mb-6 sm:mb-8 px-2 sm:px-4 md:px-0">
               <form onSubmit={handleSubmit} className="relative">
-                <div className="relative flex items-end gap-2 md:gap-3">
-                  {/* Add Button with Upload Menu */}
-                  <div className="relative hidden md:block">
+                <div className="relative flex items-end gap-2">
+                  {/* Add Button with Upload Menu - Hidden on mobile */}
+                  <div className="relative hidden sm:block">
                     <button
                       type="button"
                       onClick={() => setShowUploadMenu(!showUploadMenu)}
@@ -1173,63 +1173,63 @@ export default function HermesChat({ className }: ChatProps) {
                       value={input}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      placeholder="Ask anything... (type / for commands)"
-                      className="w-full bg-card border border-border rounded-2xl px-3 md:px-4 py-3 pr-16 md:pr-20 text-sm md:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
+                      placeholder="Ask anything..."
+                      className="w-full bg-card border-2 border-border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-3 sm:py-3.5 pr-20 sm:pr-24 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 resize-none transition-all shadow-sm"
                       rows={1}
                       style={{
-                        minHeight: "48px",
+                        minHeight: "52px",
                         maxHeight: "120px",
                       }}
                     />
                     
                     {/* Right side buttons */}
-                    <div className="absolute right-1 md:right-2 bottom-2 flex items-center gap-1 md:gap-2">
+                    <div className="absolute right-2 bottom-2 flex items-center gap-1.5 sm:gap-2">
                       <button
                         type="button"
                         onClick={isRecording ? stopRecording : startRecording}
                         className={cn(
-                          "w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center transition-colors",
+                          "w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-all shadow-sm",
                           isRecording 
-                            ? "bg-red-600 hover:bg-red-700 text-foreground animate-pulse" 
-                            : "bg-accent hover:bg-accent/80 text-muted-foreground hover:text-foreground"
+                            ? "bg-red-600 hover:bg-red-700 text-white animate-pulse" 
+                            : "bg-accent hover:bg-accent/80 text-muted-foreground hover:text-foreground border border-border"
                         )}
                       >
-                        <Mic className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        <Mic className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                       </button>
                       <button
                         type="submit"
                         disabled={!input.trim() || isLoading}
-                        className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-primary hover:bg-blue-700 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-foreground transition-colors"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary hover:bg-primary/90 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-white transition-all shadow-sm disabled:shadow-none"
                       >
-                        <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        <Send className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Bottom Actions */}
-                <div className="flex items-center justify-between mt-3">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between mt-2 sm:mt-3 px-1">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     <button
                       type="button"
                       onClick={handlePlanningMode}
                       disabled={!input.trim() || isLoading}
                       className={cn(
-                        "flex items-center gap-2 text-xs transition-colors",
+                        "flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm transition-colors px-2 py-1 rounded-md",
                         isPlanningMode 
-                          ? "text-blue-400" 
-                          : "text-muted-foreground hover:text-muted-foreground disabled:text-white/20"
+                          ? "text-primary bg-primary/10" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent disabled:text-muted-foreground/40"
                       )}
                     >
-                      <Zap className="w-3 h-3" />
-                      {isPlanningMode ? "Planning..." : "Plan"}
+                      <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <span className="hidden sm:inline">{isPlanningMode ? "Planning..." : "Plan"}</span>
                     </button>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     <button 
                       onClick={() => setShowFeedback(true)}
-                      className="hover:text-muted-foreground transition-colors"
+                      className="hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent"
                     >
                       Feedback
                     </button>
@@ -1239,7 +1239,7 @@ export default function HermesChat({ className }: ChatProps) {
             </div>
 
             {/* Suggestions Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8 w-full max-w-4xl px-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8 w-full max-w-4xl px-2 sm:px-4">
               {SUGGESTIONS.map((suggestion, index) => (
                 <motion.button
                   key={suggestion.title}
@@ -1247,13 +1247,13 @@ export default function HermesChat({ className }: ChatProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => handleSuggestionClick(suggestion.action)}
-                  className="p-3 md:p-4 bg-card hover:bg-accent border border-border rounded-xl text-left transition-colors group"
+                  className="p-3 sm:p-4 bg-card hover:bg-accent border border-border rounded-lg sm:rounded-xl text-left transition-all group shadow-sm hover:shadow-md"
                 >
-                  <suggestion.icon className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground mb-2 md:mb-3 group-hover:text-foreground transition-colors" />
-                  <h3 className="text-foreground font-medium text-xs md:text-sm mb-1">
+                  <suggestion.icon className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary/70 mb-2 sm:mb-3 group-hover:text-primary transition-colors" />
+                  <h3 className="text-foreground font-semibold text-xs sm:text-sm mb-0.5 sm:mb-1">
                     {suggestion.title}
                   </h3>
-                  <p className="text-muted-foreground text-[10px] md:text-xs">
+                  <p className="text-muted-foreground text-[10px] sm:text-xs leading-tight">
                     {suggestion.description}
                   </p>
                 </motion.button>
@@ -1262,19 +1262,19 @@ export default function HermesChat({ className }: ChatProps) {
 
             {/* Dynamic Suggestions */}
             {dynamicSuggestions.length > 0 && (
-              <div className="w-full max-w-4xl mb-6 md:mb-8 px-4">
-                <div className="flex items-center justify-between mb-3 md:mb-4">
-                  <h3 className="text-foreground font-semibold text-base md:text-lg">Try these suggestions</h3>
+              <div className="w-full max-w-4xl mb-6 sm:mb-8 px-2 sm:px-4">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="text-foreground font-bold text-sm sm:text-base md:text-lg">Try these suggestions</h3>
                   <button
                     onClick={regenerateSuggestions}
                     disabled={isLoadingSuggestions}
-                    className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-accent hover:bg-accent/90 border border-border rounded-lg text-muted-foreground hover:text-foreground text-xs md:text-sm transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-accent hover:bg-accent/90 border border-border rounded-lg text-muted-foreground hover:text-foreground text-xs sm:text-sm transition-all disabled:opacity-50 shadow-sm"
                   >
-                    <RefreshCw className={cn("w-3 h-3", isLoadingSuggestions && "animate-spin")} />
-                    <span className="hidden md:inline">Regenerate</span>
+                    <RefreshCw className={cn("w-3 h-3 sm:w-3.5 sm:h-3.5", isLoadingSuggestions && "animate-spin")} />
+                    <span className="hidden sm:inline">Regenerate</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3">
+                <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
                   {dynamicSuggestions.map((suggestion, index) => (
                     <motion.button
                       key={suggestion.id}
@@ -1354,38 +1354,38 @@ export default function HermesChat({ className }: ChatProps) {
             </motion.div>
           </div>
         ) : (
-          <div className="p-6 space-y-6">
+          <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-4xl mx-auto">
             {messages.map((message) => (
               <motion.div
                 key={message.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
-                  "flex gap-4",
+                  "flex gap-2 sm:gap-3 md:gap-4",
                   message.role === "user" ? "justify-end" : "justify-start"
                 )}
               >
                 {message.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-foreground" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                   </div>
                 )}
                 <div
                   className={cn(
-                    "max-w-[70%] rounded-2xl px-4 py-3",
+                    "max-w-[85%] sm:max-w-[75%] md:max-w-[70%] rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 shadow-sm",
                     message.role === "user"
-                      ? "bg-primary text-foreground ml-auto"
-                      : "bg-accent text-foreground border border-border"
+                      ? "bg-primary text-white ml-auto"
+                      : "bg-card text-foreground border border-border"
                   )}
                 >
                   {/* File message display */}
                   {message.type === "file" && message.fileInfo && (
-                    <div className="mb-2 p-3 bg-accent rounded-lg border border-border">
-                      <div className="flex items-center gap-2 mb-2">
-                        <FileText className="w-4 h-4 text-blue-400" />
-                        <span className="text-sm font-medium">{message.fileInfo.name}</span>
+                    <div className="mb-2 p-2 sm:p-3 bg-accent/50 rounded-lg border border-border">
+                      <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                        <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                        <span className="text-xs sm:text-sm font-medium truncate">{message.fileInfo.name}</span>
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">
                         {(message.fileInfo.size / 1024).toFixed(1)} KB • {message.fileInfo.type}
                       </div>
                     </div>
@@ -1393,32 +1393,32 @@ export default function HermesChat({ className }: ChatProps) {
 
                   {/* Plan message indicator */}
                   {message.type === "plan" && (
-                    <div className="flex items-center gap-2 mb-2 text-xs text-blue-400">
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-2 text-[10px] sm:text-xs text-primary">
                       <Zap className="w-3 h-3" />
                       <span>Planning Mode</span>
                     </div>
                   )}
 
-                  <div className="text-sm leading-relaxed">
+                  <div className="text-xs sm:text-sm leading-relaxed">
                     {message.role === "assistant" ? (
                       <div className="prose prose-sm max-w-none dark:prose-invert">
                         <ReactMarkdown 
                           remarkPlugins={[remarkGfm]}
                           components={{
                             // Custom styling for markdown elements with light/dark mode support
-                            h1: ({children}) => <h1 className="text-lg font-bold mb-2 text-foreground">{children}</h1>,
-                            h2: ({children}) => <h2 className="text-base font-semibold mb-2 text-foreground">{children}</h2>,
-                            h3: ({children}) => <h3 className="text-sm font-medium mb-1 text-foreground">{children}</h3>,
-                            p: ({children}) => <p className="mb-2 text-foreground/90 last:mb-0">{children}</p>,
-                            ul: ({children}) => <ul className="list-disc list-inside mb-2 text-foreground/90 space-y-1">{children}</ul>,
-                            ol: ({children}) => <ol className="list-decimal list-inside mb-2 text-foreground/90 space-y-1">{children}</ol>,
-                            li: ({children}) => <li className="mb-1 text-foreground/90">{children}</li>,
+                            h1: ({children}) => <h1 className="text-base sm:text-lg font-bold mb-2 text-foreground">{children}</h1>,
+                            h2: ({children}) => <h2 className="text-sm sm:text-base font-semibold mb-2 text-foreground">{children}</h2>,
+                            h3: ({children}) => <h3 className="text-xs sm:text-sm font-medium mb-1 text-foreground">{children}</h3>,
+                            p: ({children}) => <p className="mb-2 text-foreground/90 last:mb-0 text-xs sm:text-sm">{children}</p>,
+                            ul: ({children}) => <ul className="list-disc list-inside mb-2 text-foreground/90 space-y-1 text-xs sm:text-sm">{children}</ul>,
+                            ol: ({children}) => <ol className="list-decimal list-inside mb-2 text-foreground/90 space-y-1 text-xs sm:text-sm">{children}</ol>,
+                            li: ({children}) => <li className="mb-1 text-foreground/90 text-xs sm:text-sm">{children}</li>,
                             strong: ({children}) => <strong className="font-semibold text-foreground">{children}</strong>,
                             em: ({children}) => <em className="italic text-foreground/80">{children}</em>,
-                            code: ({children}) => <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">{children}</code>,
-                            pre: ({children}) => <pre className="bg-muted p-3 rounded-lg overflow-x-auto text-xs font-mono mb-2 border border-border">{children}</pre>,
-                            blockquote: ({children}) => <blockquote className="border-l-2 border-primary/30 pl-3 italic text-muted-foreground mb-2">{children}</blockquote>,
-                            a: ({children, href}) => <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                            code: ({children}) => <code className="bg-muted px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-mono text-primary">{children}</code>,
+                            pre: ({children}) => <pre className="bg-muted p-2 sm:p-3 rounded-lg overflow-x-auto text-[10px] sm:text-xs font-mono mb-2 border border-border">{children}</pre>,
+                            blockquote: ({children}) => <blockquote className="border-l-2 border-primary/30 pl-2 sm:pl-3 italic text-muted-foreground mb-2 text-xs sm:text-sm">{children}</blockquote>,
+                            a: ({children, href}) => <a href={href} className="text-primary hover:underline text-xs sm:text-sm" target="_blank" rel="noopener noreferrer">{children}</a>,
                           }}
                         >
                           {message.content}
@@ -1428,7 +1428,7 @@ export default function HermesChat({ className }: ChatProps) {
                       <p className="whitespace-pre-wrap text-foreground/90">{message.content}</p>
                     )}
                   </div>
-                  <p className="text-xs opacity-60 mt-2">
+                  <p className="text-[10px] sm:text-xs opacity-60 mt-1.5 sm:mt-2">
                     {message.timestamp.toLocaleTimeString([], { 
                       hour: '2-digit', 
                       minute: '2-digit' 
@@ -1436,8 +1436,8 @@ export default function HermesChat({ className }: ChatProps) {
                   </p>
                 </div>
                 {message.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-white/[0.1] flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">U</span>
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <span className="text-primary text-xs sm:text-sm font-bold">U</span>
                   </div>
                 )}
               </motion.div>
@@ -1447,16 +1447,16 @@ export default function HermesChat({ className }: ChatProps) {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex gap-4"
+                className="flex gap-2 sm:gap-3 md:gap-4"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-foreground" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-sm">
+                  <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
-                <div className="bg-accent border border-border rounded-2xl px-4 py-3">
+                <div className="bg-card border border-border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 shadow-sm">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                    <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary/60 rounded-full animate-bounce" />
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
                   </div>
                 </div>
               </motion.div>
@@ -1468,17 +1468,17 @@ export default function HermesChat({ className }: ChatProps) {
 
       {/* Input Area for conversation state */}
       {!isEmpty && (
-        <div className="border-t border-border/60 p-3 md:p-6">
-          <form onSubmit={handleSubmit} className="relative">
-            <div className="relative flex items-end gap-2 md:gap-3">
-              {/* Add Button with Upload Menu */}
-              <div className="relative hidden md:block">
+        <div className="border-t border-border/60 p-3 sm:p-4 md:p-6 bg-background/50 backdrop-blur-sm">
+          <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto">
+            <div className="relative flex items-end gap-2">
+              {/* Add Button with Upload Menu - Hidden on mobile */}
+              <div className="relative hidden sm:block">
                 <button
                   type="button"
                   onClick={() => setShowUploadMenu(!showUploadMenu)}
                   className={cn(
-                    "w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors flex-shrink-0",
-                    showUploadMenu ? "bg-primary text-foreground" : "bg-accent hover:bg-accent/80"
+                    "w-10 h-10 rounded-full border-2 border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-all flex-shrink-0 shadow-sm",
+                    showUploadMenu ? "bg-primary text-white border-primary" : "bg-card hover:bg-accent"
                   )}
                 >
                   <Plus className="w-4 h-4" />
@@ -1494,63 +1494,63 @@ export default function HermesChat({ className }: ChatProps) {
                   value={input}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask anything... (type / for commands)"
-                  className="w-full bg-card border border-border rounded-2xl px-3 md:px-4 py-3 pr-16 md:pr-20 text-sm md:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
+                  placeholder="Ask anything..."
+                  className="w-full bg-card border-2 border-border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-3 sm:py-3.5 pr-20 sm:pr-24 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 resize-none transition-all shadow-sm"
                   rows={1}
                   style={{
-                    minHeight: "48px",
+                    minHeight: "52px",
                     maxHeight: "120px",
                   }}
                 />
                 
                 {/* Right side buttons */}
-                <div className="absolute right-1 md:right-2 bottom-2 flex items-center gap-1 md:gap-2">
+                <div className="absolute right-2 bottom-2 flex items-center gap-1.5 sm:gap-2">
                   <button
                     type="button"
                     onClick={isRecording ? stopRecording : startRecording}
                     className={cn(
-                      "w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center transition-colors",
+                      "w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-all shadow-sm",
                       isRecording 
-                        ? "bg-red-600 hover:bg-red-700 text-foreground animate-pulse" 
-                        : "bg-accent hover:bg-accent/80 text-muted-foreground hover:text-foreground"
+                        ? "bg-red-600 hover:bg-red-700 text-white animate-pulse" 
+                        : "bg-accent hover:bg-accent/80 text-muted-foreground hover:text-foreground border border-border"
                     )}
                   >
-                    <Mic className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    <Mic className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                   </button>
                   <button
                     type="submit"
                     disabled={!input.trim() || isLoading}
-                    className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-primary hover:bg-blue-700 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-foreground transition-colors"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary hover:bg-primary/90 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-white transition-all shadow-sm disabled:shadow-none"
                   >
-                    <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    <Send className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex items-center justify-between mt-3">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between mt-2 sm:mt-3 px-1">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <button
                   type="button"
                   onClick={handlePlanningMode}
                   disabled={!input.trim() || isLoading}
                   className={cn(
-                    "flex items-center gap-2 text-xs transition-colors",
+                    "flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm transition-colors px-2 py-1 rounded-md",
                     isPlanningMode 
-                      ? "text-blue-400" 
-                      : "text-muted-foreground hover:text-muted-foreground disabled:text-white/20"
+                      ? "text-primary bg-primary/10" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent disabled:text-muted-foreground/40"
                   )}
                 >
-                  <Zap className="w-3 h-3" />
-                  {isPlanningMode ? "Planning..." : "Plan"}
+                  <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <span className="hidden sm:inline">{isPlanningMode ? "Planning..." : "Plan"}</span>
                 </button>
               </div>
               
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                 <button 
                   onClick={() => setShowFeedback(true)}
-                  className="hover:text-muted-foreground transition-colors"
+                  className="hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent"
                 >
                   Feedback
                 </button>
