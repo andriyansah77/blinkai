@@ -927,9 +927,9 @@ export default function HermesChat({ className }: ChatProps) {
         throw new Error('Invalid amount. Please specify a number between 1 and 10.');
       }
 
-      // Check if MetaMask is available
-      if (typeof window === 'undefined' || !window.ethereum) {
-        throw new Error('MetaMask not found. Please install MetaMask to use auto mining.');
+      // Check if wallet provider exists (works for both MetaMask and Privy)
+      if (typeof window === 'undefined' || !(window as any).ethereum) {
+        throw new Error('No wallet provider found. Please connect your wallet first.');
       }
 
       const resultMessage: Message = {
@@ -941,6 +941,13 @@ export default function HermesChat({ className }: ChatProps) {
       };
 
       setMessages(prev => [...prev, resultMessage]);
+
+      // Get wallet provider
+      const provider = (window as any).ethereum;
+
+      // Request accounts
+      const accounts = await provider.request({ method: 'eth_requestAccounts' });
+      const fromAddress = accounts[0];
 
       // Execute mining
       for (let i = 0; i < amount; i++) {
@@ -963,17 +970,17 @@ export default function HermesChat({ className }: ChatProps) {
           throw new Error(result.error || 'Failed to prepare transaction');
         }
 
-        // Step 2: Sign with MetaMask
+        // Step 2: Sign with wallet (MetaMask or Privy)
         const tx = result.unsignedTransaction;
-        const txHash = await window.ethereum.request({
+        const txHash = await provider.request({
           method: 'eth_sendTransaction',
           params: [{
-            from: tx.from,
+            from: fromAddress,
             to: tx.to,
             data: tx.data,
             value: tx.value || '0x0',
-            gas: tx.gasLimit ? `0x${parseInt(tx.gasLimit).toString(16)}` : undefined,
-            gasPrice: tx.gasPrice ? `0x${parseInt(tx.gasPrice).toString(16)}` : undefined,
+            gas: tx.gasLimit,
+            gasPrice: tx.gasPrice,
           }],
         });
 
@@ -985,7 +992,7 @@ export default function HermesChat({ className }: ChatProps) {
           },
           body: JSON.stringify({
             inscriptionId: result.inscriptionId,
-            txHash
+            txHash: txHash,
           }),
         });
 
@@ -1019,10 +1026,15 @@ export default function HermesChat({ className }: ChatProps) {
     } catch (error: any) {
       console.error('Mine command error:', error);
       
+      let errorMsg = error.message;
+      if (error.code === 4001) {
+        errorMsg = 'Transaction rejected by user';
+      }
+      
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
         role: "assistant",
-        content: `❌ Mining failed: ${error.message}\n\nUsage: /mine [amount]\nExample: /mine 5 (mints 5 times, earning 50,000 REAGENT)\n\nNote: You need MetaMask installed and connected to use this command.`,
+        content: `❌ Mining failed: ${errorMsg}\n\nUsage: /mine [amount]\nExample: /mine 5 (mints 5 times, earning 50,000 REAGENT)\n\nNote: Make sure your wallet is connected and you have enough PATHUSD for gas fees.`,
         timestamp: new Date(),
         type: "text"
       };
