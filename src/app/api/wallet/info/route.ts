@@ -1,6 +1,6 @@
 /**
- * GET /api/wallet/balance
- * Get wallet balance for user (supports both session and API key auth)
+ * GET /api/wallet/info
+ * Get wallet info for user (supports both session and API key auth)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -53,14 +53,17 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      id: wallet.id,
       address: wallet.address,
+      network: wallet.network,
       reagentBalance: wallet.reagentBalance,
       pathusdBalance: wallet.pathusdBalance,
+      createdAt: wallet.createdAt,
       lastBalanceUpdate: wallet.lastBalanceUpdate
     });
 
   } catch (error: any) {
-    console.error('[Wallet Balance API] Error:', error);
+    console.error('[Wallet Info API] Error:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

@@ -11,21 +11,45 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[SimpleMint API] Request received');
     
-    // 1. Authenticate user
-    const session = await getPrivySession(request);
-    if (!session?.user?.id) {
-      console.log('[SimpleMint API] Unauthorized - no session');
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Authentication required'
-        },
-        { status: 401 }
-      );
+    // 1. Authenticate user (support both Privy session and X-User-ID header for bots)
+    let userId: string | null = null;
+    
+    // Check for X-User-ID header (for Telegram bot / API calls)
+    const userIdHeader = request.headers.get('X-User-ID');
+    if (userIdHeader) {
+      // Verify API key for bot requests
+      const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '');
+      const platformApiKey = process.env.PLATFORM_API_KEY;
+      
+      if (apiKey && platformApiKey && apiKey === platformApiKey) {
+        userId = userIdHeader;
+        console.log(`[SimpleMint API] Bot request authenticated for user: ${userId}`);
+      } else {
+        console.log('[SimpleMint API] Invalid API key for bot request');
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Invalid API key'
+          },
+          { status: 401 }
+        );
+      }
+    } else {
+      // Regular Privy session authentication
+      const session = await getPrivySession(request);
+      if (!session?.user?.id) {
+        console.log('[SimpleMint API] Unauthorized - no session');
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Authentication required'
+          },
+          { status: 401 }
+        );
+      }
+      userId = session.user.id;
+      console.log(`[SimpleMint API] User authenticated: ${userId}`);
     }
-
-    const userId = session.user.id;
-    console.log(`[SimpleMint API] User authenticated: ${userId}`);
 
     // 2. Get request body
     const body = await request.json().catch(() => ({}));
