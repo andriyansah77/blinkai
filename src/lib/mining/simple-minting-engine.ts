@@ -148,7 +148,7 @@ export class SimpleMintingEngine {
       to: REAGENT_TOKEN_ADDRESS,
       from: fromAddress,
       nonce,
-      gasLimit: 150000,
+      gasLimit: 300000, // Increased from 150000 to 300000
       gasPrice,
       data,
       value: 0,
