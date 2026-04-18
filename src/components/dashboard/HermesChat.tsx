@@ -1135,23 +1135,23 @@ export default function HermesChat({ className }: ChatProps) {
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto">
         {isEmpty ? (
-          <div className="h-full flex flex-col items-center justify-center p-8">
+          <div className="h-full flex flex-col items-center justify-center p-4 md:p-8">
             {/* Welcome Message */}
-            <div className="text-center mb-12 max-w-2xl">
-              <h1 className="text-4xl font-bold text-foreground mb-4">
+            <div className="text-center mb-8 md:mb-12 max-w-2xl px-4">
+              <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-3 md:mb-4">
                 What would you like to do?
               </h1>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-base md:text-lg">
                 {agent?.name} is ready
               </p>
             </div>
 
             {/* Input Area - Moved to center for empty state */}
-            <div className="w-full max-w-2xl mb-8">
+            <div className="w-full max-w-2xl mb-8 px-4 md:px-0">
               <form onSubmit={handleSubmit} className="relative">
-                <div className="relative flex items-end gap-3">
+                <div className="relative flex items-end gap-2 md:gap-3">
                   {/* Add Button with Upload Menu */}
-                  <div className="relative">
+                  <div className="relative hidden md:block">
                     <button
                       type="button"
                       onClick={() => setShowUploadMenu(!showUploadMenu)}
@@ -1174,7 +1174,7 @@ export default function HermesChat({ className }: ChatProps) {
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
                       placeholder="Ask anything... (type / for commands)"
-                      className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-20 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
+                      className="w-full bg-card border border-border rounded-2xl px-3 md:px-4 py-3 pr-16 md:pr-20 text-sm md:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
                       rows={1}
                       style={{
                         minHeight: "48px",
@@ -1183,25 +1183,25 @@ export default function HermesChat({ className }: ChatProps) {
                     />
                     
                     {/* Right side buttons */}
-                    <div className="absolute right-2 bottom-2 flex items-center gap-2">
+                    <div className="absolute right-1 md:right-2 bottom-2 flex items-center gap-1 md:gap-2">
                       <button
                         type="button"
                         onClick={isRecording ? stopRecording : startRecording}
                         className={cn(
-                          "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                          "w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center transition-colors",
                           isRecording 
                             ? "bg-red-600 hover:bg-red-700 text-foreground animate-pulse" 
                             : "bg-accent hover:bg-accent/80 text-muted-foreground hover:text-foreground"
                         )}
                       >
-                        <Mic className="w-4 h-4" />
+                        <Mic className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       </button>
                       <button
                         type="submit"
                         disabled={!input.trim() || isLoading}
-                        className="w-8 h-8 rounded-lg bg-primary hover:bg-blue-700 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-foreground transition-colors"
+                        className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-primary hover:bg-blue-700 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-foreground transition-colors"
                       >
-                        <Send className="w-4 h-4" />
+                        <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       </button>
                     </div>
                   </div>
@@ -1239,7 +1239,7 @@ export default function HermesChat({ className }: ChatProps) {
             </div>
 
             {/* Suggestions Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 w-full max-w-4xl">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8 w-full max-w-4xl px-4">
               {SUGGESTIONS.map((suggestion, index) => (
                 <motion.button
                   key={suggestion.title}
@@ -1247,13 +1247,13 @@ export default function HermesChat({ className }: ChatProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => handleSuggestionClick(suggestion.action)}
-                  className="p-4 bg-card hover:bg-accent border border-border rounded-xl text-left transition-colors group"
+                  className="p-3 md:p-4 bg-card hover:bg-accent border border-border rounded-xl text-left transition-colors group"
                 >
-                  <suggestion.icon className="w-5 h-5 text-muted-foreground mb-3 group-hover:text-foreground transition-colors" />
-                  <h3 className="text-foreground font-medium text-sm mb-1">
+                  <suggestion.icon className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground mb-2 md:mb-3 group-hover:text-foreground transition-colors" />
+                  <h3 className="text-foreground font-medium text-xs md:text-sm mb-1">
                     {suggestion.title}
                   </h3>
-                  <p className="text-muted-foreground text-xs">
+                  <p className="text-muted-foreground text-[10px] md:text-xs">
                     {suggestion.description}
                   </p>
                 </motion.button>
@@ -1262,19 +1262,19 @@ export default function HermesChat({ className }: ChatProps) {
 
             {/* Dynamic Suggestions */}
             {dynamicSuggestions.length > 0 && (
-              <div className="w-full max-w-4xl mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-foreground font-semibold text-lg">Try these suggestions</h3>
+              <div className="w-full max-w-4xl mb-6 md:mb-8 px-4">
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <h3 className="text-foreground font-semibold text-base md:text-lg">Try these suggestions</h3>
                   <button
                     onClick={regenerateSuggestions}
                     disabled={isLoadingSuggestions}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-accent hover:bg-accent/90 border border-border rounded-lg text-muted-foreground hover:text-foreground text-sm transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-accent hover:bg-accent/90 border border-border rounded-lg text-muted-foreground hover:text-foreground text-xs md:text-sm transition-colors disabled:opacity-50"
                   >
                     <RefreshCw className={cn("w-3 h-3", isLoadingSuggestions && "animate-spin")} />
-                    Regenerate
+                    <span className="hidden md:inline">Regenerate</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3">
                   {dynamicSuggestions.map((suggestion, index) => (
                     <motion.button
                       key={suggestion.id}
@@ -1468,11 +1468,11 @@ export default function HermesChat({ className }: ChatProps) {
 
       {/* Input Area for conversation state */}
       {!isEmpty && (
-        <div className="border-t border-border/60 p-6">
+        <div className="border-t border-border/60 p-3 md:p-6">
           <form onSubmit={handleSubmit} className="relative">
-            <div className="relative flex items-end gap-3">
+            <div className="relative flex items-end gap-2 md:gap-3">
               {/* Add Button with Upload Menu */}
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <button
                   type="button"
                   onClick={() => setShowUploadMenu(!showUploadMenu)}
@@ -1495,7 +1495,7 @@ export default function HermesChat({ className }: ChatProps) {
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask anything... (type / for commands)"
-                  className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-20 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
+                  className="w-full bg-card border border-border rounded-2xl px-3 md:px-4 py-3 pr-16 md:pr-20 text-sm md:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all"
                   rows={1}
                   style={{
                     minHeight: "48px",
@@ -1504,25 +1504,25 @@ export default function HermesChat({ className }: ChatProps) {
                 />
                 
                 {/* Right side buttons */}
-                <div className="absolute right-2 bottom-2 flex items-center gap-2">
+                <div className="absolute right-1 md:right-2 bottom-2 flex items-center gap-1 md:gap-2">
                   <button
                     type="button"
                     onClick={isRecording ? stopRecording : startRecording}
                     className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                      "w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center transition-colors",
                       isRecording 
                         ? "bg-red-600 hover:bg-red-700 text-foreground animate-pulse" 
                         : "bg-accent hover:bg-accent/80 text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <Mic className="w-4 h-4" />
+                    <Mic className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </button>
                   <button
                     type="submit"
                     disabled={!input.trim() || isLoading}
-                    className="w-8 h-8 rounded-lg bg-primary hover:bg-blue-700 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-foreground transition-colors"
+                    className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-primary hover:bg-blue-700 disabled:bg-accent disabled:text-muted-foreground/60 flex items-center justify-center text-foreground transition-colors"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </button>
                 </div>
               </div>
