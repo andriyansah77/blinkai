@@ -178,11 +178,11 @@ export default function SkillsPage() {
               Refresh
             </button>
             <button 
-              onClick={() => window.open('https://github.com/NousResearch/hermes-agent', '_blank')}
+              onClick={() => router.push('/docs')}
               className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-foreground font-medium transition-colors"
             >
-              <Download className="w-4 h-4" />
-              Browse Hub
+              <BookOpen className="w-4 h-4" />
+              Documentation
             </button>
           </div>
         </div>

@@ -260,12 +260,12 @@ export default function LandingPage() {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
-                onClick={() => window.open("https://github.com/andriyansah77/blinkai", "_blank")}
+                onClick={() => router.push("/docs")}
                 className="group px-8 py-4 bg-white/5 border border-white/10 rounded-lg font-semibold hover:bg-white/10 hover:border-white/20 transition-all duration-200 flex items-center justify-center gap-2 backdrop-blur-sm"
               >
-                <Github className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                <span>View Source</span>
-                <ExternalLink className="w-3 h-3 opacity-50" />
+                <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span>Documentation</span>
+                <ArrowRight className="w-3 h-3 opacity-50" />
               </button>
             </div>
 
@@ -915,12 +915,12 @@ export default function LandingPage() {
               </div>
 
               <button
-                onClick={() => window.open('https://github.com/andriyansah77/blinkai/tree/main/packages/reagent-cli', '_blank')}
+                onClick={() => router.push('/docs/cli')}
                 className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <Github className="w-4 h-4" />
+                <BookOpen className="w-4 h-4" />
                 View CLI Documentation
-                <ExternalLink className="w-3 h-3 opacity-50" />
+                <ArrowRight className="w-3 h-3 opacity-50" />
               </button>
             </motion.div>
 
@@ -984,12 +984,12 @@ export default function LandingPage() {
               </div>
 
               <button
-                onClick={() => window.open('https://github.com/andriyansah77/blinkai/blob/main/packages/reagent-cli/CURL_EXAMPLES.md', '_blank')}
+                onClick={() => router.push('/docs/api')}
                 className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <Github className="w-4 h-4" />
+                <BookOpen className="w-4 h-4" />
                 View API Documentation
-                <ExternalLink className="w-3 h-3 opacity-50" />
+                <ArrowRight className="w-3 h-3 opacity-50" />
               </button>
             </motion.div>
           </div>
@@ -1041,7 +1041,7 @@ export default function LandingPage() {
 
               <div className="mt-6 flex items-center justify-center gap-4">
                 <button
-                  onClick={() => window.open('https://github.com/andriyansah77/blinkai/blob/main/CLI_USAGE_EXAMPLES.md', '_blank')}
+                  onClick={() => router.push('/docs/examples')}
                   className="text-sm text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-2"
                 >
                   View More Examples
@@ -1090,12 +1090,12 @@ export default function LandingPage() {
               </button>
               
               <button
-                onClick={() => window.open("https://github.com/andriyansah77/blinkai", "_blank")}
+                onClick={() => router.push("/docs")}
                 className="group px-8 py-4 bg-white/5 border border-white/10 rounded-lg font-semibold hover:bg-white/10 hover:border-white/20 transition-all duration-200 inline-flex items-center justify-center gap-2 backdrop-blur-sm"
               >
-                <Github className="w-4 h-4" />
+                <BookOpen className="w-4 h-4" />
                 <span>View Documentation</span>
-                <ExternalLink className="w-3 h-3 opacity-50" />
+                <ArrowRight className="w-3 h-3 opacity-50" />
               </button>
             </div>
             
@@ -1138,15 +1138,13 @@ export default function LandingPage() {
             {/* Social & License */}
             <div className="flex flex-col items-end gap-3">
               <div className="flex items-center gap-4">
-                <a 
-                  href="https://github.com/andriyansah77/blinkai" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <button 
+                  onClick={() => router.push('/docs')}
                   className="text-gray-400 hover:text-orange-400 transition-colors"
-                  aria-label="GitHub"
+                  aria-label="Documentation"
                 >
-                  <Github className="w-5 h-5" />
-                </a>
+                  <BookOpen className="w-5 h-5" />
+                </button>
                 <a 
                   href="https://explore.tempo.xyz" 
                   target="_blank" 
