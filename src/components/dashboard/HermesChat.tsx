@@ -1151,7 +1151,7 @@ export default function HermesChat({ className, initialCommand }: ChatProps) {
       <FeedbackModal />
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pt-4 lg:pt-0">
         {isEmpty ? (
           <div className="h-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
             {/* Welcome Message */}
@@ -1488,7 +1488,7 @@ export default function HermesChat({ className, initialCommand }: ChatProps) {
 
       {/* Input Area for conversation state */}
       {!isEmpty && (
-        <div className="border-t border-border/60 p-3 sm:p-4 md:p-6 bg-background/50 backdrop-blur-sm">
+        <div className="border-t border-border/60 p-3 sm:p-4 md:p-6 bg-background/50 backdrop-blur-sm pb-safe">
           <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto">
             {/* Command Menu - Outside of hidden div so it shows on mobile */}
             <CommandMenu />

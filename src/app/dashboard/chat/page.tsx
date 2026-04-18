@@ -31,7 +31,11 @@ export default function ChatPage() {
   // Get command from URL parameter
   const command = searchParams.get('command');
 
-  return <HermesChat className="h-screen" initialCommand={command} />;
+  return (
+    <div className="h-full">
+      <HermesChat className="h-full" initialCommand={command} />
+    </div>
+  );
 }
 
 
