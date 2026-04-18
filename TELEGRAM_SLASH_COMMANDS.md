@@ -208,6 +208,53 @@ Let's start mining! ⛏️
 
 ## API Endpoints
 
+### POST /api/telegram/link
+
+Link Telegram account to platform user.
+
+**Headers**:
+- `Authorization: Bearer <PLATFORM_API_KEY>` (for bot)
+- `X-User-ID: <user_id>` (for bot)
+- Or Privy session cookie (for dashboard)
+
+**Body**:
+```json
+{
+  "telegramUserId": "123456789",
+  "telegramUsername": "john_doe",
+  "telegramFirstName": "John",
+  "telegramLastName": "Doe"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Telegram account linked successfully",
+  "telegramLink": {
+    "id": "link_123",
+    "telegramUserId": "123456789",
+    "telegramUsername": "john_doe"
+  }
+}
+```
+
+### DELETE /api/telegram/link
+
+Unlink Telegram account.
+
+**Headers**:
+- Privy session cookie
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Telegram account unlinked successfully"
+}
+```
+
 ### GET /api/telegram/user
 
 Get user info by Telegram ID.
@@ -299,27 +346,37 @@ Get wallet info (supports bot authentication).
 
 ## Database Schema
 
-### Channel Table (for Telegram linking)
+### TelegramLink Table
+
+Stores the mapping between platform users and Telegram accounts:
 
 ```sql
--- Store Telegram user ID in channel config
-UPDATE "Channel"
-SET config = jsonb_set(
-  config,
-  '{telegram_user_id}',
-  '"123456789"'
-)
-WHERE type = 'telegram' AND "userId" = 'user_123';
+CREATE TABLE "TelegramLink" (
+    "id" TEXT PRIMARY KEY,
+    "userId" TEXT UNIQUE NOT NULL,
+    "telegramUserId" TEXT UNIQUE NOT NULL,
+    "telegramUsername" TEXT,
+    "telegramFirstName" TEXT,
+    "telegramLastName" TEXT,
+    "botToken" TEXT,
+    "active" BOOLEAN DEFAULT true,
+    "createdAt" TIMESTAMP DEFAULT NOW(),
+    "updatedAt" TIMESTAMP DEFAULT NOW(),
+    
+    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+);
+
+CREATE INDEX "TelegramLink_userId_active_idx" ON "TelegramLink"("userId", "active");
 ```
 
-**Config Structure**:
-```json
-{
-  "telegram_user_id": "123456789",
-  "telegram_username": "john_doe",
-  "bot_token": "123456:ABC-DEF..."
-}
-```
+**Fields**:
+- `userId` - Platform user ID (unique)
+- `telegramUserId` - Telegram user ID (unique)
+- `telegramUsername` - Telegram @username (optional)
+- `telegramFirstName` - User's first name from Telegram
+- `telegramLastName` - User's last name from Telegram
+- `botToken` - Bot token (optional, for multi-bot support)
+- `active` - Whether link is active (can be deactivated)
 
 ## Security
 
@@ -358,7 +415,17 @@ cd /root/reagent
 git pull origin main
 ```
 
-### 2. Add Environment Variables
+### 2. Run Database Migration
+
+```bash
+# Run Prisma migration to create TelegramLink table
+npx prisma migrate deploy
+
+# Or if using dev database
+npx prisma migrate dev
+```
+
+### 3. Add Environment Variables
 
 ```bash
 # Generate API key
@@ -369,14 +436,14 @@ echo "PLATFORM_API_KEY=$API_KEY" >> .env
 echo "PLATFORM_URL=https://reagent.eu.cc" >> .env
 ```
 
-### 3. Build and Restart
+### 4. Build and Restart
 
 ```bash
 npm run build
 pm2 restart reagent
 ```
 
-### 4. Update Hermes Skills
+### 5. Update Hermes Skills
 
 ```bash
 # Copy skill to Hermes skills directory
@@ -386,7 +453,7 @@ cp hermes-skills/telegram_commands_skill.py /root/.hermes/skills/
 hermes gateway restart --all
 ```
 
-### 5. Test
+### 6. Test
 
 ```bash
 # Test in Telegram
@@ -416,16 +483,17 @@ hermes --profile user-{userId} gateway restart
 
 ### Problem: "Account not linked" error
 
-**Cause**: User belum send `/start` atau Telegram ID tidak tersimpan
+**Cause**: User belum send `/start` atau Telegram ID tidak tersimpan di TelegramLink table
 
 **Solution**:
 1. User send `/start` di Telegram bot
 2. Check database:
    ```sql
-   SELECT config FROM "Channel" 
-   WHERE type = 'telegram' AND "userId" = 'user_123';
+   SELECT * FROM "TelegramLink" 
+   WHERE "userId" = 'user_123';
    ```
-3. Pastikan ada `telegram_user_id` di config
+3. Pastikan ada record dengan `telegramUserId`
+4. Jika tidak ada, call `/api/telegram/link` untuk create link
 
 ### Problem: "Invalid API key" error
 
