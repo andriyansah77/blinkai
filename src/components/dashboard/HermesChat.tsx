@@ -198,8 +198,7 @@ export default function HermesChat({ className, initialCommand }: ChatProps) {
 
   // Slash command suggestions
   const SLASH_COMMANDS = [
-    '/help', '/skills', '/memory', '/sessions', '/session', '/clear', 
-    '/agent', '/learn', '/forget', '/mode', '/export', '/reset', '/mine'
+    '/help', '/mine', '/balance', '/wallet'
   ];
 
   // Handle input change for slash command detection
@@ -1005,18 +1004,9 @@ export default function HermesChat({ className, initialCommand }: ChatProps) {
   const getCommandDescription = (command: string) => {
     const descriptions: Record<string, string> = {
       '/help': 'Show all commands',
-      '/skills': 'List agent skills',
-      '/memory': 'Show agent memory',
-      '/sessions': 'List chat sessions',
-      '/session': 'Manage sessions',
-      '/clear': 'Clear chat history',
-      '/agent': 'Agent information',
-      '/learn': 'Teach agent',
-      '/forget': 'Remove memory',
-      '/mode': 'Change agent mode',
-      '/export': 'Export chat',
-      '/reset': 'Reset agent',
-      '/mine': 'Auto mine REAGENT tokens'
+      '/mine': 'Auto mine REAGENT tokens (1-10)',
+      '/balance': 'Check wallet balance',
+      '/wallet': 'Show wallet information'
     };
     return descriptions[command] || '';
   };
