@@ -170,13 +170,13 @@ Content-Type: application/json
 User: "Can you mint tokens for me?"
 Agent: "Let me check your balance first..."
 Agent: *calls GET /api/wallet/balance*
-Agent: "Great! You have $10.50 USD. Minting costs $0.50. Proceed?"
+Agent: "Great! You have $10.50 USD. Minting costs $0.05. Proceed?"
 User: "Yes"
 Agent: *calls POST /api/mining/simple-mint with {"type": "auto"}*
 Agent: "✅ Success! You've earned 10,000 REAGENT tokens!
 
 🪙 Tokens Earned: 10,000 REAGENT
-💵 Fee Paid: $0.50 USD
+💵 Fee Paid: $0.50.05 USD
 🔗 TX: 0x1234...5678
 
 💰 New Balance: $10.00 USD
@@ -240,10 +240,10 @@ Agent: *calls GET /api/mining/inscriptions?page=1&limit=10*
 Agent: "Your recent minting operations:
 
 1. ✅ Confirmed - Apr 18, 10:30 AM
-   🪙 10,000 REAGENT | 💵 $0.50 | Auto
+   🪙 10,000 REAGENT | 💵 $0.50.05 | Auto
    
 2. ✅ Confirmed - Apr 17, 3:45 PM
-   🪙 10,000 REAGENT | 💵 $0.50 | Auto
+   🪙 10,000 REAGENT | 💵 $0.50.05 | Auto
    
 Total: 5 mints | 50,000 REAGENT earned"
 ```
@@ -477,7 +477,7 @@ GET /api/wallet/balance
 
 **Step 2**: Get user confirmation for transactions
 ```
-Agent: "I can mint 10,000 REAGENT for $0.50. Proceed?"
+Agent: "I can mint 10,000 REAGENT for $0.05. Proceed?"
 User: "Yes"
 ```
 
@@ -500,7 +500,7 @@ Agent: "Let me check your balance first..."
 Agent: *calls GET /api/wallet/balance*
 Agent: "Great! You have $10.50 USD available.
 
-Minting 10,000 REAGENT tokens will cost $0.50 USD (including gas).
+Minting 10,000 REAGENT tokens will cost $0.50.05 USD (including gas).
 
 Would you like me to proceed?"
 
@@ -511,7 +511,7 @@ Agent: *calls POST /api/mining/simple-mint with {"type": "auto"}*
 Agent: "✅ Success! You've earned 10,000 REAGENT tokens!
 
 🪙 Tokens Earned: 10,000 REAGENT
-� Fee Paid: $0.50 USD
+� Fee Paid: $0.50.05 USD
 🔗 TX: 0x1234...5678
 
 💰 New Balance: $10.00 USD
@@ -527,7 +527,7 @@ View: https://explore.tempo.xyz/tx/0x1234..."
 Agent: *calls GET /api/wallet/balance*
 Agent: "I'd love to help you mint tokens, but your balance is $0.30 USD.
 
-You need at least $0.50 USD for auto-mining.
+You need at least $0.50.05 USD for auto-mining.
 
 Would you like me to show you how to deposit funds?"
 ```
@@ -681,7 +681,7 @@ bash /root/blinkai/hermes-skills/reagent_minting_curl.sh check_balance
 
 **Step 2**: If minting, get user confirmation first
 ```
-Agent: "I can mint 10,000 REAGENT tokens for $0.50 USD. Proceed?"
+Agent: "I can mint 10,000 REAGENT tokens for $0.05 USD. Proceed?"
 User: "Yes"
 ```
 
@@ -701,7 +701,7 @@ Agent: "Let me check your balance first..."
 Agent: *executes check_balance*
 Agent: "Great! You have $10.50 USD available.
 
-Minting 10,000 REAGENT tokens will cost $0.50 USD (including gas).
+Minting 10,000 REAGENT tokens will cost $0.50.05 USD (including gas).
 
 Would you like me to proceed?"
 
@@ -712,7 +712,7 @@ Agent: *executes mint*
 Agent: "✅ Success! You've earned 10,000 REAGENT tokens!
 
 🪙 Tokens Earned: 10,000 REAGENT
-💵 Fee Paid: $0.50 USD
+💵 Fee Paid: $0.50.05 USD
 🔗 Transaction: 0x1234...5678
 
 💰 New Balance: $10.00 USD
@@ -728,7 +728,7 @@ View on Explorer: https://explore.tempo.xyz/tx/0x1234...5678"
 Agent: *executes check_balance*
 Agent: "I'd love to help you mint tokens, but your balance is $0.30 USD.
 
-You need at least $0.50 USD for auto-mining.
+You need at least $0.50.05 USD for auto-mining.
 
 Would you like me to show you how to deposit funds?"
 ```
@@ -790,7 +790,7 @@ Your funds have been refunded. Would you like to try again?"
 1. **Always Confirm Before Transactions**:
    ```
    User: "Mint tokens"
-   Agent: "I can mint 10,000 REAGENT for $0.50 USD. Proceed?"
+   Agent: "I can mint 10,000 REAGENT for $0.50.05 USD. Proceed?"
    User: "Yes"
    Agent: *calls POST /api/mining/simple-mint*
    ```
@@ -817,7 +817,7 @@ Your funds have been refunded. Would you like to try again?"
 ```
 "Great news! I've successfully minted 10,000 REAGENT tokens for you via the auto-mining API.
 
-The transaction cost $0.50 USD and is now confirmed on the blockchain.
+The transaction cost $0.05 USD and is now confirmed on the blockchain.
 
 Your new balance is $X.XX USD and you now have X,XXX REAGENT tokens total.
 
@@ -829,7 +829,7 @@ Would you like to mint more, or is there anything else I can help you with?"
 "I'd love to help you mint tokens, but it looks like your USD balance is a bit low.
 
 Current Balance: $X.XX USD
-Required: $0.50 USD
+Required: $0.05 USD
 Shortfall: $X.XX USD
 
 You can deposit more funds through the Mining Dashboard. Would you like me to show you how?"
@@ -839,8 +839,8 @@ You can deposit more funds through the Mining Dashboard. Would you like me to sh
 ```
 "Minting 10,000 REAGENT tokens costs:
 
-Manual (via dashboard): $1.00 USD + gas
-Auto (via me): $0.50 USD + gas
+Manual (via dashboard): $0.10 USD + gas
+Auto (via me): $0.05 USD + gas
 
 That's a 50% savings when you let me handle it via the API! Gas fees are typically very low on Tempo Network (less than $0.001).
 

@@ -10,8 +10,8 @@ import { simpleWalletManager } from './simple-wallet-manager';
 import { usdBalanceManager } from './usd-balance-manager';
 
 const TOKENS_PER_MINT = '10000'; // 10,000 REAGENT per mint
-const AUTO_MINT_FEE = '0.1'; // 0.5 PATHUSD for auto
-const MANUAL_MINT_FEE = '1.0'; // 1.0 PATHUSD for manual
+const AUTO_MINT_FEE = '0.05'; // 0.05 PATHUSD for auto
+const MANUAL_MINT_FEE = '0.1'; // 0.1 PATHUSD for manual
 const REAGENT_TOKEN_ADDRESS = process.env.REAGENT_TOKEN_ADDRESS || '0x20C000000000000000000000a59277C0c1d65Bc5';
 const PATHUSD_TOKEN_ADDRESS = process.env.PATHUSD_TOKEN_ADDRESS || '0x20c0000000000000000000000000000000000000';
 const TEMPO_CHAIN_ID = parseInt(process.env.TEMPO_CHAIN_ID || '4217');

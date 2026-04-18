@@ -15,8 +15,8 @@
 ### 2. Token Mining System
 - **REAGENT Token**: Platform's native TIP-20 token on Tempo Network
 - **Mining Methods**:
-  - Auto Mining: Configurable fee (default 0.5 PATHUSD) via AI agent
-  - Manual Mining: Configurable fee (default 1.0 PATHUSD) via dashboard
+  - Auto Mining: Configurable fee (default 0.05 PATHUSD) via AI agent
+  - Manual Mining: Configurable fee (default 0.1 PATHUSD) via dashboard
 - **Rewards**: 10,000 REAGENT tokens per successful mint
 - **Total Supply**: 400M REAGENT (50% allocated for mining)
 - **API Endpoint**: `/api/mining/simple-mint` (unified for web and bot)
@@ -52,8 +52,8 @@
 ### Mining Economics
 - **Tokens per Mint**: 10,000 REAGENT
 - **Max Mints**: 20,000 (200M / 10K)
-- **Auto Mining Fee**: Configurable via `AUTO_MINT_FEE` env (default 0.5 PATHUSD) + gas
-- **Manual Mining Fee**: Configurable via `MANUAL_MINT_FEE` env (default 1.0 PATHUSD) + gas
+- **Auto Mining Fee**: Configurable via `AUTO_MINT_FEE` env (default 0.05 PATHUSD) + gas
+- **Manual Mining Fee**: Configurable via `MANUAL_MINT_FEE` env (default 0.1 PATHUSD) + gas
 - **Savings**: 50% discount for auto mining (default)
 - **Payment Method**: ERC-20 transfer of PATHUSD token (not native transfer)
 
