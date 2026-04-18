@@ -39,6 +39,14 @@ export async function GET(request: NextRequest) {
       userId = session.user.id;
     }
 
+    // Verify userId is not null
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'User ID not found' },
+        { status: 400 }
+      );
+    }
+
     // Get wallet
     const wallet = await prisma.wallet.findUnique({
       where: { userId }
