@@ -33,6 +33,7 @@ model User {
   tradeOrders         TradeOrder[]
   buyTrades           Trade[] @relation("BuyerTrades")
   sellTrades          Trade[] @relation("SellerTrades")
+  telegramLink        TelegramLink?
 }
 
 // ─── API Key Config (per user) ─────────────────────────────────────────────────
@@ -453,4 +454,24 @@ model Trade {
   
   @@index([buyerId, executedAt])
   @@index([sellerId, executedAt])
+}
+
+// ─── Telegram Link ────────────────────────────────────────────────────────────
+model TelegramLink {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  telegramUserId    String   @unique
+  telegramUsername  String?
+  telegramFirstName String?
+  telegramLastName  String?
+  botToken          String?  // Optional: store bot token if needed
+  
+  active            Boolean  @default(true)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([userId, active])
 }

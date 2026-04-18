@@ -18,14 +18,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Find user by Telegram ID in channels
-    const channel = await prisma.channel.findFirst({
+    // Find user by Telegram ID in TelegramLink table
+    const telegramLink = await prisma.telegramLink.findUnique({
       where: {
-        type: 'telegram',
-        config: {
-          path: ['telegram_user_id'],
-          equals: telegramId
-        }
+        telegramUserId: telegramId
       },
       include: {
         user: {
@@ -39,19 +35,26 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    if (!channel || !channel.user) {
+    if (!telegramLink || !telegramLink.user) {
       return NextResponse.json(
-        { success: false, error: 'User not found' },
+        { success: false, error: 'User not found. Please link your Telegram account first by sending /start to the bot.' },
         { status: 404 }
+      );
+    }
+
+    if (!telegramLink.active) {
+      return NextResponse.json(
+        { success: false, error: 'Telegram link is inactive' },
+        { status: 403 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      userId: channel.user.id,
-      email: channel.user.email,
-      name: channel.user.name,
-      createdAt: channel.user.createdAt
+      userId: telegramLink.user.id,
+      email: telegramLink.user.email,
+      name: telegramLink.user.name,
+      createdAt: telegramLink.user.createdAt
     });
 
   } catch (error: any) {
