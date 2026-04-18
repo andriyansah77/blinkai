@@ -31,6 +31,7 @@ export default function LandingPage() {
   const router = useRouter();
   const { ready, authenticated } = usePrivy();
   const [selectedFeature, setSelectedFeature] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -157,14 +158,15 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 navbar-scroll">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => router.push("/")}>
-              <Image src="/logo.jpg" alt="ReAgent" width={32} height={32} className="rounded-lg" />
-              <span className="font-bold text-lg">ReAgent</span>
+            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => router.push("/")}>
+              <Image src="/logo.jpg" alt="ReAgent" width={28} height={28} className="rounded-lg sm:w-8 sm:h-8" />
+              <span className="font-bold text-base sm:text-lg">ReAgent</span>
             </div>
             
-            <div className="hidden md:flex items-center gap-8">
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center gap-6 lg:gap-8">
               <a href="#features" className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium">Features</a>
               <a href="#how-it-works" className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium">How it works</a>
               <a href="#pricing" className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium">Pricing</a>
@@ -173,11 +175,12 @@ export default function LandingPage() {
               </a>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Desktop Auth Buttons */}
+            <div className="hidden md:flex items-center gap-3">
               {authenticated ? (
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 hover:scale-105 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40"
+                  className="px-4 lg:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 hover:scale-105 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40"
                 >
                   Dashboard
                 </button>
@@ -191,78 +194,171 @@ export default function LandingPage() {
                   </button>
                   <button
                     onClick={() => router.push("/sign-up")}
-                    className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 hover:scale-105 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40"
+                    className="px-4 lg:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 hover:scale-105 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40"
                   >
                     Get Started
                   </button>
                 </>
               )}
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinecap="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden mt-4 pb-4 border-t border-white/10 pt-4"
+            >
+              <div className="flex flex-col gap-4">
+                <a 
+                  href="#features" 
+                  className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Features
+                </a>
+                <a 
+                  href="#how-it-works" 
+                  className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  How it works
+                </a>
+                <a 
+                  href="#pricing" 
+                  className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Pricing
+                </a>
+                <a 
+                  href="https://explore.tempo.xyz" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-orange-400 transition-all duration-200 text-sm font-medium flex items-center gap-1 py-2"
+                >
+                  Explorer <ExternalLink className="w-3 h-3" />
+                </a>
+                
+                <div className="flex flex-col gap-3 pt-4 border-t border-white/10">
+                  {authenticated ? (
+                    <button
+                      onClick={() => {
+                        router.push("/dashboard");
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg shadow-orange-500/20"
+                    >
+                      Dashboard
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          router.push("/sign-in");
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full px-5 py-3 bg-white/10 border border-white/10 text-white rounded-lg text-sm font-semibold hover:bg-white/20 transition-all duration-200"
+                      >
+                        Login
+                      </button>
+                      <button
+                        onClick={() => {
+                          router.push("/sign-up");
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg shadow-orange-500/20"
+                      >
+                        Get Started
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-32 fade-in-section">{/* Code Pattern Background */}
+      <section className="relative overflow-hidden pt-24 sm:pt-28 md:pt-32 fade-in-section">
+        {/* Code Pattern Background */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-10 left-10 text-orange-500 float-animation">
-            <Code className="w-16 h-16" />
+          <div className="absolute top-10 left-10 text-orange-500 float-animation hidden sm:block">
+            <Code className="w-12 sm:w-16 h-12 sm:h-16" />
           </div>
-          <div className="absolute top-32 right-20 text-orange-500 float-animation" style={{ animationDelay: '0.5s' }}>
+          <div className="absolute top-32 right-20 text-orange-500 float-animation hidden md:block" style={{ animationDelay: '0.5s' }}>
             <Terminal className="w-12 h-12" />
           </div>
-          <div className="absolute bottom-20 left-1/4 text-orange-500 float-animation" style={{ animationDelay: '1s' }}>
+          <div className="absolute bottom-20 left-1/4 text-orange-500 float-animation hidden lg:block" style={{ animationDelay: '1s' }}>
             <Database className="w-14 h-14" />
           </div>
-          <div className="absolute top-1/2 right-1/3 text-orange-500 float-animation" style={{ animationDelay: '1.5s' }}>
+          <div className="absolute top-1/2 right-1/3 text-orange-500 float-animation hidden md:block" style={{ animationDelay: '1.5s' }}>
             <Code className="w-10 h-10" />
           </div>
-          <div className="absolute bottom-32 right-10 text-orange-500 float-animation" style={{ animationDelay: '2s' }}>
-            <Terminal className="w-16 h-16" />
+          <div className="absolute bottom-32 right-10 text-orange-500 float-animation hidden sm:block" style={{ animationDelay: '2s' }}>
+            <Terminal className="w-12 sm:w-16 h-12 sm:h-16" />
           </div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent"></div>
-        <div className="max-w-7xl mx-auto px-6 py-20 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 relative">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-orange-500/10 via-orange-500/5 to-transparent border border-orange-500/20 rounded-lg mb-6 backdrop-blur-sm">
-              <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500/10 via-orange-500/5 to-transparent border border-orange-500/20 rounded-lg mb-4 sm:mb-6 backdrop-blur-sm">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Built with</span>
+                <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider">Built with</span>
               </div>
-              <div className="h-4 w-px bg-orange-500/20"></div>
-              <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-orange-400" />
-                <span className="text-sm font-semibold text-orange-400">Hermes AI</span>
+              <div className="h-3 sm:h-4 w-px bg-orange-500/20"></div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Bot className="w-3 sm:w-4 h-3 sm:h-4 text-orange-400" />
+                <span className="text-xs sm:text-sm font-semibold text-orange-400">Hermes AI</span>
               </div>
-              <div className="h-4 w-px bg-orange-500/20"></div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-orange-400" />
-                <span className="text-sm font-semibold text-orange-400">Tempo Network</span>
+              <div className="h-3 sm:h-4 w-px bg-orange-500/20"></div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Zap className="w-3 sm:w-4 h-3 sm:h-4 text-orange-400" />
+                <span className="text-xs sm:text-sm font-semibold text-orange-400">Tempo Network</span>
               </div>
             </div>
 
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 px-4">
               Deploy AI Agents
               <br />
               <span className="text-gray-500">On Blockchain</span>
             </h1>
 
-            <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-400 mb-6 sm:mb-8 max-w-2xl mx-auto px-4 leading-relaxed">
               Create intelligent AI agents with blockchain integration. Mine tokens, 
               connect to messaging platforms, and deploy custom skills in minutes.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-4">
               <button
                 onClick={() => router.push(authenticated ? "/dashboard" : "/sign-up")}
-                className="group relative px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105"
+                className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 text-sm sm:text-base"
               >
                 <span>{authenticated ? "Go to Dashboard" : "Start Building"}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
                 onClick={() => router.push("/docs")}
-                className="group px-8 py-4 bg-white/5 border border-white/10 rounded-lg font-semibold hover:bg-white/10 hover:border-white/20 transition-all duration-200 flex items-center justify-center gap-2 backdrop-blur-sm"
+                className="group px-6 sm:px-8 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-lg font-semibold hover:bg-white/10 hover:border-white/20 transition-all duration-200 flex items-center justify-center gap-2 backdrop-blur-sm text-sm sm:text-base"
               >
                 <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 <span>Documentation</span>
@@ -270,11 +366,11 @@ export default function LandingPage() {
               </button>
             </div>
 
-            <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-8 text-xs sm:text-sm text-gray-500 px-4">
               <div>73+ agents deployed</div>
-              <div>•</div>
+              <div className="hidden sm:block">•</div>
               <div>Free to start</div>
-              <div>•</div>
+              <div className="hidden sm:block">•</div>
               <a 
                 href="https://x.com/Reagentempo_AI" 
                 target="_blank" 
@@ -290,30 +386,30 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="py-20 border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full mb-4">
-              <Terminal className="w-3.5 h-3.5 text-orange-400" />
-              <span className="text-xs font-medium text-orange-400 uppercase tracking-wider">Developer Workflow</span>
+      <section id="how-it-works" className="py-12 sm:py-16 md:py-20 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full mb-3 sm:mb-4">
+              <Terminal className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-orange-400" />
+              <span className="text-[10px] sm:text-xs font-medium text-orange-400 uppercase tracking-wider">Developer Workflow</span>
             </div>
-            <h2 className="text-3xl font-bold mb-4">Ship in minutes, not days</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Deploy production-ready AI agents with blockchain integration using our streamlined developer workflow</p>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 px-4">Ship in minutes, not days</h2>
+            <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto px-4">Deploy production-ready AI agents with blockchain integration using our streamlined developer workflow</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             <div className="relative">
-              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-6 hover:border-orange-500/30 transition-all duration-300 group">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <span className="text-orange-400 font-bold text-sm">01</span>
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-5 sm:p-6 hover:border-orange-500/30 transition-all duration-300 group">
+                <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <span className="text-orange-400 font-bold text-xs sm:text-sm">01</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Initialize Project</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">Sign up via API or dashboard. Auto-provisioned HD wallet with AES-256 encryption and secure key management.</p>
+                    <h3 className="font-semibold text-base sm:text-lg mb-2">Initialize Project</h3>
+                    <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Sign up via API or dashboard. Auto-provisioned HD wallet with AES-256 encryption and secure key management.</p>
                   </div>
                 </div>
-                <div className="bg-black/40 border border-white/5 rounded-lg p-3 font-mono text-xs text-gray-300">
+                <div className="bg-black/40 border border-white/5 rounded-lg p-2.5 sm:p-3 font-mono text-[10px] sm:text-xs text-gray-300 overflow-x-auto">
                   <span className="text-orange-400">$</span> curl -X POST /api/auth/signup
                 </div>
               </div>
@@ -322,17 +418,17 @@ export default function LandingPage() {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-6 hover:border-orange-500/30 transition-all duration-300 group">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <span className="text-orange-400 font-bold text-sm">02</span>
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-5 sm:p-6 hover:border-orange-500/30 transition-all duration-300 group">
+                <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <span className="text-orange-400 font-bold text-xs sm:text-sm">02</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Configure Agent</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">Deploy Hermes AI with 73+ skills, custom personality, and multi-channel gateway integration (Discord, Telegram, Slack).</p>
+                    <h3 className="font-semibold text-base sm:text-lg mb-2">Configure Agent</h3>
+                    <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Deploy Hermes AI with 73+ skills, custom personality, and multi-channel gateway integration (Discord, Telegram, Slack).</p>
                   </div>
                 </div>
-                <div className="bg-black/40 border border-white/5 rounded-lg p-3 font-mono text-xs text-gray-300">
+                <div className="bg-black/40 border border-white/5 rounded-lg p-2.5 sm:p-3 font-mono text-[10px] sm:text-xs text-gray-300 overflow-x-auto">
                   <span className="text-orange-400">$</span> hermes deploy --config agent.yml
                 </div>
               </div>
@@ -341,17 +437,17 @@ export default function LandingPage() {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-6 hover:border-orange-500/30 transition-all duration-300 group">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <span className="text-orange-400 font-bold text-sm">03</span>
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl p-5 sm:p-6 hover:border-orange-500/30 transition-all duration-300 group">
+                <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <span className="text-orange-400 font-bold text-xs sm:text-sm">03</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Start Mining</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">Execute TIP-20 token inscriptions on Tempo Network. 10K REAGENT per mint with automated gas estimation.</p>
+                    <h3 className="font-semibold text-base sm:text-lg mb-2">Start Mining</h3>
+                    <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Execute TIP-20 token inscriptions on Tempo Network. 10K REAGENT per mint with automated gas estimation.</p>
                   </div>
                 </div>
-                <div className="bg-black/40 border border-white/5 rounded-lg p-3 font-mono text-xs text-gray-300">
+                <div className="bg-black/40 border border-white/5 rounded-lg p-2.5 sm:p-3 font-mono text-[10px] sm:text-xs text-gray-300 overflow-x-auto">
                   <span className="text-orange-400">$</span> POST /api/mining/inscribe
                 </div>
               </div>
@@ -359,17 +455,17 @@ export default function LandingPage() {
           </div>
 
           {/* Tech Stack Badge */}
-          <div className="mt-12 flex justify-center">
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm">
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Tech Stack:</span>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-300 font-mono">Next.js</span>
+          <div className="mt-8 sm:mt-12 flex justify-center px-4">
+            <div className="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm">
+              <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider">Tech Stack:</span>
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+                <span className="text-xs sm:text-sm text-gray-300 font-mono">Next.js</span>
                 <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
-                <span className="text-sm text-gray-300 font-mono">Hermes AI</span>
+                <span className="text-xs sm:text-sm text-gray-300 font-mono">Hermes AI</span>
                 <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
-                <span className="text-sm text-gray-300 font-mono">Tempo Chain</span>
-                <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
-                <span className="text-sm text-gray-300 font-mono">TypeScript</span>
+                <span className="text-xs sm:text-sm text-gray-300 font-mono">Tempo Chain</span>
+                <div className="w-1 h-1 bg-gray-600 rounded-full hidden sm:block"></div>
+                <span className="text-xs sm:text-sm text-gray-300 font-mono hidden sm:inline">TypeScript</span>
               </div>
             </div>
           </div>
@@ -490,24 +586,24 @@ export default function LandingPage() {
       </section>
 
       {/* Stats */}
-      <section className="py-20 border-t border-white/10 bg-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <section className="py-12 sm:py-16 md:py-20 border-t border-white/10 bg-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold mb-2">73+</div>
-              <div className="text-gray-400 text-sm">Built-in Skills</div>
+              <div className="text-3xl sm:text-4xl font-bold mb-2">73+</div>
+              <div className="text-gray-400 text-xs sm:text-sm">Built-in Skills</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">10K</div>
-              <div className="text-gray-400 text-sm">REAGENT per Mint</div>
+              <div className="text-3xl sm:text-4xl font-bold mb-2">10K</div>
+              <div className="text-gray-400 text-xs sm:text-sm">REAGENT per Mint</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">3</div>
-              <div className="text-gray-400 text-sm">Gateway Channels</div>
+              <div className="text-3xl sm:text-4xl font-bold mb-2">3</div>
+              <div className="text-gray-400 text-xs sm:text-sm">Gateway Channels</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">4217</div>
-              <div className="text-gray-400 text-sm">Tempo Chain ID</div>
+              <div className="text-3xl sm:text-4xl font-bold mb-2">4217</div>
+              <div className="text-gray-400 text-xs sm:text-sm">Tempo Chain ID</div>
             </div>
           </div>
         </div>
