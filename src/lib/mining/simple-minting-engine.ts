@@ -53,13 +53,16 @@ export class SimpleMintingEngine {
 
       console.log(`[SimpleMinting] User wallet: ${userWallet.address}`);
 
-      // 2. Check and deduct PATHUSD fee
+      // 2. Check and deduct PATHUSD fee (DISABLED for now - will implement proper balance system later)
       const fee = type === 'auto' ? AUTO_MINT_FEE : MANUAL_MINT_FEE;
-      console.log(`[SimpleMinting] Checking PATHUSD balance for fee: ${fee}`);
+      console.log(`[SimpleMinting] Fee for ${type} minting: ${fee} PATHUSD (not charged yet)`);
       
+      // TODO: Implement proper PATHUSD balance system
+      // For now, skip fee check to allow minting
+      /*
       try {
         const balanceInfo = await usdBalanceManager.getBalance(userId);
-        const balance = balanceInfo.balance; // Extract balance string from BalanceInfo
+        const balance = balanceInfo.balance;
         console.log(`[SimpleMinting] User PATHUSD balance: ${balance}`);
         
         if (parseFloat(balance) < parseFloat(fee)) {
@@ -75,6 +78,7 @@ export class SimpleMintingEngine {
           error: 'Failed to check PATHUSD balance. Please try again.'
         };
       }
+      */
 
       // 3. Create inscription record
       const inscription = await prisma.inscription.create({
@@ -93,17 +97,20 @@ export class SimpleMintingEngine {
       console.log(`[SimpleMinting] Inscription created: ${inscription.id}`);
 
       try {
-        // 4. Deduct PATHUSD fee
+        // 4. Deduct PATHUSD fee (DISABLED for now)
+        // TODO: Implement proper PATHUSD balance system
+        /*
         await usdBalanceManager.deduct(
           userId,
           fee,
-          'inscription_fee', // Use valid reason type
+          'inscription_fee',
           `${type} minting fee`,
           'inscription',
           inscription.id
         );
         
         console.log(`[SimpleMinting] PATHUSD fee deducted: ${fee}`);
+        */
 
         // 5. Construct transaction (master wallet mints TO user address)
         const tx = await this.constructMintTransaction(userWallet.address);
@@ -142,7 +149,9 @@ export class SimpleMintingEngine {
       } catch (txError: any) {
         console.error('[SimpleMinting] Transaction failed:', txError);
         
-        // Refund PATHUSD fee if transaction failed
+        // Refund PATHUSD fee if transaction failed (DISABLED for now)
+        // TODO: Implement proper PATHUSD balance system
+        /*
         try {
           await usdBalanceManager.refund(
             userId,
@@ -155,6 +164,7 @@ export class SimpleMintingEngine {
         } catch (refundError) {
           console.error('[SimpleMinting] Refund failed:', refundError);
         }
+        */
         
         // Update inscription as failed
         await prisma.inscription.update({
