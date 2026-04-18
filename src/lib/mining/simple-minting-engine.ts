@@ -58,7 +58,8 @@ export class SimpleMintingEngine {
       console.log(`[SimpleMinting] Checking PATHUSD balance for fee: ${fee}`);
       
       try {
-        const balance = await usdBalanceManager.getBalance(userId);
+        const balanceInfo = await usdBalanceManager.getBalance(userId);
+        const balance = balanceInfo.balance; // Extract balance string from BalanceInfo
         console.log(`[SimpleMinting] User PATHUSD balance: ${balance}`);
         
         if (parseFloat(balance) < parseFloat(fee)) {
