@@ -906,7 +906,7 @@ export default function HermesChat({ className }: ChatProps) {
     </AnimatePresence>
   );
 
-  // Handle /mine command
+  // Handle /mine command - Server-side signing
   const handleMineCommand = async (args: string[]) => {
     const commandMessage: Message = {
       id: Date.now().toString(),
@@ -927,11 +927,6 @@ export default function HermesChat({ className }: ChatProps) {
         throw new Error('Invalid amount. Please specify a number between 1 and 10.');
       }
 
-      // Check if wallet provider exists (works for both MetaMask and Privy)
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
-        throw new Error('No wallet provider found. Please connect your wallet first.');
-      }
-
       const resultMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -942,21 +937,17 @@ export default function HermesChat({ className }: ChatProps) {
 
       setMessages(prev => [...prev, resultMessage]);
 
-      // Get wallet provider
-      const provider = (window as any).ethereum;
-
-      // Request accounts
-      const accounts = await provider.request({ method: 'eth_requestAccounts' });
-      const fromAddress = accounts[0];
-
-      // Execute mining
+      // Execute mining with server-side signing
       for (let i = 0; i < amount; i++) {
-        // Step 1: Get unsigned transaction
-        const response = await fetch('/api/mining/mine-chat', {
+        // Call simple-mint API (server-side signing)
+        const response = await fetch('/api/mining/simple-mint', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            type: 'auto'
+          }),
         });
 
         if (!response.ok) {
@@ -966,40 +957,15 @@ export default function HermesChat({ className }: ChatProps) {
 
         const result = await response.json();
 
-        if (!result.success || !result.requiresClientSigning) {
-          throw new Error(result.error || 'Failed to prepare transaction');
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to mint');
         }
 
-        // Step 2: Sign with wallet (MetaMask or Privy)
-        const tx = result.unsignedTransaction;
-        const txHash = await provider.request({
-          method: 'eth_sendTransaction',
-          params: [{
-            from: fromAddress,
-            to: tx.to,
-            data: tx.data,
-            value: tx.value || '0x0',
-            gas: tx.gasLimit,
-            gasPrice: tx.gasPrice,
-          }],
-        });
-
-        // Step 3: Submit tx hash for monitoring
-        await fetch('/api/mining/submit-signed', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            inscriptionId: result.inscriptionId,
-            txHash: txHash,
-          }),
-        });
-
         // Update message with progress
+        const txHash = result.txHash || 'N/A';
         const progress = `✅ Mint ${i + 1}/${amount}: Transaction submitted\n` +
                         `   TX Hash: ${txHash.slice(0, 10)}...${txHash.slice(-8)}\n` +
-                        `   Tokens: 10000 REAGENT\n\n`;
+                        `   Tokens: ${result.tokensEarned || '10000'} REAGENT\n\n`;
 
         setMessages(prev => prev.map(msg => 
           msg.id === resultMessage.id 
@@ -1026,15 +992,10 @@ export default function HermesChat({ className }: ChatProps) {
     } catch (error: any) {
       console.error('Mine command error:', error);
       
-      let errorMsg = error.message;
-      if (error.code === 4001) {
-        errorMsg = 'Transaction rejected by user';
-      }
-      
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
         role: "assistant",
-        content: `❌ Mining failed: ${errorMsg}\n\nUsage: /mine [amount]\nExample: /mine 5 (mints 5 times, earning 50,000 REAGENT)\n\nNote: Make sure your wallet is connected and you have enough PATHUSD for gas fees.`,
+        content: `❌ Mining failed: ${error.message}\n\nUsage: /mine [amount]\nExample: /mine 5 (mints 5 times, earning 50,000 REAGENT)\n\nNote: All minting is done server-side. Make sure you have a wallet created.`,
         timestamp: new Date(),
         type: "text"
       };
