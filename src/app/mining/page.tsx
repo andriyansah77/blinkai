@@ -188,6 +188,12 @@ function MiningPageContent() {
     try {
       setMinting(true);
       
+      // Check if wallet provider exists
+      if (typeof window === 'undefined' || !(window as any).ethereum) {
+        toast.error("No wallet provider found. Please install MetaMask or connect your Privy wallet.");
+        return;
+      }
+      
       // Step 1: Request unsigned transaction from server
       const response = await fetch("/api/mining/inscribe", {
         method: "POST",
@@ -207,12 +213,8 @@ function MiningPageContent() {
         toast.loading("Please sign the transaction in your wallet...");
         
         try {
-          // Get Privy wallet provider
-          const provider = await (window as any).ethereum;
-          if (!provider) {
-            toast.error("No wallet provider found. Please install MetaMask or connect your wallet.");
-            return;
-          }
+          // Get wallet provider
+          const provider = (window as any).ethereum;
 
           // Request accounts
           const accounts = await provider.request({ method: 'eth_requestAccounts' });
@@ -258,6 +260,7 @@ function MiningPageContent() {
           }
         } catch (walletError: any) {
           console.error("Wallet signing error:", walletError);
+          toast.dismiss();
           if (walletError.code === 4001) {
             toast.error("Transaction rejected by user");
           } else {
