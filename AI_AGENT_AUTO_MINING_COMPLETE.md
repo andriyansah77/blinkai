@@ -1,186 +1,185 @@
-# AI Agent Auto Mining - Complete Implementation
+# AI Agent Auto Mining - Implementation Complete
 
 ## Overview
-AI agent dapat secara otomatis melakukan minting REAGENT tokens dengan akses ke wallet user melalui API key.
+Implemented complete AI agent auto mining feature that allows AI agents to automatically mint REAGENT tokens using managed wallets with encrypted private keys stored on server.
 
-## Features Implemented
+## Implementation Details
 
-### 1. Auto Mining Skill (`auto_mining_skill.py`)
-Python skill yang memungkinkan AI agent untuk:
-- ✅ Check balance PATHUSD dan REAGENT
-- ✅ Start auto mining dengan jumlah yang ditentukan
-- ✅ Get mining status dan history
-- ✅ Automatic error handling dan retry logic
+### 1. Managed Wallet System
+**File**: `src/lib/mining/wallet-manager.ts`
 
-### 2. Mining API Key System
-- ✅ API endpoint `/api/user/mining-key` untuk generate/get API key
-- ✅ Secure API key format: `rgt_[64 hex characters]`
-- ✅ API key regeneration capability
-- ✅ Stored in database (ApiKeyConfig table)
+Added `createManagedWallet` method:
+- Generates new wallet with ethers.Wallet.createRandom()
+- Encrypts private key using AES-256-GCM
+- Stores encrypted private key and IV in database
+- Updates wallet address to new managed wallet address
 
-### 3. AI Agent Setup UI Component
-- ✅ Display API key dengan show/hide toggle
-- ✅ Copy API key button
-- ✅ Regenerate API key button
-- ✅ Setup instructions dengan copy commands
-- ✅ Example commands untuk AI agent
+### 2. Wallet API Enhancement
+**File**: `src/app/api/wallet/route.ts`
 
-## How It Works
+Added `hasManagedWallet` field to response:
+- Checks if wallet has encrypted private key
+- Returns boolean flag indicating managed wallet status
+- Used by frontend to show/hide managed wallet UI
 
-### User Flow:
-1. User membuka mining page
-2. User melihat "AI Agent Auto Mining" section
-3. User copy API key
-4. User set environment variable: `export REAGENT_API_KEY="rgt_..."`
-5. User install skill (jika belum): `hermes skills install auto_mining`
-6. User chat dengan AI agent: "Start mining REAGENT"
-7. AI agent execute skill dan mint tokens automatically
+### 3. Enable Managed Wallet Endpoint
+**File**: `src/app/api/wallet/enable-managed/route.ts`
 
-### AI Agent Commands:
-```bash
-# Check balance
-auto_mining check_balance
+POST endpoint to enable managed wallet:
+- Authenticates user
+- Checks if wallet exists
+- Calls `createManagedWallet` to generate and encrypt new wallet
+- Returns success with new wallet address
 
-# Start mining (1 operation)
-auto_mining start_mining
+### 4. Inscription Engine Updates
+**File**: `src/lib/mining/inscription-engine.ts`
 
-# Start mining (5 operations)
-auto_mining start_mining 5
+Enhanced `executeInscription` method:
+- Queries database for encrypted private key and IV
+- For auto mining: requires managed wallet, returns error if not enabled
+- For managed wallets: decrypts private key, signs transaction server-side
+- For external wallets: returns unsigned transaction for client-side signing
+- Fixed TypeScript errors by properly querying database for wallet data
 
-# Get status
-auto_mining get_status
+### 5. Frontend UI Component
+**File**: `src/components/mining/AIAgentSetup.tsx`
+
+Added managed wallet section:
+- Shows enabled/disabled status badge
+- Displays explanation of managed wallet benefits
+- "Enable Managed Wallet" button to activate feature
+- Success message when enabled
+- Fetches status on component mount
+
+## Transaction Flow
+
+### Auto Mining with Managed Wallet
+1. User enables managed wallet from UI
+2. Server generates new wallet and encrypts private key
+3. AI agent calls `/api/mining/inscribe` with `type: 'auto'`
+4. Server checks for managed wallet (encrypted private key exists)
+5. Server decrypts private key
+6. Server constructs, signs, and broadcasts transaction
+7. Server monitors transaction confirmation
+8. User receives REAGENT tokens automatically
+
+### Manual Mining with External Wallet
+1. User connects MetaMask/Privy wallet
+2. User clicks "Mint Now" button
+3. Server constructs unsigned transaction
+4. Frontend prompts MetaMask to sign
+5. User approves transaction in MetaMask
+6. MetaMask broadcasts transaction
+7. Frontend submits tx hash to server for monitoring
+
+## Security Features
+
+- Private keys encrypted with AES-256-GCM
+- Encryption key from environment variable `WALLET_ENCRYPTION_KEY`
+- IV (initialization vector) stored separately in database
+- Auth tag included for integrity verification
+- Private keys never exposed in API responses
+- Only decrypted in memory during transaction signing
+
+## Database Schema
+
+Wallet table fields used:
+- `encryptedPrivateKey`: Encrypted private key (hex string with auth tag)
+- `keyIv`: Initialization vector for decryption (hex string)
+- `address`: Wallet address (updated when managed wallet enabled)
+
+## API Endpoints
+
+### GET /api/wallet
+Returns wallet info including `hasManagedWallet` boolean
+
+### POST /api/wallet/enable-managed
+Enables managed wallet for user
+- Generates new wallet
+- Encrypts and stores private key
+- Returns new wallet address
+
+### POST /api/mining/inscribe
+Executes minting transaction
+- For managed wallets: signs server-side
+- For external wallets: returns unsigned tx
+
+## AI Agent Integration
+
+### Hermes Skill
+**File**: `hermes-skills/auto_mining_skill.py`
+
+Updated to use `forceClientSigning: false` for auto mining:
+```python
+payload = {
+    "type": "auto",
+    "forceClientSigning": False  # Allow server-side signing
+}
 ```
 
-### Natural Language Examples:
+### Usage Examples
+User can say to AI agent:
 - "Start mining REAGENT"
 - "Mint 5 REAGENT tokens"
 - "Check my mining balance"
-- "What's my REAGENT balance?"
-- "Start auto mining"
 
-## Security
-
-### API Key Security:
-- ✅ API key stored securely in database
-- ✅ API key required for all mining operations
-- ✅ Rate limiting: 10 mints per hour
-- ✅ User can regenerate key anytime
-- ✅ Key masked in UI by default
-
-### Wallet Access:
-- ✅ NO private keys stored on server
-- ✅ Transactions signed server-side only if user opted in
-- ✅ Client-side signing preferred (more secure)
-- ✅ API key only allows minting, not withdrawals
-
-## Cost & Rewards
-
-### Auto Mining (via AI Agent):
-- Cost: 0.5 PATHUSD + gas per operation
-- Reward: 10,000 REAGENT per operation
-- 50% cheaper than manual minting
-
-### Manual Mining (via Dashboard):
-- Cost: 1.0 PATHUSD + gas per operation
-- Reward: 10,000 REAGENT per operation
-
-## Files Created/Modified
-
-### New Files:
-1. `hermes-skills/auto_mining_skill.py` - Python skill implementation
-2. `hermes-skills/auto_mining_skill.json` - Skill definition
-3. `src/app/api/user/mining-key/route.ts` - API key management endpoint
-4. `src/components/mining/AIAgentSetup.tsx` - UI component
-
-### Modified Files:
-1. `src/app/mining/page.tsx` - Added AIAgentSetup component
-
-## Deployment Steps
-
-1. **Deploy Code:**
-   ```bash
-   git add .
-   git commit -m "feat: Add AI agent auto mining capability"
-   git push origin main
-   ```
-
-2. **Deploy to VPS:**
-   ```bash
-   ssh root@188.166.247.252
-   cd /root/reagent
-   git pull
-   npm run build
-   pm2 restart reagent
-   ```
-
-3. **Install Skill on Hermes:**
-   ```bash
-   # Copy skill files to Hermes skills directory
-   cp hermes-skills/auto_mining_skill.* /root/.hermes/skills/
-   
-   # Or install via Hermes CLI
-   hermes skills install auto_mining
-   ```
-
-4. **Test:**
-   ```bash
-   # Set API key
-   export REAGENT_API_KEY="rgt_..."
-   
-   # Test skill
-   python3 /root/.hermes/skills/auto_mining_skill.py check_balance
-   python3 /root/.hermes/skills/auto_mining_skill.py start_mining 1
-   ```
-
-## Usage Example
-
-### Via AI Agent Chat:
-```
-User: "Start mining REAGENT tokens"
-
-AI Agent: "I'll start mining REAGENT tokens for you..."
-[Executes auto_mining skill]
-
-AI Agent: "✓ Successfully minted 10,000 REAGENT tokens!
-Transaction hash: 0x1234...
-Your new balance: 10,000 REAGENT"
-```
-
-### Via Command Line:
-```bash
-# Set API key
-export REAGENT_API_KEY="rgt_abc123..."
-export REAGENT_PLATFORM_URL="https://reagent.eu.cc"
-
-# Check balance
-python3 auto_mining_skill.py check_balance
-
-# Start mining
-python3 auto_mining_skill.py start_mining 3
-
-# Get status
-python3 auto_mining_skill.py get_status
-```
+AI agent will:
+1. Check if managed wallet is enabled
+2. If not enabled, prompt user to enable it
+3. If enabled, call API to mint tokens automatically
+4. Monitor transaction and report status
 
 ## Benefits
 
-1. **Convenience**: User hanya perlu chat dengan AI agent
-2. **Cost Effective**: 50% lebih murah dari manual minting
-3. **Automation**: AI agent bisa schedule minting otomatis
-4. **Monitoring**: AI agent bisa monitor balance dan alert user
-5. **Hands-free**: Tidak perlu buka dashboard setiap kali
+1. **Fully Automated**: No manual approval needed for each transaction
+2. **Cost Effective**: 0.5 PATHUSD for auto vs 1.0 PATHUSD for manual
+3. **Convenient**: Mint tokens via chat without opening dashboard
+4. **Secure**: Private keys encrypted at rest, only decrypted during signing
+5. **Flexible**: Users can still use external wallets for manual mining
+
+## Testing Checklist
+
+- [x] TypeScript compilation passes
+- [ ] Enable managed wallet from UI
+- [ ] Verify wallet created with encrypted private key in database
+- [ ] Test AI agent auto mining with API key
+- [ ] Verify transaction signed server-side and broadcast
+- [ ] Confirm REAGENT tokens received after transaction
+- [ ] Test error handling when managed wallet not enabled
+- [ ] Verify external wallet manual mining still works
+
+## Deployment Steps
+
+1. Commit changes to git
+2. Push to GitHub
+3. SSH to VPS: `ssh root@188.166.247.252`
+4. Pull latest code: `cd /root/reagent && git pull`
+5. Build application: `npm run build`
+6. Restart PM2: `pm2 restart reagent`
+7. Copy updated skill: `cp /root/reagent/hermes-skills/auto_mining_skill.py /root/.hermes/skills/`
+8. Test from browser with hard refresh (Ctrl+Shift+R)
+
+## Environment Variables Required
+
+```bash
+WALLET_ENCRYPTION_KEY=your-32-character-encryption-key-here
+REAGENT_TOKEN_ADDRESS=0x20C000000000000000000000a59277C0c1d65Bc5
+TEMPO_RPC_URL=https://rpc.tempo.xyz
+TEMPO_CHAIN_ID=4217
+```
 
 ## Next Steps
 
-1. ✅ Deploy skill ke production
-2. ✅ Test dengan real user
-3. ⏳ Add scheduling capability (mint every X hours)
-4. ⏳ Add notification when minting complete
-5. ⏳ Add multi-wallet support
-6. ⏳ Add batch minting optimization
+1. Deploy to VPS and test end-to-end
+2. Monitor for any errors in PM2 logs
+3. Test AI agent auto mining with real API key
+4. Document user guide for enabling managed wallet
+5. Add rate limiting for auto mining (already implemented: 10 per hour)
 
-## Status
-✅ **READY FOR DEPLOYMENT**
+## Notes
 
-All components implemented and tested locally.
-Ready to deploy to production VPS.
+- Managed wallet is optional - users can still use external wallets
+- Users must transfer REAGENT tokens to new managed wallet address after enabling
+- Private key encryption uses same key for all users (consider per-user keys in future)
+- Transaction monitoring runs for up to 5 minutes before timeout
+- Gas fees paid from managed wallet's PATHUSD balance

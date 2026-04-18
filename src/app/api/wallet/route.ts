@@ -114,7 +114,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 5. Return wallet data
+    // 5. Check if has managed wallet
+    const hasManagedWallet = !!(wallet.encryptedPrivateKey && wallet.encryptedPrivateKey.length > 0);
+
+    // 6. Return wallet data
     return NextResponse.json({
       success: true,
       address: wallet.address,
@@ -123,7 +126,8 @@ export async function GET(request: NextRequest) {
       usdBalance: pathusdBalance,  // Use pathusdBalance as usdBalance for compatibility
       lastUpdate: wallet.lastBalanceUpdate.toISOString(),
       isNewWallet, // Indicate if this is a new wallet (client-side keys)
-      needsSetup: !isNewWallet // Old wallets need migration to new system
+      needsSetup: !isNewWallet, // Old wallets need migration to new system
+      hasManagedWallet // Indicate if wallet has encrypted private key for auto mining
     });
 
   } catch (error: any) {

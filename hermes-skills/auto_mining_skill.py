@@ -70,10 +70,6 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
     if not balance_check.get('success'):
         return balance_check
     
-    # Note: For external wallets, user doesn't need PATHUSD balance
-    # They pay gas directly from their wallet
-    # This check is just informational
-    
     results = []
     successful = 0
     failed = 0
@@ -82,7 +78,7 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
         try:
             print(f"Starting minting operation {i+1}/{count}...", file=sys.stderr)
             
-            # Step 1: Request unsigned transaction
+            # Request minting with auto type (will use managed wallet if available)
             response = requests.post(
                 f"{PLATFORM_URL}/api/mining/inscribe",
                 headers={
@@ -91,7 +87,7 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
                 },
                 json={
                     "confirm": True,
-                    "forceClientSigning": True
+                    "forceClientSigning": False  # Allow server-side signing for managed wallets
                 },
                 timeout=60
             )
@@ -100,17 +96,16 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
             
             if response.status_code == 200 and result.get('success'):
                 if result.get('requiresClientSigning'):
-                    # For AI agent, we can't sign transactions
-                    # This requires user's wallet interaction
+                    # User has external wallet, cannot auto-mint
                     failed += 1
                     results.append({
                         "operation": i + 1,
                         "success": False,
-                        "error": "Client-side signing required. Please use the web interface to mint tokens with your wallet."
+                        "error": "Auto mining requires managed wallet. Please enable managed wallet in settings to allow AI agent to mint on your behalf."
                     })
-                    print(f"✗ Minting {i+1} requires wallet signing", file=sys.stderr)
+                    print(f"✗ Minting {i+1} requires managed wallet", file=sys.stderr)
                 else:
-                    # Server-side signing succeeded (legacy)
+                    # Server-side signing succeeded with managed wallet
                     successful += 1
                     results.append({
                         "operation": i + 1,
@@ -122,7 +117,7 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
                     print(f"✓ Minting {i+1} successful: {result.get('tokensEarned', '10000')} REAGENT", file=sys.stderr)
             else:
                 failed += 1
-                error_msg = result.get('error', {}).get('message', 'Unknown error')
+                error_msg = result.get('error', {}).get('message', 'Unknown error') if isinstance(result.get('error'), dict) else result.get('error', 'Unknown error')
                 results.append({
                     "operation": i + 1,
                     "success": False,
@@ -131,7 +126,8 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
                 print(f"✗ Minting {i+1} failed: {error_msg}", file=sys.stderr)
                 
                 # Stop if rate limited
-                if result.get('error', {}).get('code') == 'RATE_LIMIT_EXCEEDED':
+                error_code = result.get('error', {}).get('code') if isinstance(result.get('error'), dict) else None
+                if error_code == 'RATE_LIMIT_EXCEEDED':
                     print("Rate limit reached, stopping...", file=sys.stderr)
                     break
                     
@@ -151,7 +147,7 @@ def start_auto_mining(api_key: str, count: int = 1) -> Dict[str, Any]:
         "failed": failed,
         "total_tokens_earned": successful * 10000,
         "results": results,
-        "note": "AI agent cannot sign transactions. Please use the web interface to mint tokens with your wallet."
+        "note": "Auto mining requires managed wallet. Enable it in settings if you see 'requires managed wallet' errors."
     }
 
 def get_mining_status(api_key: str) -> Dict[str, Any]:

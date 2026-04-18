@@ -166,6 +166,51 @@ export class WalletManager {
   }
 
   /**
+   * Create a managed wallet for auto mining
+   * @param userId - User ID
+   * @returns Wallet information with encrypted private key stored on server
+   */
+  async createManagedWallet(userId: string): Promise<WalletInfo> {
+    // Check if wallet already exists
+    const existing = await prisma.wallet.findUnique({
+      where: { userId }
+    });
+
+    if (!existing) {
+      throw new Error('Wallet not found. Please create a wallet first.');
+    }
+
+    // Check if already has managed wallet
+    if (existing.encryptedPrivateKey && existing.encryptedPrivateKey.length > 0) {
+      throw new Error('Managed wallet already enabled');
+    }
+
+    // Generate new wallet with mnemonic
+    const wallet = ethers.Wallet.createRandom();
+    const address = wallet.address;
+    const privateKey = wallet.privateKey;
+
+    // Encrypt private key
+    const { encrypted, iv } = this.encryptPrivateKey(privateKey);
+
+    // Update database with encrypted private key
+    const updatedWallet = await prisma.wallet.update({
+      where: { userId },
+      data: {
+        address,
+        encryptedPrivateKey: encrypted,
+        keyIv: iv,
+        reagentBalance: '0',
+        pathusdBalance: '0'
+      }
+    });
+
+    console.log(`[WalletManager] Created managed wallet for user ${userId}: ${address}`);
+
+    return this.toWalletInfo(updatedWallet);
+  }
+
+  /**
    * Export private key (requires password re-authentication)
    * @param userId - User ID
    * @returns Decrypted private key

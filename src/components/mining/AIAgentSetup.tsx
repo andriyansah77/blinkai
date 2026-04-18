@@ -11,6 +11,7 @@ import {
   EyeOff,
   Terminal,
   Zap,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -21,9 +22,12 @@ export function AIAgentSetup() {
   const [regenerating, setRegenerating] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [hasManagedWallet, setHasManagedWallet] = useState(false);
+  const [enablingManagedWallet, setEnablingManagedWallet] = useState(false);
 
   useEffect(() => {
     fetchApiKey();
+    checkManagedWallet();
   }, []);
 
   const fetchApiKey = async () => {
@@ -41,6 +45,40 @@ export function AIAgentSetup() {
       toast.error("Failed to fetch API key");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkManagedWallet = async () => {
+    try {
+      const response = await fetch("/api/wallet");
+      if (response.ok) {
+        const data = await response.json();
+        setHasManagedWallet(data.hasManagedWallet || false);
+      }
+    } catch (error) {
+      console.error("Error checking managed wallet:", error);
+    }
+  };
+
+  const enableManagedWallet = async () => {
+    try {
+      setEnablingManagedWallet(true);
+      const response = await fetch("/api/wallet/enable-managed", {
+        method: "POST",
+      });
+      
+      if (response.ok) {
+        setHasManagedWallet(true);
+        toast.success("Managed wallet enabled! AI agent can now mint tokens automatically.");
+      } else {
+        const data = await response.json();
+        toast.error(data.error?.message || "Failed to enable managed wallet");
+      }
+    } catch (error) {
+      console.error("Error enabling managed wallet:", error);
+      toast.error("Failed to enable managed wallet");
+    } finally {
+      setEnablingManagedWallet(false);
     }
   };
 
@@ -151,6 +189,62 @@ export function AIAgentSetup() {
         <p className="text-muted-foreground text-xs mt-2">
           Keep this key secure. It allows your AI agent to mint tokens on your behalf.
         </p>
+      </div>
+
+      {/* Managed Wallet Section */}
+      <div className="mb-6 p-4 bg-accent/50 rounded-lg border border-border">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" />
+            <h3 className="text-foreground font-medium text-sm">Managed Wallet for Auto Mining</h3>
+          </div>
+          {hasManagedWallet ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/30">
+              <CheckCircle className="w-3 h-3" />
+              Enabled
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-400 border border-orange-500/30">
+              <AlertCircle className="w-3 h-3" />
+              Disabled
+            </span>
+          )}
+        </div>
+        
+        <p className="text-muted-foreground text-xs mb-3">
+          {hasManagedWallet 
+            ? "Your AI agent can automatically mint tokens without requiring manual approval for each transaction."
+            : "Enable managed wallet to allow your AI agent to mint tokens automatically. Your private key will be encrypted and stored securely."}
+        </p>
+
+        {!hasManagedWallet && (
+          <button
+            onClick={enableManagedWallet}
+            disabled={enablingManagedWallet}
+            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            {enablingManagedWallet ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Enabling...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4" />
+                Enable Managed Wallet
+              </>
+            )}
+          </button>
+        )}
+
+        {hasManagedWallet && (
+          <div className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+            <p className="text-green-400 text-xs">
+              Your AI agent is ready to mint tokens automatically! Just say "Start mining REAGENT" in chat.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Setup Instructions */}
