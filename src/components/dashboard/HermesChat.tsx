@@ -239,7 +239,7 @@ export default function HermesChat({ className, initialCommand }: ChatProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ command, args }),
+        body: JSON.stringify({ command: commandText, args }),
       });
 
       if (!response.ok) {
@@ -260,35 +260,12 @@ export default function HermesChat({ className, initialCommand }: ChatProps) {
       const resultMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: result.result.message,
+        content: result.success ? result.output : result.error || 'Command failed',
         timestamp: new Date(),
         type: "text"
       };
 
       setMessages(prev => [...prev, commandMessage, resultMessage]);
-
-      // Handle special actions
-      if (result.result.action === 'clear_chat') {
-        // Clear localStorage
-        if (typeof window !== 'undefined' && agent?.id) {
-          const storageKey = `chat-history-${agent.id}`;
-          localStorage.removeItem(storageKey);
-          console.log('[Chat] Cleared chat history from localStorage');
-        }
-        setTimeout(() => setMessages([]), 1000);
-      } else if (result.result.action === 'export_chat') {
-        // Handle chat export
-        exportChatHistory(result.result.format);
-      } else if (result.result.action === 'new_session') {
-        // Start new session
-        setTimeout(() => setMessages([]), 1000);
-      } else if (result.result.action === 'save_session') {
-        // Save current session
-        await saveCurrentSession(result.result.title);
-      } else if (result.result.action === 'load_session') {
-        // Load session
-        await loadSession(result.result.session);
-      }
 
     } catch (error) {
       console.error('Slash command error:', error);

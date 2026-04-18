@@ -24,6 +24,30 @@ export async function POST(request: NextRequest) {
 
     try {
       switch (mainCommand.toLowerCase()) {
+        case '/help':
+        case 'help':
+          result = {
+            success: true,
+            output: `Available Commands:
+==================
+
+/help - Show this help message
+/mine [amount] - Auto mine REAGENT tokens (1-10)
+/clear - Clear chat history
+/export - Export chat history
+/skills - List agent skills
+/memory - Show agent memory
+/sessions - List chat sessions
+/agent - Agent information
+
+Examples:
+---------
+/mine 5 - Mine 5 REAGENT tokens
+/help - Show available commands`,
+            error: ''
+          };
+          break;
+
         case 'status':
           const status = await hermesIntegration.getStatus(userId);
           result = {
