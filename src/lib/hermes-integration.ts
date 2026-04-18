@@ -1336,13 +1336,26 @@ EOF`);
         
         console.log(`[Platform] Telegram token set successfully for user ${userId}`);
         
-        // Also update .env file with gateway environment variables
+        // Update .env file with ReAgent API credentials
         const envPath = `/root/.hermes/profiles/${profileName}/.env`;
         try {
-          // Append gateway config to .env
-          const envAddition = `\n# Gateway Configuration\nGATEWAY_ALLOW_ALL_USERS=true\nTELEGRAM_BOT_TOKEN=${botToken}\n`;
+          // Get platform API key from environment
+          const platformApiKey = process.env.PLATFORM_API_KEY || '';
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://reagent.eu.cc';
+          
+          // Append ReAgent credentials to .env
+          const envAddition = `
+# Gateway Configuration
+GATEWAY_ALLOW_ALL_USERS=true
+TELEGRAM_BOT_TOKEN=${botToken}
+
+# ReAgent Platform Credentials (Auto-configured)
+REAGENT_API_KEY=${platformApiKey}
+REAGENT_USER_ID=${userId}
+REAGENT_API_BASE=${appUrl}
+`;
           await execAsync(`echo '${envAddition}' >> ${envPath}`);
-          console.log(`[Platform] Gateway environment variables added to .env for user ${userId}`);
+          console.log(`[Platform] ✅ ReAgent credentials auto-configured for user ${userId}`);
         } catch (envError) {
           console.warn(`[Platform] Failed to update .env file:`, envError);
           // Continue anyway, config.yaml should be enough
