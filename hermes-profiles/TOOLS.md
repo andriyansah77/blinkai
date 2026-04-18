@@ -12,6 +12,70 @@ All agent operations are performed through HTTP API calls to the ReAgent platfor
 - Database operations (history, statistics)
 - Security and validation
 
+## Slash Commands (Chat Interface)
+
+AI agents can execute commands directly via the `/api/hermes/commands` endpoint. These commands work in both web chat and Telegram bot.
+
+### Available Commands
+
+#### /mine [amount]
+**Description**: Auto mine REAGENT tokens with server-side signing  
+**Usage**: `/mine [amount]` where amount is 1-10  
+**Examples**:
+- `/mine` - Mine 1 token (default)
+- `/mine 5` - Mine 5 tokens
+- `/mine 10` - Mine 10 tokens (maximum)
+
+**API Call**:
+```http
+POST /api/hermes/commands HTTP/1.1
+Host: reagent.eu.cc
+Content-Type: application/json
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
+
+{
+  "command": "/mine 5"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "output": "⛏️ Starting auto mining for 5 REAGENT tokens...\n\n✅ Mint 1/5: Transaction submitted\n   TX Hash: 0x1234567890...abcdef12\n   Tokens: 10000 REAGENT\n\n...\n\n🎉 Mining complete! Minted 50000 REAGENT tokens.",
+  "error": ""
+}
+```
+
+#### /help
+**Description**: Show all available commands  
+**Usage**: `/help`
+
+**API Call**:
+```http
+POST /api/hermes/commands HTTP/1.1
+Host: reagent.eu.cc
+Content-Type: application/json
+Authorization: Bearer <API_KEY>
+X-User-ID: <user_id>
+
+{
+  "command": "/help"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "output": "Available Commands:\n==================\n\n/help - Show this help message\n/mine [amount] - Auto mine REAGENT tokens (1-10)\n...",
+  "error": ""
+}
+```
+
+---
+
 ## Core Skills
 
 ### 1. Minting_Skill

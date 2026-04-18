@@ -48,7 +48,76 @@ Examples:
           };
           break;
 
+        case '/mine':
+        case 'mine':
+          const amount = parseInt(subCommand || '1');
+          
+          if (isNaN(amount) || amount < 1 || amount > 10) {
+            result = {
+              success: false,
+              output: '',
+              error: 'Invalid amount. Please specify a number between 1 and 10.\nUsage: /mine [amount]\nExample: /mine 5'
+            };
+            break;
+          }
+
+          try {
+            let miningOutput = `⛏️ Starting auto mining for ${amount} REAGENT token${amount > 1 ? 's' : ''}...\n\n`;
+            
+            // Execute mining via simple-mint API
+            for (let i = 0; i < amount; i++) {
+              const mineResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/mining/simple-mint`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Cookie': request.headers.get('cookie') || ''
+                },
+                body: JSON.stringify({
+                  type: 'auto'
+                }),
+              });
+
+              if (!mineResponse.ok) {
+                const error = await mineResponse.json();
+                throw new Error(error.error || 'Mining failed');
+              }
+
+              const mineResult = await mineResponse.json();
+
+              if (!mineResult.success) {
+                throw new Error(mineResult.error || 'Failed to mint');
+              }
+
+              const txHash = mineResult.txHash || 'N/A';
+              miningOutput += `✅ Mint ${i + 1}/${amount}: Transaction submitted\n`;
+              miningOutput += `   TX Hash: ${txHash.slice(0, 10)}...${txHash.slice(-8)}\n`;
+              miningOutput += `   Tokens: ${mineResult.tokensEarned || '10000'} REAGENT\n\n`;
+
+              // Wait 2 seconds between mints
+              if (i < amount - 1) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+              }
+            }
+
+            miningOutput += `\n🎉 Mining complete! Minted ${amount * 10000} REAGENT tokens.\n\n`;
+            miningOutput += `Transactions are being confirmed on the blockchain. Check your balance in a few minutes.`;
+
+            result = {
+              success: true,
+              output: miningOutput,
+              error: ''
+            };
+          } catch (error: any) {
+            result = {
+              success: false,
+              output: '',
+              error: `Mining failed: ${error.message}\n\nUsage: /mine [amount]\nExample: /mine 5 (mints 5 times, earning 50,000 REAGENT)`
+            };
+          }
+          break;
+
         case 'status':
+    
           const status = await hermesIntegration.getStatus(userId);
           result = {
             success: true,
