@@ -88,22 +88,21 @@ export class SimpleMintingEngine {
         
         console.log(`[SimpleMinting] Transferring ${fee} PATHUSD fee from user to platform`);
         
-        // Construct fee transfer transaction
-        const feeTransferTx = {
-          to: platformWalletAddress,
-          from: userWallet.address,
-          value: ethers.parseUnits(fee, 6), // PATHUSD uses 6 decimals
-          gasLimit: 21000, // Standard transfer
-          chainId: TEMPO_CHAIN_ID
-        };
-        
         // Get nonce and gas price for fee transfer
         const nonce = await provider.getTransactionCount(userWallet.address, 'pending');
         const feeData = await provider.getFeeData();
         const gasPrice = feeData.gasPrice || ethers.parseUnits('20', 'gwei');
         
-        feeTransferTx.nonce = nonce;
-        feeTransferTx.gasPrice = gasPrice;
+        // Construct fee transfer transaction
+        const feeTransferTx: ethers.TransactionRequest = {
+          to: platformWalletAddress,
+          from: userWallet.address,
+          value: ethers.parseUnits(fee, 6), // PATHUSD uses 6 decimals
+          gasLimit: 21000, // Standard transfer
+          chainId: TEMPO_CHAIN_ID,
+          nonce: nonce,
+          gasPrice: gasPrice
+        };
         
         // Sign and broadcast fee transfer with user's wallet
         const signedFeeTx = await simpleWalletManager.signTransaction(userId, feeTransferTx);
