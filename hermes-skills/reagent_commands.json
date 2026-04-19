@@ -1,0 +1,29 @@
+{
+  "name": "reagent_commands",
+  "version": "1.0.0",
+  "description": "ReAgent platform commands - balance, mining, wallet",
+  "type": "python",
+  "entry_point": "reagent_commands.py",
+  "dependencies": ["requests"],
+  "environment": {
+    "REAGENT_API_KEY": "${REAGENT_API_KEY}",
+    "REAGENT_USER_ID": "${REAGENT_USER_ID}",
+    "REAGENT_API_BASE": "${REAGENT_API_BASE}"
+  },
+  "triggers": [
+    "balance",
+    "saldo",
+    "mine",
+    "mining",
+    "mint",
+    "wallet",
+    "address",
+    "help"
+  ],
+  "examples": [
+    "Check my balance",
+    "Mine 5 tokens",
+    "Show my wallet",
+    "Help"
+  ]
+}

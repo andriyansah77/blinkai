@@ -14,255 +14,174 @@ ReAgent is an AI agent deployment platform on Tempo Network that enables users t
 
 ---
 
-## How to Execute Commands
+## IMPORTANT: How AI Agents Should Work
 
-AI agents should execute commands by calling the ReAgent API directly, NOT through Hermes CLI commands.
+AI agents on ReAgent have a **Python skill** (`reagent_commands.py`) that handles all ReAgent operations automatically. 
 
-### ❌ WRONG - Don't Use Hermes CLI
+### ✅ CORRECT - Use Python Skill
+
+When user asks about balance, mining, or wallet:
+
+```python
+# The skill is automatically available
+# Just respond naturally and the skill will be triggered
+
+User: "Check my balance"
+AI: *reagent_commands.py skill is triggered automatically*
+AI: *displays balance from API response*
+
+User: "Mine 5 tokens"
+AI: *reagent_commands.py skill is triggered automatically*
+AI: *displays mining progress from API response*
 ```
-/balance  ← This won't work
-/mine     ← This won't work
-```
 
-### ✅ CORRECT - Use ReAgent API
-```bash
-# Check balance
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $API_KEY" \
-  -H "X-User-ID: $USER_ID" \
-  -d '{"command": "/balance"}'
+### Skill Triggers
 
-# Mine tokens
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $API_KEY" \
-  -H "X-User-ID: $USER_ID" \
-  -d '{"command": "/mine 5"}'
-```
+The `reagent_commands.py` skill is automatically triggered when user message contains:
+- **Balance**: "balance", "saldo", "check balance", "cek saldo"
+- **Mining**: "mine", "mining", "mint", "minting"
+- **Wallet**: "wallet", "address", "alamat"
+- **Help**: "help", "bantuan", "command", "perintah"
+
+### How It Works
+
+1. User sends message to Telegram bot
+2. Hermes detects trigger words
+3. `reagent_commands.py` skill is executed
+4. Skill calls ReAgent API with credentials from environment
+5. Skill returns formatted response
+6. AI agent displays response to user
 
 ---
 
 ## Available Commands
 
-### 1. Check Balance
-**User Request**: "Check my balance", "What's my balance?", "Show wallet"
+The Python skill handles these commands automatically:
 
-**API Call**:
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "/balance"}'
-```
+### 1. Check Balance
+**User says**: "Check my balance", "What's my balance?", "Cek saldo"
+
+**Skill executes**: `check_balance()`
+
+**API Call**: `POST /api/hermes/commands` with `{"command": "/balance"}`
 
 **Response**:
-```json
-{
-  "success": true,
-  "output": "💰 Wallet Balance\n==================\n\nAddress: 0xA54193Fc126182f3b0167077c5FEf0A8bFEB7937\nREAGENT: 50000.000000 tokens\nPATHUSD: 10.500000 tokens\n\nLast Updated: 2024-01-15 10:30:00"
-}
+```
+💰 Wallet Balance
+==================
+
+Address: 0xA54193Fc126182f3b0167077c5FEf0A8bFEB7937
+REAGENT: 50000.000000 tokens
+PATHUSD: 10.500000 tokens
+
+Last Updated: 2024-01-15 10:30:00
 ```
 
 ### 2. Mine Tokens
-**User Request**: "Mine 5 tokens", "Start mining", "Mint REAGENT"
+**User says**: "Mine 5 tokens", "Start mining", "Mint REAGENT"
 
-**API Call**:
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "/mine 5"}'
-```
+**Skill executes**: `mine_tokens(amount)`
+
+**API Call**: `POST /api/hermes/commands` with `{"command": "/mine 5"}`
 
 **Response**:
-```json
-{
-  "success": true,
-  "output": "⛏️ Starting auto mining for 5 REAGENT tokens...\n\n✅ Mint 1/5: Transaction submitted\n   TX Hash: 0x1234567890...abcdef12\n   Tokens: 10000 REAGENT\n\n...\n\n🎉 Mining complete! Minted 50000 REAGENT tokens."
-}
+```
+⛏️ Starting auto mining for 5 REAGENT tokens...
+
+✅ Mint 1/5: Transaction submitted
+   TX Hash: 0x1234567890...abcdef12
+   Tokens: 10000 REAGENT
+
+...
+
+🎉 Mining complete! Minted 50000 REAGENT tokens.
 ```
 
-### 3. Show Wallet Info
-**User Request**: "Show my wallet", "Wallet info", "What's my address?"
+### 3. Show Wallet
+**User says**: "Show my wallet", "Wallet info", "What's my address?"
 
-**API Call**:
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "/wallet"}'
-```
+**Skill executes**: `show_wallet()`
+
+**API Call**: `POST /api/hermes/commands` with `{"command": "/wallet"}`
 
 ### 4. Help
-**User Request**: "Help", "What can you do?", "Show commands"
+**User says**: "Help", "What can you do?", "Show commands"
 
-**API Call**:
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "/help"}'
-```
+**Skill executes**: `show_help()`
+
+**API Call**: `POST /api/hermes/commands` with `{"command": "/help"}`
 
 ---
 
-## Authentication
+## Environment Variables
 
-### Environment Variables Required
-
-AI agents need these environment variables configured:
+The Python skill reads credentials from environment variables that are **automatically configured** when user adds Telegram channel:
 
 ```bash
-REAGENT_API_KEY=sk_live_abc123...     # Platform API key
-REAGENT_USER_ID=user@example.com      # User's email or Privy ID
+REAGENT_API_KEY=sk_platform_abc123...     # Platform API key
+REAGENT_USER_ID=did:privy:xyz789...       # User's Privy ID
+REAGENT_API_BASE=https://reagent.eu.cc    # Platform URL
 ```
 
-### How to Get API Key
-
-1. User logs in to https://reagent.eu.cc
-2. Goes to Settings page
-3. Generates API key
-4. Copies and provides to AI agent
-
-### How to Get User ID
-
-User ID is the user's email address or Privy user ID (format: `did:privy:...`).
+These are injected into `/root/.hermes/profiles/user-{userId}/.env` automatically.
 
 ---
 
-## Important Rules for AI Agents
+## For AI Agents: Natural Language Processing
 
-### 1. Always Use API Calls
-- ❌ Don't use `/balance` as Hermes CLI command
-- ✅ Use API call to `/api/hermes/commands` with `{"command": "/balance"}`
+You don't need to call APIs directly. Just understand what user wants and let the skill handle it:
 
-### 2. Check Environment Variables
-Before making API calls, verify:
-```bash
-if [ -z "$REAGENT_API_KEY" ]; then
-  echo "Error: REAGENT_API_KEY not set"
-  exit 1
-fi
+**User**: "Can you check how much REAGENT I have?"
+**AI**: *Skill detects "check" + "REAGENT" → triggers check_balance()*
+**AI**: "Let me check your balance..." *displays result*
 
-if [ -z "$REAGENT_USER_ID" ]; then
-  echo "Error: REAGENT_USER_ID not set"
-  exit 1
-fi
-```
+**User**: "I want to mine 3 tokens"
+**AI**: *Skill detects "mine" + "3" → triggers mine_tokens(3)*
+**AI**: "Starting mining for 3 tokens..." *displays result*
 
-### 3. Handle Errors Gracefully
-```json
-{
-  "success": false,
-  "error": "Invalid API key"
-}
-```
-
-Tell user: "API key tidak valid. Silakan generate API key baru di dashboard Settings."
-
-### 4. Parse Response Correctly
-```json
-{
-  "success": true,
-  "output": "💰 Wallet Balance\n..."
-}
-```
-
-Display the `output` field to user, formatted nicely.
-
----
-
-## Common User Requests & Responses
-
-### "Check my balance"
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "/balance"}'
-```
-
-### "Mine 3 tokens"
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "/mine 3"}'
-```
-
-### "Show my wallet"
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "/wallet"}'
-```
-
-### "What can you do?"
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "/help"}'
-```
+**User**: "What's my wallet address?"
+**AI**: *Skill detects "wallet" + "address" → triggers show_wallet()*
+**AI**: "Here's your wallet information..." *displays result*
 
 ---
 
 ## Troubleshooting
 
-### Error: "Invalid API key"
-**Solution**: User needs to generate new API key from dashboard Settings.
+### If Skill Doesn't Trigger
 
-### Error: "Wallet not found"
-**Solution**: User needs to create wallet first via dashboard.
+Check if skill is installed:
+```bash
+hermes --profile user-{userId} skills list
+```
 
-### Error: "Insufficient PATHUSD balance"
-**Solution**: User needs to deposit PATHUSD to wallet first.
+Should show:
+```
+✓ reagent_commands - ReAgent platform commands
+```
 
-### Error: "Unknown command"
-**Solution**: AI agent is using wrong command format. Use API calls, not CLI commands.
+### If API Calls Fail
 
----
+Check environment variables:
+```bash
+cat /root/.hermes/profiles/user-{userId}/.env | grep REAGENT
+```
 
-## Mining Fees
-
-- Auto-mining: 0.05 PATHUSD per mint
-- Manual mining: 0.1 PATHUSD per mint
-- Reward: 10,000 REAGENT per mint
-- Maximum: 10 mints per command
-
----
-
-## Links
-
-- Dashboard: https://reagent.eu.cc
-- Explorer: https://explore.tempo.xyz
-- Documentation: Check dashboard help section
+Should show:
+```
+REAGENT_API_KEY=sk_platform_...
+REAGENT_USER_ID=did:privy:...
+REAGENT_API_BASE=https://reagent.eu.cc
+```
 
 ---
 
 ## Summary for AI Agents
 
-1. ✅ Use API calls to `/api/hermes/commands`
-2. ✅ Include `Authorization` and `X-User-ID` headers
-3. ✅ Send command in JSON body: `{"command": "/balance"}`
-4. ❌ Don't use Hermes CLI commands directly
-5. ❌ Don't call `/balance` or `/mine` as CLI commands
+1. ✅ Python skill (`reagent_commands.py`) handles all ReAgent operations
+2. ✅ Skill is automatically triggered by keywords
+3. ✅ Credentials are auto-configured from environment
+4. ✅ Just respond naturally - skill does the work
+5. ❌ Don't try to call APIs manually
+6. ❌ Don't use Hermes CLI commands
 
-**Example Template**:
-```bash
-curl -X POST https://reagent.eu.cc/api/hermes/commands \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $REAGENT_API_KEY" \
-  -H "X-User-ID: $REAGENT_USER_ID" \
-  -d '{"command": "YOUR_COMMAND_HERE"}'
-```
+**Your job**: Understand user intent and let the skill execute the operation.
