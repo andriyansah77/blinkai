@@ -291,6 +291,40 @@ EOF`);
               console.error(`[Profile] Failed to copy profile markdown files:`, copyError);
               // Continue anyway, profile is created
             }
+            
+            // 4. Install ReAgent Commands skill
+            console.log(`[Profile] Installing ReAgent Commands skill for user ${userId}`);
+            try {
+              // Copy skill files to Hermes skills directory
+              const hermesSkillsDir = '/root/.hermes/skills';
+              const sourceSkillsDir = '/root/reagent/hermes-skills';
+              
+              // Ensure skills directory exists
+              await execAsync(`mkdir -p ${hermesSkillsDir}`);
+              
+              // Copy skill files
+              await execAsync(`cp ${sourceSkillsDir}/reagent_commands.py ${hermesSkillsDir}/`);
+              await execAsync(`cp ${sourceSkillsDir}/reagent_commands.json ${hermesSkillsDir}/`);
+              await execAsync(`chmod +x ${hermesSkillsDir}/reagent_commands.py`);
+              
+              console.log(`[Profile] ✅ Skill files copied to ${hermesSkillsDir}`);
+              
+              // Install skill for this profile
+              const installResult = await this.executeHermesCommand(userId, {
+                command: 'skills',
+                subcommand: 'install',
+                args: ['reagent_commands']
+              });
+              
+              if (installResult.success) {
+                console.log(`[Profile] ✅ ReAgent Commands skill installed for user ${userId}`);
+              } else {
+                console.warn(`[Profile] ⚠️ Failed to install skill:`, installResult.error);
+              }
+            } catch (skillError) {
+              console.error(`[Profile] Failed to install ReAgent Commands skill:`, skillError);
+              // Continue anyway, skill can be installed later
+            }
           } catch (configError) {
             console.error(`[Profile] Failed to set AI configuration:`, configError);
             // Continue anyway, profile is created
